@@ -14,12 +14,15 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ## Portafoglio applicativo AS-IS
 
-| Applicativo | Sede / Ambito | Stack | Database |
-|---|---|---|---|
-| ASPEN | Tribunale di Milano – Ufficio GIP | Visual Basic 6 | SQL Server 2000 |
-| ASPEN2 | Napoli – GUP | Microsoft Access | Access |
-| ASPENCA | Corte d'Appello di Napoli | Visual Basic 6 | Access |
-| ASSPECA | Corte d'Appello di Napoli (ext.) | VB6 / Access | Access |
+| Applicativo | Stato | Sede attiva | Stack | Database |
+|---|---|---|---|---|
+| ASPEN | **Dismesso** | — | Visual Basic 6 | SQL Server 2000 |
+| ASPEN2 | **In produzione** | Palermo – Ufficio GIP | VB6 | SQL Server |
+| ASPENCA | Installato, non usato | Palermo (pensato per Corte d'Appello) | Visual Basic 6 | Access |
+| ASSPECA | — | Napoli | VB6 / Access | Access |
+
+> La stessa struttura base è presente anche a Milano, Monza, Roma e Napoli con configurazioni locali.
+> Vedi analisi completa: [`02 - Analisi/AS-IS/ASPEN - Analisi AS-IS.md`](02%20-%20Analisi/AS-IS/ASPEN%20-%20Analisi%20AS-IS.md)
 
 ---
 
@@ -66,10 +69,12 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ## Prossimi passi
 
-1. Completare le sessioni di analisi AS-IS con il cliente (mappatura modello dati reale)
-2. Definire architettura target su Power Platform (collocazione logica assegnazione)
-3. Strategia migrazione storico + integrazione SICP
-4. Validare algoritmo evoluto (classi di peso / principio di occorrenza)
+1. **Validare con il cliente** la sintesi AS-IS emersa dalla call del 04/06/2026
+2. **Approfondire il modello dati** (tabelle, relazioni, soglie pesatura) – richiedere dump anonimizzato
+3. **POC model-driven su Power Platform** entro ~2 settimane (tabelle: Magistrati, Fascicoli/Assegnazioni, Canestri)
+4. Pianificare sessioni su: sicurezza, incompatibilità, reportistica, migrazione dati
+5. Definire architettura target (collocazione logica assegnazione: Plugin / Custom API vs Power Automate)
+6. Strategia migrazione storico + integrazione SICP
 
 ---
 
@@ -80,3 +85,6 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | Referente Ufficio GIP | Dott.ssa Maccora | Tribunale di Milano |
 | Referente tecnico | Dott. Crepaldi | Tribunale di Milano |
 | Referente operativo | Sig. Cortese | Tribunale di Milano |
+
+**Partecipanti call 04/06/2026 (AGIC):** Chiara D'Innocenzi, Linda Tomasello, Vincenzo Picone, Giuseppe Scalabrino, Riccardo Vedovato, Luca Campoglioni  
+**Microsoft:** Daiana D'Agostino
