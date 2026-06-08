@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest>
+  <control namespace="AgicAspen" constructor="StatoFascicoliChart" version="1.0.0"
+    display-name-key="Fascicoli per Stato"
+    description-key="Grafico a torta dei fascicoli suddivisi per stato"
+    control-type="standard">
+    <external-service-usage enabled="false" />
+    <!--
+      Tabella sorgente: agc_fascicolo
+      Mapping consigliato:
+        statoField  →  agc_statocaso  (Picklist — OptionSet)
+    -->
+    <data-set name="fascicoliDataSet" display-name-key="Fascicoli">
+      <property-set name="statoField" display-name-key="Stato caso"
+        of-type="OptionSet" usage="bound" required="true" />
+    </data-set>
+    <resources>
+      <code path="index.ts" order="1" />
+      <css path="css/chart.css" order="1" />
+    </resources>
+  </control>
+</manifest>

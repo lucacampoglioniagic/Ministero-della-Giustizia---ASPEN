@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest>
+  <control namespace="AgicAspen" constructor="CaricoMagistratiChart" version="1.0.0"
+           display-name-key="Carico per Magistrato"
+           description-key="Grafico animato del carico (somma pesi) per magistrato"
+           control-type="standard">
+    <external-service-usage enabled="false" />
+    <!--
+      Tabella sorgente: agc_fascicolo
+      Mapping consigliato:
+        magistratoField  →  agc_magistratoassegnato  (Lookup → agc_giudice)
+        pesoField        →  agc_peso                 (Decimal)
+    -->
+    <type-group name="pesoTypes">
+      <type>Whole.None</type>
+      <type>FP</type>
+      <type>Decimal</type>
+    </type-group>
+    <data-set name="fascicoliDataSet" display-name-key="Fascicoli">
+      <property-set name="magistratoField" display-name-key="Magistrato (lookup)"
+                    of-type="Lookup.Simple" usage="bound" required="true" />
+      <property-set name="pesoField" display-name-key="Peso"
+                    of-type-group="pesoTypes" usage="bound" required="true" />
+    </data-set>
+    <resources>
+      <code path="index.ts" order="1" />
+      <css path="css/chart.css" order="1" />
+    </resources>
+  </control>
+</manifest>

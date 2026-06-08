@@ -21,7 +21,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | ASPENCA | Installato, non usato | Palermo (pensato per Corte d'Appello) | Visual Basic 6 | Access |
 | ASSPECA | — | Napoli | VB6 / Access | Access |
 
-> La stessa struttura base è presente anche a Milano, Monza, Roma e Napoli con configurazioni locali.
+> La stessa struttura base è presente anche a Milano, Monza, Roma e Napoli con configurazioni locali.  
 > Vedi analisi completa: [`02 - Analisi/AS-IS/ASPEN - Analisi AS-IS.md`](02%20-%20Analisi/AS-IS/ASPEN%20-%20Analisi%20AS-IS.md)
 
 ---
@@ -50,7 +50,9 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 │   ├── Dataverse/                   # Schema tabelle, relazioni, choice columns
 │   ├── Model-Driven-App/            # File app model-driven
 │   ├── Power-Automate/              # Flussi di automazione
-│   └── Plugin-Custom-API/           # Plugin Dataverse / Custom API per logica assegnazione
+│   ├── Plugin-Custom-API/           # Plugin Dataverse / Custom API per logica assegnazione
+│   ├── PCF/                         # CaricoMagistratiChart — barre orizzontali carico magistrati
+│   └── PCF-Pie/                     # StatoFascicoliChart — torta fascicoli per stato
 
 📁 06 - Riferimenti Normativi e Tecnici/   # Normativa, lettere istituzionali, docs tecnici
 ```
@@ -77,13 +79,66 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ---
 
+## POC — stato attuale (08/06/2026)
+
+**Ambiente Dataverse:** `LCC-MINISTEROGIUSTIZIA-DEMO` (https://lccministerogiustiziademo.crm4.dynamics.com)  
+**Publisher prefix:** `agc_`
+
+### Modello dati POC
+
+| Tabella Dataverse | LogicalName | Descrizione |
+|---|---|---|
+| Canestro | `agc_canestro` | Materie/competenze (es. Stupefacenti, Omicidio…) |
+| Magistrato | `agc_giudice` | Giudici GIP/GUP con ruolo e stato attivo |
+| Fascicolo/Assegnazione | `agc_fascicolo` | Fascicoli con peso calcolato e lookup a magistrato+canestro |
+| Configurazione | `agc_configurazione` | Parametri di sistema (es. `PesoLimite = 20`) |
+
+**Colonne chiave `agc_fascicolo`:**
+
+| Colonna | LogicalName | Tipo |
+|---|---|---|
+| Numero RG | `agc_numeroregistrogenerale` | String |
+| N. imputati | `agc_numeroimputati` | Integer |
+| N. imputazioni | `agc_numeroimputazioni` | Integer |
+| Punti imputati | `agc_puntiimputati` | Integer |
+| Punti imputazioni | `agc_puntiimputazioni` | Integer |
+| Canestro | `agc_canestro` | Lookup → agc_canestro |
+| Magistrato assegnato | `agc_magistratoassegnato` | Lookup → agc_giudice |
+| Peso | `agc_peso` | Decimal (calcolato) |
+| Stato | `agc_statocaso` | OptionSet: 0=Validato, 1=Proposto |
+| Data | `agc_datacaso` | DateTime |
+
+### Componenti PCF pubblicati
+
+#### `AgicAspen.CaricoMagistratiChart` — `05 - Power Platform/PCF/`
+Grafico a barre orizzontali del carico per magistrato.
+- **Colori dinamici** dalla soglia `PesoLimite` in `agc_configurazione`:
+  - 🟢 Verde `#107C10` — carico < 80% soglia
+  - 🟡 Giallo `#FFB900` — carico ≥ 80% soglia
+  - 🔴 Rosso `#D13438` — carico ≥ soglia
+- **Legenda colori** inline sotto il grafico
+- **Click su barra** → naviga alla scheda `agc_giudice` corrispondente
+- **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_peso`
+
+#### `AgicAspen.StatoFascicoliChart` — `05 - Power Platform/PCF-Pie/`
+Grafico a torta distribuzione fascicoli per stato.
+- Verde = Validato, Blu = Proposto
+- Tooltip con valore assoluto e percentuale
+- **Mapping nel designer:** `statoField` → `agc_statocaso`
+
+### App model-driven
+- Sitemap: **Operatività** (Fascicoli, Cruscotto) · **Anagrafiche** (Magistrati, Canestri)
+- Dashboard "Cruscotto ASPEN" con entrambi i PCF
+
+---
+
 ## Prossimi passi
 
-1. **Validare con il cliente** la sintesi AS-IS emersa dalla call del 04/06/2026
-2. **Approfondire il modello dati** (tabelle, relazioni, soglie pesatura) – richiedere dump anonimizzato
-3. **POC model-driven su Power Platform** entro ~2 settimane (tabelle: Magistrati, Fascicoli/Assegnazioni, Canestri)
+1. Validare con il cliente la sintesi AS-IS emersa dalla call del 04/06/2026
+2. Approfondire il modello dati – richiedere dump anonimizzato
+3. Aggiungere pagina **Configurazione** alla sitemap per gestire `PesoLimite` dall'app
 4. Pianificare sessioni su: sicurezza, incompatibilità, reportistica, migrazione dati
-5. Definire architettura target (collocazione logica assegnazione: Plugin / Custom API vs Power Automate)
+5. Implementare logica assegnazione (Plugin / Custom API)
 6. Strategia migrazione storico + integrazione SICP
 
 ---
