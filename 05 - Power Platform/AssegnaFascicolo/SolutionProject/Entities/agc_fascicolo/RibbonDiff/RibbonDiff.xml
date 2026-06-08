@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RibbonDiffXml>
+  <CustomActions>
+    <CustomAction Id="agc.Form.agc_fascicolo.MainTab.Save.Assegna.CustomAction"
+                  Location="Mscrm.Form.agc_fascicolo.MainTab.Save.Controls._children"
+                  Sequence="21">
+      <CommandUIDefinition>
+        <Button Id="agc.Form.agc_fascicolo.MainTab.Save.Assegna.Button"
+                Command="agc.Form.agc_fascicolo.MainTab.Save.Assegna.Command"
+                LabelText="Assegna"
+                Alt="Assegna Fascicolo"
+                ToolTipTitle="Assegna Fascicolo"
+                ToolTipDescription="Avvia il processo di assegnazione del fascicolo"
+                TemplateAlias="o1"
+                Sequence="21"
+                Image16by16="/_imgs/ribbon/SaveAndClose_16.png"
+                Image32by32="/_imgs/ribbon/SaveAndClose_32.png"/>
+      </CommandUIDefinition>
+    </CustomAction>
+  </CustomActions>
+  <CommandDefinitions>
+    <CommandDefinition Id="agc.Form.agc_fascicolo.MainTab.Save.Assegna.Command">
+      <EnableRules>
+        <EnableRule Id="Mscrm.FormStateExistingOrReadOnly"/>
+      </EnableRules>
+      <DisplayRules/>
+      <Actions>
+        <JavaScriptFunction FunctionName="AgicAspen.AssegnaFascicolo.openDialog"
+                            Library="$webresource:agc_assignfascicolo.js">
+          <CrmParameter Value="PrimaryControl"/>
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+  </CommandDefinitions>
+  <RuleDefinitions>
+    <EnableRules/>
+    <DisplayRules/>
+  </RuleDefinitions>
+  <Templates/>
+</RibbonDiffXml>

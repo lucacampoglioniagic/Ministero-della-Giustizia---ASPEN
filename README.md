@@ -52,7 +52,8 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 │   ├── Power-Automate/              # Flussi di automazione
 │   ├── Plugin-Custom-API/           # Plugin Dataverse / Custom API per logica assegnazione
 │   ├── PCF/                         # CaricoMagistratiChart — barre orizzontali carico magistrati
-│   └── PCF-Pie/                     # StatoFascicoliChart — torta fascicoli per stato
+│   ├── PCF-Pie/                     # StatoFascicoliChart — torta fascicoli per stato
+│   └── AssegnaFascicolo/            # Ribbon button + dialog "Assegna Fascicolo" su agc_fascicolo
 
 📁 06 - Riferimenti Normativi e Tecnici/   # Normativa, lettere istituzionali, docs tecnici
 ```
@@ -117,14 +118,41 @@ Grafico a barre orizzontali del carico per magistrato.
   - 🟡 Giallo `#FFB900` — carico ≥ 80% soglia
   - 🔴 Rosso `#D13438` — carico ≥ soglia
 - **Legenda colori** inline sotto il grafico
-- **Click su barra** → naviga alla scheda `agc_giudice` corrispondente
+- **Click su barra** → modal con elenco fascicoli assegnati al magistrato
 - **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_peso`
 
 #### `AgicAspen.StatoFascicoliChart` — `05 - Power Platform/PCF-Pie/`
 Grafico a torta distribuzione fascicoli per stato.
 - Verde = Validato, Blu = Proposto
 - Tooltip con valore assoluto e percentuale
+- **Click su fetta** → modal con elenco fascicoli di quello stato
 - **Mapping nel designer:** `statoField` → `agc_statocaso`
+
+### Ribbon button — Assegna Fascicolo
+
+Tasto custom **"Assegna Fascicolo"** nella command bar della form `agc_fascicolo`.  
+Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
+
+**File sorgente: `05 - Power Platform/AssegnaFascicolo/`**
+
+| File | Tipo | Descrizione |
+|---|---|---|
+| `WebResources/agc_assignfascicolo.js` | JS (type 3) | Handler ribbon: legge l'ID fascicolo e apre il dialog via `Xrm.Navigation.navigateTo` |
+| `WebResources/agc_assignfascicolodialog.html` | HTML (type 1) | Dialog popup standalone |
+| `WebResources/agc_assignfascicolo_icon.svg` | SVG (type 11) | Icona Fluent UI: persona blu + freccia verde |
+| `AgicAspenRibbon_unpacked/` | Solution unpacked | Sorgente soluzione con `RibbonDiff.xml` |
+
+**Comportamento del dialog:**
+1. Carica lista magistrati da `agc_giudices` via REST (`/api/data/v9.2/agc_giudices`)
+2. Permette selezione multipla di magistrati **incompatibili** (evidenziati in giallo con badge contatore)
+3. **Conferma** → spinner 2.5s (simulazione flusso assegnazione) → schermata successo animata → chiusura automatica
+4. **Annulla** → chiude il dialog
+
+**Note tecniche:**
+- Il dialog usa URL relativo per le chiamate Dataverse (same-domain cookie auth — no Bearer token)
+- Il parametro passato al dialog si legge con `new URLSearchParams(location.search).get("Data")` (D maiuscola)
+- `ModernImage` nel `RibbonDiff.xml` richiede il prefisso `$webresource:` (es. `$webresource:agc_assignfascicolo_icon.svg`)
+- Il flusso di assegnazione effettivo **non è implementato** — la demo simula con spinner
 
 ### App model-driven
 - Sitemap: **Operatività** (Fascicoli, Cruscotto) · **Anagrafiche** (Magistrati, Canestri)
@@ -138,7 +166,7 @@ Grafico a torta distribuzione fascicoli per stato.
 2. Approfondire il modello dati – richiedere dump anonimizzato
 3. Aggiungere pagina **Configurazione** alla sitemap per gestire `PesoLimite` dall'app
 4. Pianificare sessioni su: sicurezza, incompatibilità, reportistica, migrazione dati
-5. Implementare logica assegnazione (Plugin / Custom API)
+5. Implementare logica assegnazione reale (Plugin / Custom API) collegata al tasto "Assegna Fascicolo"
 6. Strategia migrazione storico + integrazione SICP
 
 ---

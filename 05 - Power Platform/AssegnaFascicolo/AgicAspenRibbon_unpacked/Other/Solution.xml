@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ImportExportXml version="9.2.26053.134" SolutionPackageVersion="9.2" languagecode="1040" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26053.134" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26061.00126">
+  <SolutionManifest>
+    <UniqueName>AgicAspenRibbon</UniqueName>
+    <LocalizedNames>
+      <LocalizedName description="AGIC ASPEN Ribbon Assegna" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions />
+    <Version>1.0.0.0</Version>
+    <Managed>0</Managed>
+    <Publisher>
+      <UniqueName>Agic</UniqueName>
+      <LocalizedNames>
+        <LocalizedName description="AGIC" languagecode="1040" />
+      </LocalizedNames>
+      <Descriptions />
+      <EMailAddress></EMailAddress>
+      <SupportingWebsiteUrl></SupportingWebsiteUrl>
+      <CustomizationPrefix>agc</CustomizationPrefix>
+      <CustomizationOptionValuePrefix>10000</CustomizationOptionValuePrefix>
+      <Addresses>
+        <Address>
+          <AddressNumber>1</AddressNumber>
+          <AddressTypeCode>1</AddressTypeCode>
+          <City></City>
+          <County></County>
+          <Country></Country>
+          <Fax></Fax>
+          <FreightTermsCode xsi:nil="true"></FreightTermsCode>
+          <ImportSequenceNumber xsi:nil="true"></ImportSequenceNumber>
+          <Latitude xsi:nil="true"></Latitude>
+          <Line1 xsi:nil="true"></Line1>
+          <Line2 xsi:nil="true"></Line2>
+          <Line3 xsi:nil="true"></Line3>
+          <Longitude xsi:nil="true"></Longitude>
+          <Name>PrimaryAddress</Name>
+          <PostalCode></PostalCode>
+          <PostOfficeBox xsi:nil="true"></PostOfficeBox>
+          <PrimaryContactName xsi:nil="true"></PrimaryContactName>
+          <ShippingMethodCode xsi:nil="true"></ShippingMethodCode>
+          <StateOrProvince></StateOrProvince>
+          <Telephone1></Telephone1>
+          <Telephone2 xsi:nil="true"></Telephone2>
+          <Telephone3 xsi:nil="true"></Telephone3>
+          <TimeZoneRuleVersionNumber xsi:nil="true"></TimeZoneRuleVersionNumber>
+          <UPSZone xsi:nil="true"></UPSZone>
+          <UTCOffset xsi:nil="true"></UTCOffset>
+          <UTCConversionTimeZoneCode xsi:nil="true"></UTCConversionTimeZoneCode>
+        </Address>
+      </Addresses>
+    </Publisher>
+    <RootComponents>
+      <RootComponent type="1" schemaName="agc_fascicolo" behavior="0" />
+    </RootComponents>
+    <MissingDependencies>
+      <MissingDependency>
+        <Required type="1" schemaName="agc_canestro" displayName="Reserve entity 22a6bb1e6a" solution="Active" />
+        <Dependent type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_canestroid" displayName="Reserve entity 22a6bb1e6a" parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a" solution="Active" />
+        <Dependent type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_nomecompleto" displayName="Nome" parentSchemaName="agc_giudice" parentDisplayName="Giudice" solution="Active" />
+        <Dependent type="10" schemaName="agc_fascicolo_Magistratoassegnato_agc_giudice" displayName="agc_fascicolo_Magistratoassegnato_agc_giudice" parentSchemaName="agc_giudice" parentDisplayName="Giudice" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_pesocanestro" displayName="Peso canestro" parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a" solution="Active" />
+        <Dependent type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_tipodireato" displayName="Name" parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a" solution="Active" />
+        <Dependent type="10" schemaName="agc_fascicolo_Canestro_agc_canestro" displayName="agc_fascicolo_Canestro_agc_canestro" parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a" />
+      </MissingDependency>
+    </MissingDependencies>
+  </SolutionManifest>
+</ImportExportXml>

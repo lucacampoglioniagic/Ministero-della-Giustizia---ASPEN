@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ImportExportXml version="9.1.0.1450" SolutionPackageVersion="9.1" languagecode="1040" generatedBy="CrmLive">
+  <SolutionManifest>
+    <UniqueName>AgicAspenRibbon</UniqueName>
+    <LocalizedNames>
+      <LocalizedName description="AGIC ASPEN Ribbon Assegna" languagecode="1040"/>
+    </LocalizedNames>
+    <Descriptions/>
+    <Version>1.0.0.0</Version>
+    <Managed>0</Managed>
+    <Publisher>
+      <UniqueName>Agic</UniqueName>
+      <LocalizedNames>
+        <LocalizedName description="AGIC" languagecode="1040"/>
+      </LocalizedNames>
+      <Descriptions/>
+      <EMailAddress/>
+      <SupportingWebsiteUrl/>
+      <CustomizationPrefix>agc</CustomizationPrefix>
+      <CustomizationOptionValuePrefix>10000</CustomizationOptionValuePrefix>
+      <Addresses>
+        <Address>
+          <AddressNumber>1</AddressNumber>
+          <AddressTypeCode>1</AddressTypeCode>
+          <Name>PrimaryAddress</Name>
+          <City/><County/><Country/><Fax/>
+          <PostalCode/><StateOrProvince/><Telephone1/>
+          <Street1/><Street2/><Street3/>
+        </Address>
+      </Addresses>
+    </Publisher>
+    <RootComponents>
+      <RootComponent type="1" schemaName="agc_fascicolo" behavior="0"/>
+    </RootComponents>
+    <MissingDependencies/>
+  </SolutionManifest>
+</ImportExportXml>

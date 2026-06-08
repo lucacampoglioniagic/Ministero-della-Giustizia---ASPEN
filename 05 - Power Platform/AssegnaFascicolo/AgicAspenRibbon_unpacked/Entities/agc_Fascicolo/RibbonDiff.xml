@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RibbonDiffXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CustomActions>
+    <CustomAction Id="agc.Form.agc_fascicolo.MainTab.Save.AssegnaFascicolo.CustomAction"
+      Location="Mscrm.Form.agc_fascicolo.MainTab.Save.Controls._children"
+      Sequence="21">
+      <CommandUIDefinition>
+        <Button Id="agc.Form.agc_fascicolo.MainTab.Save.AssegnaFascicolo.Button"
+          Command="agc.Form.agc_fascicolo.MainTab.Save.AssegnaFascicolo.Command"
+          LabelText="Assegna Fascicolo"
+          Alt="Assegna Fascicolo"
+          ToolTipTitle="Assegna Fascicolo"
+          ToolTipDescription="Avvia il processo di assegnazione del fascicolo a un magistrato"
+          TemplateAlias="o1"
+          Sequence="21"
+          Image16by16="/_imgs/ribbon/ico_16_assign.gif"
+          Image32by32="/_imgs/ribbon/ico_32_assign.gif"
+          ModernImage="$webresource:agc_assignfascicolo_icon.svg" />
+      </CommandUIDefinition>
+    </CustomAction>
+  </CustomActions>
+  <Templates>
+    <RibbonTemplates Id="Mscrm.Templates"></RibbonTemplates>
+  </Templates>
+  <CommandDefinitions>
+    <CommandDefinition Id="agc.Form.agc_fascicolo.MainTab.Save.AssegnaFascicolo.Command">
+      <EnableRules>
+        <EnableRule Id="Mscrm.FormStateExistingOrReadOnly" />
+      </EnableRules>
+      <DisplayRules />
+      <Actions>
+        <JavaScriptFunction FunctionName="AgicAspen.AssegnaFascicolo.openDialog"
+          Library="$webresource:agc_assignfascicolo.js">
+          <CrmParameter Value="PrimaryControl" />
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+  </CommandDefinitions>
+  <RuleDefinitions>
+    <TabDisplayRules />
+    <DisplayRules />
+    <EnableRules />
+  </RuleDefinitions>
+  <LocLabels />
+</RibbonDiffXml>

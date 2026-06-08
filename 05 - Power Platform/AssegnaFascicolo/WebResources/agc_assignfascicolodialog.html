@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Assegna Fascicolo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Segoe, Arial, sans-serif;
+      background: #fff;
+      color: #242424;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .hdr {
+      background: #0F6CBD;
+      color: #fff;
+      padding: 14px 20px;
+      flex-shrink: 0;
+    }
+
+    .hdr h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .hdr p {
+      font-size: 12px;
+      opacity: .8;
+      margin-top: 3px;
+    }
+
+    /* ── Content ── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+    }
+
+    .description {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0F6CBD;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-count {
+      background: #FDE7E9;
+      color: #D13438;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    /* ── Magistrati list ── */
+    .mag-list {
+      border: 1px solid #E0E0E0;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .mag-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #F0F0F0;
+      transition: background .1s;
+      user-select: none;
+    }
+
+    .mag-item:last-child {
+      border-bottom: none;
+    }
+
+    .mag-item:hover {
+      background: #F3F9FF;
+    }
+
+    .mag-item.incomp {
+      background: #FFF4CE;
+    }
+
+    .mag-item input[type=checkbox] {
+      width: 15px;
+      height: 15px;
+      accent-color: #D13438;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .mag-item label {
+      font-size: 13px;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .incomp-tag {
+      font-size: 10px;
+      font-weight: 700;
+      background: #FDE7E9;
+      color: #D13438;
+      padding: 1px 6px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .mag-item.incomp .incomp-tag {
+      display: inline-block;
+    }
+
+    /* ── Loading / Error ── */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 12px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .status.err {
+      color: #D13438;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 12px 20px;
+      border-top: 1px solid #E8E8E8;
+      background: #FAFAFA;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      padding: 8px 22px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #0F6CBD;
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #0D5AA7;
+    }
+
+    .btn-primary:disabled {
+      background: #A0C4E8;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: #333;
+      border: 1px solid #C8C8C8;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #F0F0F0;
+    }
+
+    .btn-secondary:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    /* ── Spinner overlay ── */
+    .spinner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, .88);
+      z-index: 50;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .spinner-overlay.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid #E0E0E0;
+      border-top-color: #0F6CBD;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner-text {
+      font-size: 14px;
+      color: #555;
+    }
+
+    /* ── Success screen ── */
+    .success {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .success.show {
+      display: flex;
+    }
+
+    .check-circle {
+      width: 68px;
+      height: 68px;
+      background: #107C10;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      color: #fff;
+      animation: pop .35s ease;
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(.4);
+        opacity: 0;
+      }
+
+      70% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .success-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #107C10;
+    }
+
+    .success-subtitle {
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+      max-width: 360px;
+    }
+
+    .success-close {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="hdr">
+    <h2 id="dlg-title">Assegna Fascicolo</h2>
+    <p>Seleziona eventuali incompatibilità prima di confermare l'assegnazione</p>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <p class="description">
+      Spunta i magistrati che hanno <strong>incompatibilità</strong> con questo fascicolo:
+      verranno esclusi dal processo di assegnazione automatica.
+    </p>
+
+    <div class="section-label">
+      Magistrati
+      <span class="badge-count" id="badge-count">0 incompatibili</span>
+    </div>
+
+    <div class="mag-list" id="mag-list">
+      <div class="status" id="status-loading">
+        <div class="spinner" style="width:20px;height:20px;border-width:2px"></div>
+        Caricamento magistrati…
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <button class="btn btn-secondary" id="btn-annulla">Annulla</button>
+    <button class="btn btn-primary" id="btn-conferma" disabled>Conferma Assegnazione</button>
+  </div>
+
+  <!-- Spinner overlay -->
+  <div class="spinner-overlay" id="spinner-overlay">
+    <div class="spinner"></div>
+    <div class="spinner-text">Assegnazione in corso…</div>
+  </div>
+
+  <!-- Success screen -->
+  <div class="success" id="success-screen">
+    <div class="check-circle">✓</div>
+    <div class="success-title">Fascicolo assegnato!</div>
+    <div class="success-subtitle" id="success-sub">La finestra si chiuderà automaticamente.</div>
+    <button class="btn btn-secondary success-close" id="btn-close-success">Chiudi</button>
+  </div>
+
+  <script>
+    (function () {
+
+      /* ── Parse data from URL ── */
+      var fascicoloRg = "";
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var raw = params.get("Data") || params.get("data") || "";
+        if (raw) {
+          var parsed = JSON.parse(decodeURIComponent(raw));
+          fascicoloRg = parsed.rg || "";
+        }
+      } catch (e) { /* ignore */ }
+
+      if (fascicoloRg) {
+        document.getElementById("dlg-title").textContent = "Assegna Fascicolo " + fascicoloRg;
+      }
+
+      /* ── State ── */
+      var incompatibili = {};
+
+      /* ── Load magistrati ── */
+      var orgUrl = window.location.origin;
+      fetch(
+        orgUrl + "/api/data/v9.2/agc_giudices?$select=agc_nomecompleto,agc_giudiceid&$orderby=agc_nomecompleto",
+        { headers: { "OData-MaxVersion": "4.0", "OData-Version": "4.0", "Accept": "application/json" } }
+      )
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          var list = document.getElementById("mag-list");
+          list.innerHTML = "";
+          document.getElementById("btn-conferma").disabled = false;
+
+          (data.value || []).forEach(function (m) {
+            var id = m.agc_giudiceid;
+            var nome = m.agc_nomecompleto || "(senza nome)";
+
+            var item = document.createElement("div");
+            item.className = "mag-item";
+
+            var chkId = "chk-" + id;
+            item.innerHTML =
+              '<input type="checkbox" id="' + chkId + '" value="' + id + '">' +
+              '<label for="' + chkId + '">' + nome + '</label>' +
+              '<span class="incomp-tag">Incompatibile</span>';
+
+            var chk = item.querySelector("input");
+
+            chk.addEventListener("change", function () {
+              if (chk.checked) {
+                incompatibili[id] = nome;
+                item.classList.add("incomp");
+              } else {
+                delete incompatibili[id];
+                item.classList.remove("incomp");
+              }
+              updateBadge();
+            });
+
+            // Click on row also toggles checkbox
+            item.addEventListener("click", function (e) {
+              if (e.target !== chk && e.target.tagName !== "LABEL") {
+                chk.checked = !chk.checked;
+                chk.dispatchEvent(new Event("change"));
+              }
+            });
+
+            list.appendChild(item);
+          });
+
+          if ((data.value || []).length === 0) {
+            list.innerHTML = '<div class="status">Nessun magistrato trovato.</div>';
+          }
+        })
+        .catch(function () {
+          document.getElementById("mag-list").innerHTML =
+            '<div class="status err">Errore nel caricamento dei magistrati.</div>';
+          document.getElementById("btn-conferma").disabled = false;
+        });
+
+      /* ── Badge ── */
+      function updateBadge() {
+        var n = Object.keys(incompatibili).length;
+        var el = document.getElementById("badge-count");
+        if (n > 0) {
+          el.style.display = "inline-block";
+          el.textContent = n + " incompatibil" + (n === 1 ? "e" : "i");
+        } else {
+          el.style.display = "none";
+        }
+      }
+
+      /* ── Annulla ── */
+      document.getElementById("btn-annulla").addEventListener("click", function () {
+        window.close();
+      });
+
+      /* ── Conferma ── */
+      document.getElementById("btn-conferma").addEventListener("click", function () {
+        document.getElementById("btn-conferma").disabled = true;
+        document.getElementById("btn-annulla").disabled = true;
+        document.getElementById("spinner-overlay").classList.add("show");
+
+        // Simulate assignment (2.5 s)
+        setTimeout(function () {
+          document.getElementById("spinner-overlay").classList.remove("show");
+
+          var n = Object.keys(incompatibili).length;
+          var names = Object.values(incompatibili);
+          var sub = n > 0
+            ? "Esclusi per incompatibilità: " + names.join(", ") + "."
+            : "Nessuna incompatibilità selezionata.";
+          document.getElementById("success-sub").textContent = sub;
+          document.getElementById("success-screen").classList.add("show");
+
+          setTimeout(function () { window.close(); }, 2500);
+        }, 2500);
+      });
+
+      /* ── Chiudi (success) ── */
+      document.getElementById("btn-close-success").addEventListener("click", function () {
+        window.close();
+      });
+
+    })();
+  </script>
+</body>
+
+</html>

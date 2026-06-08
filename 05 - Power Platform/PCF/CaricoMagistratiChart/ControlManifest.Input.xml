@@ -26,5 +26,8 @@
       <code path="index.ts" order="1" />
       <css path="css/chart.css" order="1" />
     </resources>
+    <feature-usage>
+      <uses-feature name="WebAPI" required="true" />
+    </feature-usage>
   </control>
 </manifest>

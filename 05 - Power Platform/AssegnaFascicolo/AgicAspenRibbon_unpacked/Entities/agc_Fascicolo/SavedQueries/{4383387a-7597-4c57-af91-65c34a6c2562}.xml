@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<savedqueries xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <savedquery>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>0</CanBeDeleted>
+    <isquickfindquery>0</isquickfindquery>
+    <isprivate>0</isprivate>
+    <isdefault>1</isdefault>
+    <savedqueryid>{4383387a-7597-4c57-af91-65c34a6c2562}</savedqueryid>
+    <layoutxml>
+      <grid name="resultset" jump="agc_numeroregistrogenerale" select="1" icon="1" preview="1">
+        <row name="result" id="agc_fascicoloid">
+          <cell name="agc_numeroregistrogenerale" width="300" />
+          <cell name="agc_numeroimputati" width="150" />
+          <cell name="agc_numeroimputazioni" width="150" />
+          <cell name="agc_magistratoassegnato" width="159" />
+          <cell name="agc_canestro" width="100" />
+          <cell name="agc_peso" width="100" />
+          <cell name="agc_datacaso" width="150" />
+          <cell name="agc_statocaso" width="150" />
+        </row>
+      </grid>
+    </layoutxml>
+    <querytype>0</querytype>
+    <fetchxml>
+      <fetch version="1.0" mapping="logical">
+        <entity name="agc_fascicolo">
+          <attribute name="agc_fascicoloid" />
+          <attribute name="agc_numeroregistrogenerale" />
+          <attribute name="createdon" />
+          <order attribute="agc_numeroregistrogenerale" descending="false" />
+          <filter type="and">
+            <condition attribute="statecode" operator="eq" value="0" />
+          </filter>
+          <attribute name="agc_numeroimputati" />
+          <attribute name="agc_numeroimputazioni" />
+          <attribute name="agc_statocaso" />
+          <attribute name="agc_datacaso" />
+          <attribute name="agc_peso" />
+          <attribute name="agc_magistratoassegnato" />
+          <attribute name="agc_canestro" />
+        </entity>
+      </fetch>
+    </fetchxml>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <LocalizedNames>
+      <LocalizedName description="Fascicoli" languagecode="1040" />
+    </LocalizedNames>
+  </savedquery>
+</savedqueries>
