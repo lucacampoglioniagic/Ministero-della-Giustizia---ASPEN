@@ -6,6 +6,16 @@
     <FormPresentation>1</FormPresentation>
     <FormActivationState>1</FormActivationState>
     <form headerdensity="HighWithControls">
+      <events>
+        <event name="onload" application="false" active="false">
+          <Handlers>
+            <Handler functionName="AgicAspen.AssegnaFascicolo.onFormLoad"
+              libraryName="agc_assignfascicolo.js"
+              handlerUniqueId="{a1b2c3d4-e5f6-4a7b-8c9d-e0f1a2b3c4d5}" enabled="true"
+              passExecutionContext="true" />
+          </Handlers>
+        </event>
+      </events>
       <tabs>
         <tab verticallayout="true" id="{62ede4f4-d407-42d4-958c-a35824bcb82c}" IsUserDefined="1">
           <labels>
@@ -14,7 +24,8 @@
           <columns>
             <column width="100%">
               <sections>
-                <section showlabel="false" showbar="false" IsUserDefined="0" id="{2c6d3cec-cf69-4667-87aa-7894994da234}">
+                <section showlabel="false" showbar="false" IsUserDefined="0"
+                  id="{2c6d3cec-cf69-4667-87aa-7894994da234}">
                   <labels>
                     <label description="Generale" languagecode="1040" />
                   </labels>
@@ -24,7 +35,9 @@
                         <labels>
                           <label description="Numero RG" languagecode="1040" />
                         </labels>
-                        <control id="agc_numeroregistrogenerale" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="agc_numeroregistrogenerale" />
+                        <control id="agc_numeroregistrogenerale"
+                          classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}"
+                          datafieldname="agc_numeroregistrogenerale" />
                       </cell>
                     </row>
                     <row>
@@ -32,7 +45,8 @@
                         <labels>
                           <label description="Proprietario" languagecode="1040" />
                         </labels>
-                        <control id="ownerid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="ownerid" />
+                        <control id="ownerid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
+                          datafieldname="ownerid" />
                       </cell>
                     </row>
                     <row>
@@ -40,7 +54,9 @@
                         <labels>
                           <label description="N. imputati" languagecode="1040" />
                         </labels>
-                        <control id="agc_numeroimputati" classid="{c6d124ca-7eda-4a60-aea9-7fb8d318b68f}" datafieldname="agc_numeroimputati" />
+                        <control id="agc_numeroimputati"
+                          classid="{c6d124ca-7eda-4a60-aea9-7fb8d318b68f}"
+                          datafieldname="agc_numeroimputati" />
                       </cell>
                     </row>
                     <row>
@@ -48,31 +64,40 @@
                         <labels>
                           <label description="N. imputazioni" languagecode="1040" />
                         </labels>
-                        <control id="agc_numeroimputazioni" classid="{c6d124ca-7eda-4a60-aea9-7fb8d318b68f}" datafieldname="agc_numeroimputazioni" />
+                        <control id="agc_numeroimputazioni"
+                          classid="{c6d124ca-7eda-4a60-aea9-7fb8d318b68f}"
+                          datafieldname="agc_numeroimputazioni" />
                       </cell>
                     </row>
                     <row>
-                      <cell id="{6503bbcf-48f4-45d3-82e4-f1012e6100b5}" locklevel="0" colspan="1" rowspan="1">
+                      <cell id="{6503bbcf-48f4-45d3-82e4-f1012e6100b5}" locklevel="0" colspan="1"
+                        rowspan="1">
                         <labels>
                           <label description="Canestro" languagecode="1040" />
                         </labels>
-                        <control id="agc_canestro" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="agc_canestro" disabled="false" />
+                        <control id="agc_canestro" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
+                          datafieldname="agc_canestro" disabled="false" />
                       </cell>
                     </row>
                     <row>
-                      <cell id="{85ae4d6a-dcab-4be4-b2d7-3b5bc958c712}" locklevel="0" colspan="1" rowspan="1">
+                      <cell id="{85ae4d6a-dcab-4be4-b2d7-3b5bc958c712}" locklevel="0" colspan="1"
+                        rowspan="1">
                         <labels>
                           <label description="Magistrato assegnato" languagecode="1040" />
                         </labels>
-                        <control id="agc_magistratoassegnato" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="agc_magistratoassegnato" disabled="false" />
+                        <control id="agc_magistratoassegnato"
+                          classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
+                          datafieldname="agc_magistratoassegnato" disabled="false" />
                       </cell>
                     </row>
                     <row>
-                      <cell id="{fd1b20df-d312-4e57-bb2b-4326bbb99490}" locklevel="0" colspan="1" rowspan="1">
+                      <cell id="{fd1b20df-d312-4e57-bb2b-4326bbb99490}" locklevel="0" colspan="1"
+                        rowspan="1">
                         <labels>
                           <label description="Peso" languagecode="1040" />
                         </labels>
-                        <control id="agc_peso" classid="{C3EFE0C3-0EC6-42BE-8349-CBD9079DFD8E}" datafieldname="agc_peso" disabled="false" />
+                        <control id="agc_peso" classid="{C3EFE0C3-0EC6-42BE-8349-CBD9079DFD8E}"
+                          datafieldname="agc_peso" disabled="false" />
                       </cell>
                     </row>
                     <row>
@@ -80,7 +105,8 @@
                         <labels>
                           <label description="Stato" languagecode="1040" />
                         </labels>
-                        <control id="agc_statocaso" classid="{3ef39988-22bb-4f0b-bbbe-64b5a3748aee}" datafieldname="agc_statocaso" />
+                        <control id="agc_statocaso" classid="{3ef39988-22bb-4f0b-bbbe-64b5a3748aee}"
+                          datafieldname="agc_statocaso" />
                       </cell>
                     </row>
                     <row>
@@ -88,7 +114,8 @@
                         <labels>
                           <label description="Data" languagecode="1040" />
                         </labels>
-                        <control id="agc_datacaso" classid="{5b773807-9fb2-42db-97c3-7a91eff8adff}" datafieldname="agc_datacaso" />
+                        <control id="agc_datacaso" classid="{5b773807-9fb2-42db-97c3-7a91eff8adff}"
+                          datafieldname="agc_datacaso" />
                       </cell>
                     </row>
                   </rows>
@@ -98,7 +125,8 @@
           </columns>
         </tab>
       </tabs>
-      <header id="{9ec6943b-d7ad-42ec-a555-dedf3a342e00}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+      <header id="{9ec6943b-d7ad-42ec-a555-dedf3a342e00}" celllabelposition="Top" columns="111"
+        labelwidth="115" celllabelalignment="Left">
         <rows>
           <row>
             <cell id="{d1268cd8-9ccd-4732-bad0-0a73752923b5}" showlabel="false">
@@ -119,7 +147,8 @@
           </row>
         </rows>
       </header>
-      <footer id="{5f6b1629-cd1e-4ba3-998e-6a53ec306f7c}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+      <footer id="{5f6b1629-cd1e-4ba3-998e-6a53ec306f7c}" celllabelposition="Top" columns="111"
+        labelwidth="115" celllabelalignment="Left">
         <rows>
           <row>
             <cell id="{be0e455b-fc11-48b1-8f53-1c83cbf17947}" showlabel="false">

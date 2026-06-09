@@ -80,7 +80,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ---
 
-## POC — stato attuale (08/06/2026)
+## POC — stato attuale (09/06/2026)
 
 **Ambiente Dataverse:** `LCC-MINISTEROGIUSTIZIA-DEMO` (https://lccministerogiustiziademo.crm4.dynamics.com)  
 **Publisher prefix:** `agc_`
@@ -92,7 +92,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | Canestro | `agc_canestro` | Materie/competenze (es. Stupefacenti, Omicidio…) |
 | Magistrato | `agc_giudice` | Giudici GIP/GUP con ruolo e stato attivo |
 | Fascicolo/Assegnazione | `agc_fascicolo` | Fascicoli con peso calcolato e lookup a magistrato+canestro |
-| Configurazione | `agc_configurazione` | Parametri di sistema (es. `PesoLimite = 20`) |
+| Configurazione | `agc_configurazione` | Parametri di sistema (`PesoLimite = 20`, `PesoLimiteCanestro = 30`) |
 
 **Colonne chiave `agc_fascicolo`:**
 
@@ -121,6 +121,14 @@ Grafico a barre orizzontali del carico per magistrato.
 - **Click su barra** → modal con elenco fascicoli assegnati al magistrato
 - **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_peso`
 
+#### `AgicAspen.CaricoPerCanestro` — `05 - Power Platform/PCF/CaricoPerCanestro/`
+Grafico a barre del carico per canestro (materia giudiziaria).
+- **Colori dinamici** dalla soglia `PesoLimiteCanestro` in `agc_configurazione` (default = 30):
+  - 🟢 Verde `#107C10` — carico < 80% soglia
+  - 🟡 Giallo `#FFB900` — carico ≥ 80% soglia
+  - 🔴 Rosso `#D13438` — carico ≥ soglia
+- **OData fix**: lookup field letto come `_agc_canestro_value`; nome canestro via annotazione `@OData.Community.Display.V1.FormattedValue`
+
 #### `AgicAspen.StatoFascicoliChart` — `05 - Power Platform/PCF-Pie/`
 Grafico a torta distribuzione fascicoli per stato.
 - Verde = Validato, Blu = Proposto
@@ -142,17 +150,20 @@ Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 | `WebResources/agc_assignfascicolo_icon.svg` | SVG (type 11) | Icona Fluent UI: persona blu + freccia verde |
 | `AgicAspenRibbon_unpacked/` | Solution unpacked | Sorgente soluzione con `RibbonDiff.xml` |
 
-**Comportamento del dialog:**
+**Comportamento del dialog (implementazione reale):**
 1. Carica lista magistrati da `agc_giudices` via REST (`/api/data/v9.2/agc_giudices`)
 2. Permette selezione multipla di magistrati **incompatibili** (evidenziati in giallo con badge contatore)
-3. **Conferma** → spinner 2.5s (simulazione flusso assegnazione) → schermata successo animata → chiusura automatica
+3. **Conferma** → PATCH su `agc_fascicolos({id})` con navigation property `agc_Magistratoassegnato@odata.bind` → schermata successo → chiusura automatica
 4. **Annulla** → chiude il dialog
+5. **Refresh automatico**: alla chiusura, la form chiama `formContext.data.refresh(false)` e la griglia chiama `selectedControl.refresh()`
 
 **Note tecniche:**
 - Il dialog usa URL relativo per le chiamate Dataverse (same-domain cookie auth — no Bearer token)
 - Il parametro passato al dialog si legge con `new URLSearchParams(location.search).get("Data")` (D maiuscola)
 - `ModernImage` nel `RibbonDiff.xml` richiede il prefisso `$webresource:` (es. `$webresource:agc_assignfascicolo_icon.svg`)
-- Il flusso di assegnazione effettivo **non è implementato** — la demo simula con spinner
+- Navigation property PATCH è **case-sensitive**: `agc_Magistratoassegnato` (M maiuscola)
+- `refreshRibbon(true)` nell'`onFormLoad` (delay 1s) è necessario per rivalutare le enable rules dopo il caricamento dati della form
+- La soluzione ribbon va **sempre reimportata** dopo modifiche a `RibbonDiff.xml`; il deploy della web resource JS non aggiorna il ribbon
 
 ### App model-driven
 - Sitemap: **Operatività** (Fascicoli, Cruscotto) · **Anagrafiche** (Magistrati, Canestri)
@@ -164,10 +175,14 @@ Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 
 1. Validare con il cliente la sintesi AS-IS emersa dalla call del 04/06/2026
 2. Approfondire il modello dati – richiedere dump anonimizzato
-3. Aggiungere pagina **Configurazione** alla sitemap per gestire `PesoLimite` dall'app
+3. Aggiungere pagina **Configurazione** alla sitemap per gestire `PesoLimite` e `PesoLimiteCanestro` dall'app
 4. Pianificare sessioni su: sicurezza, incompatibilità, reportistica, migrazione dati
-5. Implementare logica assegnazione reale (Plugin / Custom API) collegata al tasto "Assegna Fascicolo"
-6. Strategia migrazione storico + integrazione SICP
+5. Tasto **"Rimuovi assegnazione"** e enable rule stabile "magistrato già assegnato"
+6. **Notifica al magistrato** via Power Automate alla conferma assegnazione
+7. **Storico assegnazioni** (audit trail su tabella dedicata)
+8. Assegnazione **bulk** da griglia (selezione multipla fascicoli)
+9. Persistere le **incompatibilità** su Dataverse (tabella o campo dedicato)
+10. Strategia migrazione storico + integrazione **SICP**
 
 ---
 

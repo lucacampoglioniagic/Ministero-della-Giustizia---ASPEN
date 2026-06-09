@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ImportExportXml version="9.2.26053.134" SolutionPackageVersion="9.2" languagecode="1040" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26053.134" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26061.00126">
+<ImportExportXml version="9.2.26053.134" SolutionPackageVersion="9.2" languagecode="1040"
+  generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  OrganizationVersion="9.2.26053.134" OrganizationSchemaType="Standard"
+  CRMServerServiceabilityVersion="9.2.26061.00126">
   <SolutionManifest>
     <UniqueName>AgicAspenRibbon</UniqueName>
     <LocalizedNames>
@@ -54,24 +57,39 @@
     </RootComponents>
     <MissingDependencies>
       <MissingDependency>
-        <Required type="1" schemaName="agc_canestro" displayName="Reserve entity 22a6bb1e6a" solution="Active" />
-        <Dependent type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
+        <Required type="1" schemaName="agc_canestro" displayName="Reserve entity 22a6bb1e6a"
+          solution="Active" />
+        <Dependent type="2" schemaName="agc_peso" displayName="Peso"
+          parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
       </MissingDependency>
       <MissingDependency>
-        <Required type="2" schemaName="agc_canestroid" displayName="Reserve entity 22a6bb1e6a" parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a" solution="Active" />
-        <Dependent type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
+        <Required type="2" schemaName="agc_canestroid" displayName="Reserve entity 22a6bb1e6a"
+          parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a"
+          solution="Active" />
+        <Dependent type="2" schemaName="agc_peso" displayName="Peso"
+          parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
       </MissingDependency>
       <MissingDependency>
-        <Required type="2" schemaName="agc_nomecompleto" displayName="Nome" parentSchemaName="agc_giudice" parentDisplayName="Giudice" solution="Active" />
-        <Dependent type="10" schemaName="agc_fascicolo_Magistratoassegnato_agc_giudice" displayName="agc_fascicolo_Magistratoassegnato_agc_giudice" parentSchemaName="agc_giudice" parentDisplayName="Giudice" />
+        <Required type="2" schemaName="agc_nomecompleto" displayName="Nome"
+          parentSchemaName="agc_giudice" parentDisplayName="Magistrato" solution="Active" />
+        <Dependent type="10" schemaName="agc_fascicolo_Magistratoassegnato_agc_giudice"
+          displayName="agc_fascicolo_Magistratoassegnato_agc_giudice" parentSchemaName="agc_giudice"
+          parentDisplayName="Magistrato" />
       </MissingDependency>
       <MissingDependency>
-        <Required type="2" schemaName="agc_pesocanestro" displayName="Peso canestro" parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a" solution="Active" />
-        <Dependent type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
+        <Required type="2" schemaName="agc_pesocanestro" displayName="Peso canestro"
+          parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a"
+          solution="Active" />
+        <Dependent type="2" schemaName="agc_peso" displayName="Peso"
+          parentSchemaName="agc_fascicolo" parentDisplayName="Fascicolo" />
       </MissingDependency>
       <MissingDependency>
-        <Required type="2" schemaName="agc_tipodireato" displayName="Name" parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a" solution="Active" />
-        <Dependent type="10" schemaName="agc_fascicolo_Canestro_agc_canestro" displayName="agc_fascicolo_Canestro_agc_canestro" parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a" />
+        <Required type="2" schemaName="agc_tipodireato" displayName="Name"
+          parentSchemaName="agc_canestro" parentDisplayName="Reserve entity 22a6bb1e6a"
+          solution="Active" />
+        <Dependent type="10" schemaName="agc_fascicolo_Canestro_agc_canestro"
+          displayName="agc_fascicolo_Canestro_agc_canestro" parentSchemaName="agc_canestro"
+          parentDisplayName="Reserve entity 22a6bb1e6a" />
       </MissingDependency>
     </MissingDependencies>
   </SolutionManifest>

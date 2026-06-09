@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<manifest>
+  <control namespace="AgicAspen" constructor="CaricoPerCanestro" version="1.0.1"
+    display-name-key="Carico per Canestro"
+    description-key="Mostra il carico (somma pesi fascicoli) del magistrato corrente, suddiviso per canestro"
+    control-type="standard">
+    <external-service-usage enabled="false" />
+    <!-- Nessuna property bound: l'ID magistrato viene letto da context.page.entityId -->
+    <property name="dummyBind"
+      display-name-key="Campo di ancoraggio"
+      description-key="Qualsiasi campo della form (il valore non viene usato)"
+      of-type="SingleLine.Text"
+      usage="bound"
+      required="true" />
+    <resources>
+      <code path="index.ts" order="1"/>
+    </resources>
+    <feature-usage>
+      <uses-feature name="WebAPI" required="true" />
+    </feature-usage>
+  </control>
+</manifest>

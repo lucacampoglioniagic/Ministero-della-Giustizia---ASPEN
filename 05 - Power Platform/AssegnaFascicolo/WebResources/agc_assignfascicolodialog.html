@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Assegna Fascicolo</title>
+  <title>ASPEN - Assegnazione Fascicolo</title>
   <style>
     * {
       box-sizing: border-box;
@@ -353,12 +353,14 @@
 
       /* ── Parse data from URL ── */
       var fascicoloRg = "";
+      var fascicoloId = "";
       try {
         var params = new URLSearchParams(window.location.search);
         var raw = params.get("Data") || params.get("data") || "";
         if (raw) {
           var parsed = JSON.parse(decodeURIComponent(raw));
           fascicoloRg = parsed.rg || "";
+          fascicoloId = parsed.id || "";
         }
       } catch (e) { /* ignore */ }
 
@@ -368,12 +370,13 @@
 
       /* ── State ── */
       var incompatibili = {};
+      var orgUrl = window.location.origin;
+      var apiHeaders = { "OData-MaxVersion": "4.0", "OData-Version": "4.0", "Accept": "application/json" };
 
       /* ── Load magistrati ── */
-      var orgUrl = window.location.origin;
       fetch(
         orgUrl + "/api/data/v9.2/agc_giudices?$select=agc_nomecompleto,agc_giudiceid&$orderby=agc_nomecompleto",
-        { headers: { "OData-MaxVersion": "4.0", "OData-Version": "4.0", "Accept": "application/json" } }
+        { headers: apiHeaders }
       )
         .then(function (r) { return r.json(); })
         .then(function (data) {
@@ -407,7 +410,6 @@
               updateBadge();
             });
 
-            // Click on row also toggles checkbox
             item.addEventListener("click", function (e) {
               if (e.target !== chk && e.target.tagName !== "LABEL") {
                 chk.checked = !chk.checked;
@@ -440,31 +442,112 @@
         }
       }
 
+      /* ── Mostra errore ── */
+      function showError(msg) {
+        document.getElementById("spinner-overlay").classList.remove("show");
+        document.getElementById("btn-conferma").disabled = false;
+        document.getElementById("btn-annulla").disabled = false;
+        var list = document.getElementById("mag-list");
+        var err = document.createElement("div");
+        err.className = "status err";
+        err.textContent = "❌ " + msg;
+        list.prepend(err);
+      }
+
       /* ── Annulla ── */
       document.getElementById("btn-annulla").addEventListener("click", function () {
         window.close();
       });
 
-      /* ── Conferma ── */
+      /* ── Conferma: logica assegnazione reale ── */
       document.getElementById("btn-conferma").addEventListener("click", function () {
         document.getElementById("btn-conferma").disabled = true;
         document.getElementById("btn-annulla").disabled = true;
         document.getElementById("spinner-overlay").classList.add("show");
 
-        // Simulate assignment (2.5 s)
-        setTimeout(function () {
-          document.getElementById("spinner-overlay").classList.remove("show");
+        if (!fascicoloId) {
+          showError("ID fascicolo mancante. Chiudi e riapri il dialog.");
+          return;
+        }
 
-          var n = Object.keys(incompatibili).length;
-          var names = Object.values(incompatibili);
-          var sub = n > 0
-            ? "Esclusi per incompatibilità: " + names.join(", ") + "."
-            : "Nessuna incompatibilità selezionata.";
-          document.getElementById("success-sub").textContent = sub;
-          document.getElementById("success-screen").classList.add("show");
+        // 1. Recupera tutti i magistrati con il loro peso totale (sum agc_peso fascicoli assegnati)
+        fetch(
+          orgUrl + "/api/data/v9.2/agc_giudices?$select=agc_giudiceid,agc_nomecompleto",
+          { headers: apiHeaders }
+        )
+          .then(function (r) { return r.json(); })
+          .then(function (magData) {
+            var magistrati = (magData.value || []).filter(function (m) {
+              return !incompatibili[m.agc_giudiceid];
+            });
 
-          setTimeout(function () { window.close(); }, 2500);
-        }, 2500);
+            if (magistrati.length === 0) {
+              showError("Tutti i magistrati sono stati marcati come incompatibili. Rimuovi almeno un'incompatibilità.");
+              return;
+            }
+
+            // 2. Per ogni magistrato compatibile, calcola il peso totale dei fascicoli assegnati
+            var pesoPer = {};
+            magistrati.forEach(function (m) { pesoPer[m.agc_giudiceid] = 0; });
+
+            var filter = magistrati.map(function (m) {
+              return "_agc_magistratoassegnato_value eq " + m.agc_giudiceid;
+            }).join(" or ");
+
+            return fetch(
+              orgUrl + "/api/data/v9.2/agc_fascicolos?$select=agc_peso,_agc_magistratoassegnato_value&$filter=(" + filter + ") and agc_peso ne null",
+              { headers: apiHeaders }
+            )
+              .then(function (r) { return r.json(); })
+              .then(function (fascData) {
+                (fascData.value || []).forEach(function (f) {
+                  var mid = f["_agc_magistratoassegnato_value"];
+                  if (mid && pesoPer.hasOwnProperty(mid)) {
+                    pesoPer[mid] += (f.agc_peso || 0);
+                  }
+                });
+
+                // 3. Trova il magistrato col peso minore
+                var migliore = magistrati.reduce(function (best, m) {
+                  return pesoPer[m.agc_giudiceid] < pesoPer[best.agc_giudiceid] ? m : best;
+                });
+
+                // 4. Aggiorna il fascicolo con il magistrato scelto
+                var patchBody = JSON.stringify({
+                  "agc_Magistratoassegnato@odata.bind": "/agc_giudices(" + migliore.agc_giudiceid + ")"
+                });
+
+                return fetch(
+                  orgUrl + "/api/data/v9.2/agc_fascicolos(" + fascicoloId + ")",
+                  {
+                    method: "PATCH",
+                    headers: Object.assign({}, apiHeaders, {
+                      "Content-Type": "application/json; charset=utf-8",
+                      "If-Match": "*"
+                    }),
+                    body: patchBody
+                  }
+                )
+                  .then(function (r) {
+                    if (!r.ok) throw new Error("HTTP " + r.status);
+
+                    document.getElementById("spinner-overlay").classList.remove("show");
+
+                    var sub = "Assegnato a: " + (migliore.agc_nomecompleto || migliore.agc_giudiceid) +
+                      " (carico: " + pesoPer[migliore.agc_giudiceid].toFixed(1) + ")";
+                    if (Object.keys(incompatibili).length > 0) {
+                      sub += " | Esclusi: " + Object.values(incompatibili).join(", ");
+                    }
+                    document.getElementById("success-sub").textContent = sub;
+                    document.getElementById("success-screen").classList.add("show");
+
+                    setTimeout(function () { window.close(); }, 3000);
+                  });
+              });
+          })
+          .catch(function (err) {
+            showError("Errore durante l'assegnazione: " + (err.message || err));
+          });
       });
 
       /* ── Chiudi (success) ── */
