@@ -166,7 +166,7 @@ Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 - La soluzione ribbon va **sempre reimportata** dopo modifiche a `RibbonDiff.xml`; il deploy della web resource JS non aggiorna il ribbon
 
 ### App model-driven
-- Sitemap: **Operatività** (Fascicoli, Cruscotto) · **Anagrafiche** (Magistrati, Canestri)
+- Sitemap: **Operatività** (Fascicoli, Cruscotto) · **Anagrafiche** (Magistrati, Canestri) · **Impostazioni** (Configurazioni, accesso vincolato da privilegi)
 - Dashboard "Cruscotto ASPEN" con entrambi i PCF
 
 ---
@@ -175,13 +175,13 @@ Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 
 1. Validare con il cliente la sintesi AS-IS emersa dalla call del 04/06/2026
 2. Approfondire il modello dati – richiedere dump anonimizzato
-3. Aggiungere pagina **Configurazione** alla sitemap per gestire `PesoLimite` e `PesoLimiteCanestro` dall'app
-4. Pianificare sessioni su: sicurezza, incompatibilità, reportistica, migrazione dati
-5. Tasto **"Rimuovi assegnazione"** e enable rule stabile "magistrato già assegnato"
-6. **Notifica al magistrato** via Power Automate alla conferma assegnazione
-7. **Storico assegnazioni** (audit trail su tabella dedicata)
-8. Assegnazione **bulk** da griglia (selezione multipla fascicoli)
-9. Persistere le **incompatibilità** su Dataverse (tabella o campo dedicato)
+3. Pianificare sessioni su: sicurezza, incompatibilità, reportistica, migrazione dati
+4. Tasto **"Rimuovi assegnazione"** e enable rule stabile "magistrato già assegnato"
+5. **Notifica al magistrato** via Power Automate alla conferma assegnazione
+6. **Storico assegnazioni** (audit trail su tabella dedicata)
+7. Assegnazione **bulk** da griglia (selezione multipla fascicoli)
+8. Persistere le **incompatibilità** su Dataverse (tabella o campo dedicato)
+9. Risolvere in ambiente l'errore SQL `0x80044150` su apertura/assegnazione record **Canestro** (riallineamento metadati e, se necessario, escalation Microsoft)
 10. Strategia migrazione storico + integrazione **SICP**
 
 ---

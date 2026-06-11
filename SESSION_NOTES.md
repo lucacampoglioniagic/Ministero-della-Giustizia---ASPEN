@@ -4,6 +4,35 @@
 
 ---
 
+## Session 2026-06-11
+
+### What was done
+- Analizzato errore Dataverse su **Canestro** in fase di cambio owner team e apertura form (`0x80044150`, `Sql Number: 208`), con identificazione come problema platform/metadati ambiente e non di logica JS/PCF.
+- Verificata la configurazione della sitemap su **Impostazioni > Configurazioni**: impostata regola per privilegio di lettura su `agc_configurazione`; utente con ruolo operativo vede la voce ma riceve correttamente accesso negato ai record.
+- Verificata la disponibilità dei campi **rollup** in Dataverse: in UI moderna si configurano impostando tipo numerico e comportamento rollup.
+- Confermato limite Dataverse: un rollup non aggrega un campo di origine di tipo **calculated** (`agc_fascicolo.agc_peso`).
+
+### Decisions made
+- Per il bug su Canestro, prima azione consigliata: riallineamento metadati in ambiente (publish completo + ricompilazione formula dipendente) e solo dopo eventuale escalation Microsoft con Activity/Session/Correlation IDs.
+- Per la sicurezza navigazione, mantenere il controllo principale a livello privilegi tabella; valutare app separata admin/operatori se serve nascondere completamente l'area.
+- Per il carico totale magistrato, sospesa implementazione rollup su `agc_peso` finché il peso resta colonna calculated.
+
+### Current status
+- ⚠️ Errore SQL su Canestro ancora aperto in ambiente (`0x80044150` / `Sql Number: 208`).
+- ✅ Accesso ai record Configurazioni correttamente negato al ruolo operativo.
+- ⚠️ Voce sitemap Configurazioni ancora visibile ai non admin (con access denied all'apertura); da rifinire UX se richiesto.
+- ⚠️ Rollup peso totale magistrato non applicabile direttamente su `agc_peso` finché è calculated.
+
+### Next steps
+1. Chiudere il bug **Canestro** con riallineamento metadati in ambiente ed eventuale ticket Microsoft.
+2. Stabilizzare UX sicurezza sitemap (valutare split app **ASPEN Admin** / **ASPEN Operatore**).
+3. Implementare tasto **"Rimuovi assegnazione"** e rendere stabile l'enable rule "magistrato già assegnato".
+4. Persistere incompatibilità su Dataverse.
+5. Implementare notifica magistrato via Power Automate e storico assegnazioni.
+6. Valutare alternativa tecnica al campo calculated `agc_peso` se necessario per aggregazioni rollup.
+
+---
+
 ## Session 2026-06-09
 
 ### What was done
