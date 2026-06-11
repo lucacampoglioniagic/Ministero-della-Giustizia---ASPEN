@@ -1,6 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RibbonDiffXml>
   <CustomActions>
+    <!-- Nasconde comandi standard non necessari nella homepage grid Fascicoli -->
+    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo.ShowChart"
+      Location="Mscrm.HomepageGrid.agc_fascicolo.MainTab.Visualize.ShowChart"
+      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo.ShowChart.Hide" />
+    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo.ShowThisView"
+      Location="Mscrm.HomepageGrid.agc_fascicolo.MainTab.View.ShowAs"
+      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo.ShowThisView.Hide" />
+    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo.SendLinkByEmail"
+      Location="Mscrm.HomepageGrid.agc_fascicolo.MainTab.Collaborate.SendLink"
+      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo.SendLinkByEmail.Hide" />
+    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo.RunFlow"
+      Location="Mscrm.HomepageGrid.agc_fascicolo.MainTab.Flow.RunFlow"
+      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo.RunFlow.Hide" />
+    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo.RunReport"
+      Location="Mscrm.HomepageGrid.agc_fascicolo.MainTab.Actions.RunReport"
+      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo.RunReport.Hide" />
 
     <!-- Tasto nella FORM del fascicolo -->
     <CustomAction Id="agc.Form.agc_fascicolo.MainTab.Save.Assegna.CustomAction"
