@@ -18,7 +18,7 @@
 
 ### Current status
 - ✅ Custom page home presente e documentata.
-- ✅ Accesso PAC all’ambiente DEMO funzionante, con discovery di app e solution target completata.
+- ✅ Accesso PAC all'ambiente DEMO funzionante, con discovery di app e solution target completata.
 - ⚠️ Pipeline di deploy custom page non ancora completamente automatizzabile con gli strumenti CLI attuali.
 
 ### Next steps
@@ -27,42 +27,46 @@
 3. Rivalutare automazione CLI dopo primo publish (pack/import/publish) e aggiornare la runbook tecnica.
 
 ### Files changed
+- `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/agc_aspenhome.pa.yaml` — custom page home creata (3 pulsanti + navigazione `Launch`)
+- `README.md` — aggiunta sezione "Custom Page — Home ASPEN" + passi manuali maker portal
 - `SESSION_NOTES.md` — aggiunta sessione di chiusura con stato deploy, blocco PAC CLI e decisioni operative.
-- `README.md` — allineati i riferimenti di solution target per la custom page e nota sul vincolo di primo publish da Maker Portal.
 
 ---
 
 ## Session 2026-06-12
 
 ### What was done
-- Creata la **Custom Page "ASPEN Home"** (canvas page) da usare come home della Model-Driven App, con 3 pulsanti operativi: **Creazione fascicolo**, **Assegnazione fascicolo**, **Cruscotto**.
-- Implementata la logica di navigazione in-app con la funzione Power Fx `Launch("main.aspx", { … })`:
-  - Creazione → `pagetype: "entityrecord", etn: "agc_fascicolo"`
-  - Assegnazione → `pagetype: "entitylist", etn: "agc_fascicolo"` (variante documentata: custom page dedicata via `pagetype: "custom"`)
-  - Cruscotto → `pagetype: "dashboard", dashboardId: "__DASHBOARD_ID__"`
-- Sorgente versionabile in formato Power Apps YAML (`.pa.yaml`) sotto `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/`.
-- Documentati i placeholder (`__DASHBOARD_ID__`, `__APP_ID__`, `__ASSEGNA_PAGE__`) sia in testa al file `.pa.yaml` sia nel `README.md`.
-- Aggiornato `README.md` con la sezione "Custom Page — Home ASPEN" e i passi manuali residui nel maker portal.
-
-### Decisions made
-- La navigazione verso pagine model-driven da custom page si fa con `Launch` (parametri allineati a `Xrm.Navigation.navigateTo`), non con `Navigate` (riservato agli screen canvas).
-- Il repo conserva il **sorgente leggibile** della pagina (`.pa.yaml`); l'impacchettamento `.msapp` e l'integrazione come home avvengono nel maker portal / `pac canvas pack`, non essendo presenti nel repo né l'App Module né il binario `.msapp`.
-- Il pulsante "Assegnazione fascicolo" punta di default alla vista elenco fascicoli; pronto a passare a una custom page dedicata (`__ASSEGNA_PAGE__`) se verrà creata.
+- Aggiornato `agc_fascicolo.agc_statocaso` con nuovo valore OptionSet **Chiuso (2)** e pubblicato in ambiente.
+- Aggiornati i PCF di cruscotto:
+  - `CaricoMagistratiChart`: esclusione fascicoli chiusi, barra `(non assegnato)` dedicata, ordinamento in fondo, refresh one-shot a 2s dal primo caricamento.
+  - `CaricoPerCanestro`: esclusione fascicoli chiusi e nuovo messaggio empty state.
+  - `StatoFascicoliChart`: colore stato Chiuso + selettore anno con filtro per annata.
+- Corretto campo `agc_statocaso` come filtrabile nelle viste (`IsFilterable=1`).
+- Estesa command bar fascicolo con comando **Chiudi Caso**:
+  - conferma utente,
+  - update stato a Chiuso,
+  - refresh form + ribbon.
+- Aggiornata icona del comando **Chiudi Caso** con web resource dedicata `agc_closefascicolo_icon.svg`.
+- Corretto dialog di assegnazione automatica: il calcolo del carico magistrati ora esclude i fascicoli chiusi.
 
 ### Current status
-- ✅ Sorgente custom page con 3 pulsanti e formule di navigazione versionato nel repo
-- ✅ Documentazione README e placeholder allineati
-- ⚠️ Da completare in ambiente: valorizzare `__DASHBOARD_ID__`, impacchettare/importare la pagina, aggiungerla all'app e impostarla come home (Set as default)
-
-### Next steps
-1. Recuperare la GUID della dashboard "Cruscotto ASPEN" e valorizzare `__DASHBOARD_ID__`.
-2. Impacchettare il sorgente (`pac canvas pack`) o ricreare i pulsanti nel designer e importare la custom page nella soluzione `ASPENPOC`.
-3. Aggiungere la custom page alla Model-Driven App e impostarla come pagina di default (home).
-4. Valutare una custom page dedicata di Assegnazione (variante `pagetype: "custom"`).
+- ✅ Stato Chiuso disponibile e usabile in UI.
+- ✅ Tutti i calcoli di carico (magistrato/canestro/assegnazione automatica) escludono i fascicoli chiusi.
+- ✅ Cruscotto con filtro anno sul grafico a torta.
+- ✅ Comando Chiudi Caso operativo con conferma e refresh.
 
 ### Files changed
-- `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/agc_aspenhome.pa.yaml` — custom page home creata (3 pulsanti + navigazione `Launch`)
-- `README.md` — aggiunta sezione "Custom Page — Home ASPEN" + passi manuali maker portal
+- `05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Entities/agc_Fascicolo/Entity.xml`
+- `05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Entities/agc_Fascicolo/RibbonDiff.xml`
+- `05 - Power Platform/AssegnaFascicolo/SolutionProject/Entities/agc_fascicolo/RibbonDiff/RibbonDiff.xml`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolodialog.html`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_closefascicolo_icon.svg`
+- `05 - Power Platform/PCF/CaricoMagistratiChart/index.ts`
+- `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts`
+- `05 - Power Platform/PCF-Pie/StatoFascicoliChart/index.ts`
+- `05 - Power Platform/PCF-Pie/StatoFascicoliChart/css/chart.css`
+- `README.md`
 
 ---
 
@@ -73,6 +77,8 @@
 - Verificata la configurazione della sitemap su **Impostazioni > Configurazioni**: impostata regola per privilegio di lettura su `agc_configurazione`; utente con ruolo operativo vede la voce ma riceve correttamente accesso negato ai record.
 - Verificata la disponibilità dei campi **rollup** in Dataverse: in UI moderna si configurano impostando tipo numerico e comportamento rollup.
 - Confermato limite Dataverse: un rollup non aggrega un campo di origine di tipo **calculated** (`agc_fascicolo.agc_peso`).
+- Creato branch `modifica-command-bar`, aggiunti `HideCustomAction` per i comandi standard della griglia Fascicoli e deploy su ambiente demo (`AgicAspenRibbon_v8`).
+- Verificato post-deploy: i comandi standard risultano ancora visibili in UCI, quindi è necessario intervenire con **Command Designer** (comandi moderni).
 
 ### Decisions made
 - Per il bug su Canestro, prima azione consigliata: riallineamento metadati in ambiente (publish completo + ricompilazione formula dipendente) e solo dopo eventuale escalation Microsoft con Activity/Session/Correlation IDs.
@@ -84,14 +90,16 @@
 - ✅ Accesso ai record Configurazioni correttamente negato al ruolo operativo.
 - ⚠️ Voce sitemap Configurazioni ancora visibile ai non admin (con access denied all'apertura); da rifinire UX se richiesto.
 - ⚠️ Rollup peso totale magistrato non applicabile direttamente su `agc_peso` finché è calculated.
+- ⚠️ Rimozione comandi standard della command bar Fascicoli non ancora effettiva via RibbonDiff; da completare in Command Designer.
 
 ### Next steps
 1. Chiudere il bug **Canestro** con riallineamento metadati in ambiente ed eventuale ticket Microsoft.
 2. Stabilizzare UX sicurezza sitemap (valutare split app **ASPEN Admin** / **ASPEN Operatore**).
 3. Implementare tasto **"Rimuovi assegnazione"** e rendere stabile l'enable rule "magistrato già assegnato".
-4. Persistere incompatibilità su Dataverse.
-5. Implementare notifica magistrato via Power Automate e storico assegnazioni.
-6. Valutare alternativa tecnica al campo calculated `agc_peso` se necessario per aggregazioni rollup.
+4. Completare pulizia command bar Fascicoli con **Command Designer** (comandi moderni UCI).
+5. Persistere incompatibilità su Dataverse.
+6. Implementare notifica magistrato via Power Automate e storico assegnazioni.
+7. Valutare alternativa tecnica al campo calculated `agc_peso` se necessario per aggregazioni rollup.
 
 ---
 
@@ -180,3 +188,5 @@
 - `README.md` — aggiunta sezione "Ribbon button — Assegna Fascicolo" con dettaglio file, comportamento e note tecniche
 
 ---
+
+

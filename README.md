@@ -106,7 +106,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | Canestro | `agc_canestro` | Lookup → agc_canestro |
 | Magistrato assegnato | `agc_magistratoassegnato` | Lookup → agc_giudice |
 | Peso | `agc_peso` | Decimal (calcolato) |
-| Stato | `agc_statocaso` | OptionSet: 0=Validato, 1=Proposto |
+| Stato | `agc_statocaso` | OptionSet: 0=Validato, 1=Proposto, 2=Chiuso |
 | Data | `agc_datacaso` | DateTime |
 
 ### Componenti PCF pubblicati
@@ -117,6 +117,9 @@ Grafico a barre orizzontali del carico per magistrato.
   - 🟢 Verde `#107C10` — carico < 80% soglia
   - 🟡 Giallo `#FFB900` — carico ≥ 80% soglia
   - 🔴 Rosso `#D13438` — carico ≥ soglia
+- 🟣 Barra dedicata per `(non assegnato)` con ordinamento forzato in fondo
+- Esclude i fascicoli in stato **Chiuso** dal calcolo carico
+- Refresh automatico one-shot a 2s dal primo caricamento per riallineare i colori
 - **Legenda colori** inline sotto il grafico
 - **Click su barra** → modal con elenco fascicoli assegnati al magistrato
 - **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_peso`
@@ -127,19 +130,22 @@ Grafico a barre del carico per canestro (materia giudiziaria).
   - 🟢 Verde `#107C10` — carico < 80% soglia
   - 🟡 Giallo `#FFB900` — carico ≥ 80% soglia
   - 🔴 Rosso `#D13438` — carico ≥ soglia
+- Esclude i fascicoli in stato **Chiuso** dal calcolo carico
+- Empty state: `Nessun fascicolo aperto assegnato a questo magistrato.`
 - **OData fix**: lookup field letto come `_agc_canestro_value`; nome canestro via annotazione `@OData.Community.Display.V1.FormattedValue`
 
 #### `AgicAspen.StatoFascicoliChart` — `05 - Power Platform/PCF-Pie/`
 Grafico a torta distribuzione fascicoli per stato.
-- Verde = Validato, Blu = Proposto
+- Verde = Validato, Blu = Proposto, Grigio = Chiuso
 - Tooltip con valore assoluto e percentuale
+- Selettore **Anno** (pill UI) con opzione `Tutti gli anni` + elenco annualità presenti nei dati
 - **Click su fetta** → modal con elenco fascicoli di quello stato
 - **Mapping nel designer:** `statoField` → `agc_statocaso`
 
-### Ribbon button — Assegna Fascicolo
+### Ribbon button — Assegna / Chiudi Fascicolo
 
-Tasto custom **"Assegna Fascicolo"** nella command bar della form `agc_fascicolo`.  
-Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
+Tasti custom **"Assegna Fascicolo"** e **"Chiudi Caso"** nella command bar della form `agc_fascicolo`.  
+Visibili su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 
 **File sorgente: `05 - Power Platform/AssegnaFascicolo/`**
 
@@ -147,7 +153,8 @@ Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 |---|---|---|
 | `WebResources/agc_assignfascicolo.js` | JS (type 3) | Handler ribbon: legge l'ID fascicolo e apre il dialog via `Xrm.Navigation.navigateTo` |
 | `WebResources/agc_assignfascicolodialog.html` | HTML (type 1) | Dialog popup standalone |
-| `WebResources/agc_assignfascicolo_icon.svg` | SVG (type 11) | Icona Fluent UI: persona blu + freccia verde |
+| `WebResources/agc_assignfascicolo_icon.svg` | SVG (type 11) | Icona comando Assegna Fascicolo |
+| `WebResources/agc_closefascicolo_icon.svg` | SVG (type 11) | Icona comando Chiudi Caso |
 | `AgicAspenRibbon_unpacked/` | Solution unpacked | Sorgente soluzione con `RibbonDiff.xml` |
 
 **Comportamento del dialog (implementazione reale):**
@@ -156,6 +163,12 @@ Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 3. **Conferma** → PATCH su `agc_fascicolos({id})` con navigation property `agc_Magistratoassegnato@odata.bind` → schermata successo → chiusura automatica
 4. **Annulla** → chiude il dialog
 5. **Refresh automatico**: alla chiusura, la form chiama `formContext.data.refresh(false)` e la griglia chiama `selectedControl.refresh()`
+6. **Assegnazione automatica**: il calcolo del carico magistrato esclude i fascicoli in stato **Chiuso**
+
+**Comportamento chiusura caso:**
+1. Click su **Chiudi Caso** in form
+2. Dialog di conferma
+3. Se confermato: update `agc_statocaso = 2 (Chiuso)` + refresh form + refresh ribbon
 
 **Note tecniche:**
 - Il dialog usa URL relativo per le chiamate Dataverse (same-domain cookie auth — no Bearer token)
@@ -213,12 +226,13 @@ Custom page (canvas page) usata come **home** della Model-Driven App, con 3 puls
 2. Approfondire il modello dati – richiedere dump anonimizzato
 3. Pianificare sessioni su: sicurezza, incompatibilità, reportistica, migrazione dati
 4. Tasto **"Rimuovi assegnazione"** e enable rule stabile "magistrato già assegnato"
-5. **Notifica al magistrato** via Power Automate alla conferma assegnazione
-6. **Storico assegnazioni** (audit trail su tabella dedicata)
-7. Assegnazione **bulk** da griglia (selezione multipla fascicoli)
-8. Persistere le **incompatibilità** su Dataverse (tabella o campo dedicato)
-9. Risolvere in ambiente l'errore SQL `0x80044150` su apertura/assegnazione record **Canestro** (riallineamento metadati e, se necessario, escalation Microsoft)
-10. Strategia migrazione storico + integrazione **SICP**
+5. Rifinire la command bar di **Fascicoli** con **Command Designer** (nascondere: Mostra grafico, Mostra questa visualizzazione, Invia link e-mail, Flusso, Esegui report)
+6. **Notifica al magistrato** via Power Automate alla conferma assegnazione
+7. **Storico assegnazioni** (audit trail su tabella dedicata)
+8. Assegnazione **bulk** da griglia (selezione multipla fascicoli)
+9. Persistere le **incompatibilità** su Dataverse (tabella o campo dedicato)
+10. Risolvere in ambiente l'errore SQL `0x80044150` su apertura/assegnazione record **Canestro** (riallineamento metadati e, se necessario, escalation Microsoft)
+11. Strategia migrazione storico + integrazione **SICP**
 
 ---
 
@@ -232,3 +246,5 @@ Custom page (canvas page) usata come **home** della Model-Driven App, con 3 puls
 
 **Partecipanti call 04/06/2026 (AGIC):** Chiara D'Innocenzi, Linda Tomasello, Vincenzo Picone, Giuseppe Scalabrino, Riccardo Vedovato, Luca Campoglioni  
 **Microsoft:** Daiana D'Agostino
+
+
