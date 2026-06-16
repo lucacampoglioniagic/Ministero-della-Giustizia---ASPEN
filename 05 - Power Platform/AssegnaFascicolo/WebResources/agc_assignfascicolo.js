@@ -3,6 +3,7 @@
 var AgicAspen = window.AgicAspen || {};
 
 AgicAspen.AssegnaFascicolo = (function () {
+    var STATO_CHIUSO = 2;
 
     /* ── Apre il dialog dalla form del fascicolo ── */
     function openDialog(formContext) {
@@ -54,6 +55,44 @@ AgicAspen.AssegnaFascicolo = (function () {
             }
         ).then(function () {
             try { selectedControl.refresh(); } catch (e) { /* ignore */ }
+        });
+    }
+
+    function openCloseDialog(formContext) {
+        var rawId = formContext.data.entity.getId();
+        var id = rawId ? rawId.replace(/[{}]/g, "") : "";
+        if (!id) return;
+
+        var rgAttr = formContext.getAttribute("agc_numeroregistrogenerale");
+        var rg = rgAttr ? (rgAttr.getValue() || "") : "";
+
+        Xrm.Navigation.openConfirmDialog(
+            {
+                title: "Conferma chiusura fascicolo",
+                text: "Vuoi chiudere il fascicolo" + (rg ? " " + rg : "") + "?",
+                confirmButtonLabel: "Chiudi caso",
+                cancelButtonLabel: "Annulla"
+            },
+            { height: 220, width: 520 }
+        ).then(function (result) {
+            if (!result.confirmed) return;
+
+            Xrm.Utility.showProgressIndicator("Chiusura fascicolo in corso...");
+            return Xrm.WebApi.updateRecord("agc_fascicolo", id, {
+                agc_statocaso: STATO_CHIUSO
+            }).then(function () {
+                return formContext.data.refresh(false).then(function () {
+                    try { formContext.ui.refreshRibbon(true); } catch (e) { /* ignore */ }
+                });
+            }).catch(function (e) {
+                var msg = (e && e.message) ? e.message : "Errore durante la chiusura del fascicolo.";
+                return Xrm.Navigation.openAlertDialog({
+                    title: "Chiusura non riuscita",
+                    text: msg
+                });
+            }).finally(function () {
+                Xrm.Utility.closeProgressIndicator();
+            });
         });
     }
 
@@ -118,13 +157,30 @@ AgicAspen.AssegnaFascicolo = (function () {
         }
     }
 
+    function isCloseEnabledForm(formContext) {
+        try {
+            var statoAttr = formContext.getAttribute("agc_statocaso");
+            if (!statoAttr) return true;
+
+            var val = statoAttr.getValue();
+            if (val === STATO_CHIUSO) return false;
+
+            var text = statoAttr.getText ? (statoAttr.getText() || "") : "";
+            return text.toLowerCase() !== "chiuso";
+        } catch (e) {
+            console.error("[ASPEN] isCloseEnabledForm error:", e);
+            return false;
+        }
+    }
+
     return {
         openDialog: openDialog,
         openDialogFromGrid: openDialogFromGrid,
+        openCloseDialog: openCloseDialog,
         onFormLoad: onFormLoad,
         isEnabledForm: isEnabledForm,
-        isEnabledGrid: isEnabledGrid
+        isEnabledGrid: isEnabledGrid,
+        isCloseEnabledForm: isCloseEnabledForm
     };
 
 })();
-

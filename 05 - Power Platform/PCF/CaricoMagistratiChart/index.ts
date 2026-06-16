@@ -9,14 +9,26 @@ import {
   Legend,
 } from "chart.js";
 
-Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+Chart.register(
+  BarController,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+);
 
 const COLOR_GREEN = "#107C10";
 const COLOR_YELLOW = "#FFB900";
 const COLOR_RED = "#D13438";
+const COLOR_UNASSIGNED = "#5C2D91";
 const COLOR_GREEN_HOVER = "#0B5E0B";
 const COLOR_YELLOW_HOVER = "#C78F00";
 const COLOR_RED_HOVER = "#A31B1E";
+const COLOR_UNASSIGNED_HOVER = "#4B1F78";
+const UNASSIGNED_LABEL = "(non assegnato)";
+const CLOSED_STATUS_LABEL = "chiuso";
+const CLOSED_STATUS_VALUE = 2;
 
 interface FascicoloRow {
   rg: string;
@@ -32,9 +44,20 @@ function barColor(value: number, limit: number, hover = false): string {
   return hover ? COLOR_GREEN_HOVER : COLOR_GREEN;
 }
 
-export class CaricoMagistratiChart
-  implements ComponentFramework.StandardControl<IInputs, IOutputs>
-{
+function isClosedStatus(rawStatus: unknown, formattedStatus: string): boolean {
+  if (formattedStatus.trim().toLowerCase() === CLOSED_STATUS_LABEL) return true;
+  if (typeof rawStatus === "number") return rawStatus === CLOSED_STATUS_VALUE;
+  if (typeof rawStatus === "string") {
+    const parsed = Number(rawStatus);
+    return Number.isFinite(parsed) && parsed === CLOSED_STATUS_VALUE;
+  }
+  return false;
+}
+
+export class CaricoMagistratiChart implements ComponentFramework.StandardControl<
+  IInputs,
+  IOutputs
+> {
   private _container: HTMLDivElement;
   private _canvas: HTMLCanvasElement;
   private _legendEl: HTMLDivElement;
@@ -43,6 +66,8 @@ export class CaricoMagistratiChart
   private _notifyOutputChanged: () => void;
   private _pesoLimite = 20;
   private _labels: string[] = [];
+  private _hasScheduledDelayedRefresh = false;
+  private _delayedRefreshTimer: number | null = null;
   // magistrato name → list of fascicoli rows (from dataset)
   private _fascicoliPerMagistrato: Record<string, FascicoloRow[]> = {};
 
@@ -78,6 +103,7 @@ export class CaricoMagistratiChart
       <span class="legend-item"><span class="legend-dot" style="background:${COLOR_GREEN}"></span>Scarico</span>
       <span class="legend-item"><span class="legend-dot" style="background:${COLOR_YELLOW}"></span>Attenzione (&ge;80%)</span>
       <span class="legend-item"><span class="legend-dot" style="background:${COLOR_RED}"></span>Oberato (&ge;soglia)</span>
+      <span class="legend-item"><span class="legend-dot" style="background:${COLOR_UNASSIGNED}"></span>Non assegnato</span>
     `;
 
     wrapper.appendChild(title);
@@ -113,23 +139,38 @@ export class CaricoMagistratiChart
     this._context = context;
     const dataset = context.parameters.fascicoliDataSet;
     if (dataset.loading) return;
+    if (!this._hasScheduledDelayedRefresh) {
+      this._hasScheduledDelayedRefresh = true;
+      this._delayedRefreshTimer = window.setTimeout(() => {
+        this._context.parameters.fascicoliDataSet.refresh();
+      }, 2000);
+    }
 
     const totals: Record<string, number> = {};
     this._fascicoliPerMagistrato = {};
 
     for (const id of dataset.sortedRecordIds) {
       const record = dataset.records[id];
+      const stato =
+        record.getFormattedValue("agc_statocaso") ||
+        record.getFormattedValue("agc_statocasoname") ||
+        "";
+      if (isClosedStatus(record.getValue("agc_statocaso"), stato)) continue;
+
       const magistrato =
-        record.getFormattedValue("magistratoField") || "(non assegnato)";
+        record.getFormattedValue("magistratoField") || UNASSIGNED_LABEL;
       const peso = Number(record.getValue("pesoField")) || 0;
 
       totals[magistrato] = (totals[magistrato] ?? 0) + peso;
 
       const row: FascicoloRow = {
         rg: (record.getValue("agc_numeroregistrogenerale") as string) || "—",
-        canestro: record.getFormattedValue("agc_canestro") || record.getFormattedValue("agc_canestroname") || "—",
+        canestro:
+          record.getFormattedValue("agc_canestro") ||
+          record.getFormattedValue("agc_canestroname") ||
+          "—",
         peso,
-        stato: record.getFormattedValue("agc_statocaso") || record.getFormattedValue("agc_statocasoname") || "—",
+        stato: stato || "—",
         data: record.getFormattedValue("agc_datacaso") || "—",
       };
       if (!this._fascicoliPerMagistrato[magistrato]) {
@@ -138,11 +179,25 @@ export class CaricoMagistratiChart
       this._fascicoliPerMagistrato[magistrato].push(row);
     }
 
-    const sorted = Object.entries(totals).sort((a, b) => b[1] - a[1]);
+    const sorted = Object.entries(totals).sort((a, b) => {
+      const aIsUnassigned = a[0] === UNASSIGNED_LABEL;
+      const bIsUnassigned = b[0] === UNASSIGNED_LABEL;
+      if (aIsUnassigned && !bIsUnassigned) return 1;
+      if (!aIsUnassigned && bIsUnassigned) return -1;
+      return b[1] - a[1];
+    });
     const labels = sorted.map(([name]) => name);
     const values = sorted.map(([, val]) => val);
-    const colors = values.map((v) => barColor(v, this._pesoLimite));
-    const hoverColors = values.map((v) => barColor(v, this._pesoLimite, true));
+    const colors = sorted.map(([name, val]) =>
+      name === UNASSIGNED_LABEL
+        ? COLOR_UNASSIGNED
+        : barColor(val, this._pesoLimite),
+    );
+    const hoverColors = sorted.map(([name, val]) =>
+      name === UNASSIGNED_LABEL
+        ? COLOR_UNASSIGNED_HOVER
+        : barColor(val, this._pesoLimite, true),
+    );
 
     this._labels = labels;
 
@@ -232,7 +287,9 @@ export class CaricoMagistratiChart
       <span class="aspen-modal-title">Fascicoli di <strong>${magistratoName}</strong></span>
       <button class="aspen-modal-close" aria-label="Chiudi">&times;</button>
     `;
-    header.querySelector(".aspen-modal-close")!.addEventListener("click", () => overlay.remove());
+    header
+      .querySelector(".aspen-modal-close")!
+      .addEventListener("click", () => overlay.remove());
 
     const body = document.createElement("div");
     body.className = "aspen-modal-body";
@@ -287,6 +344,10 @@ export class CaricoMagistratiChart
   }
 
   public destroy(): void {
+    if (this._delayedRefreshTimer !== null) {
+      window.clearTimeout(this._delayedRefreshTimer);
+      this._delayedRefreshTimer = null;
+    }
     document.getElementById("aspen-modal-overlay")?.remove();
     this._chart?.destroy();
     this._chart = null;

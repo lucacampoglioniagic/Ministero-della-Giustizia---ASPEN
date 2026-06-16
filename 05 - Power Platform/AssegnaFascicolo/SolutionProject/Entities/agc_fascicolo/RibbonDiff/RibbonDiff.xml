@@ -35,6 +35,23 @@
       </CommandUIDefinition>
     </CustomAction>
 
+    <!-- Tasto chiusura caso nella FORM del fascicolo -->
+    <CustomAction Id="agc.Form.agc_fascicolo.MainTab.Save.Chiudi.CustomAction"
+      Location="Mscrm.Form.agc_fascicolo.MainTab.Save.Controls._children"
+      Sequence="22">
+      <CommandUIDefinition>
+        <Button Id="agc.Form.agc_fascicolo.MainTab.Save.Chiudi.Button"
+          Command="agc.Form.agc_fascicolo.Chiudi.Command"
+          LabelText="Chiudi Caso"
+          Alt="Chiudi Caso"
+          ToolTipTitle="Chiudi Caso"
+          ToolTipDescription="Chiude il fascicolo dopo conferma"
+          TemplateAlias="o1"
+          Sequence="22"
+          ModernImage="$webresource:agc_closefascicolo_icon.svg" />
+      </CommandUIDefinition>
+    </CustomAction>
+
     <!-- Tasto nella VISTA (grid) del fascicolo -->
     <CustomAction Id="agc.HomepageGrid.agc_fascicolo.MainTab.Actions.Assegna.CustomAction"
       Location="Mscrm.HomepageGrid.agc_fascicolo.MainTab.Actions.Controls._children"
@@ -71,6 +88,21 @@
       </Actions>
     </CommandDefinition>
 
+    <!-- Command FORM chiusura -->
+    <CommandDefinition Id="agc.Form.agc_fascicolo.Chiudi.Command">
+      <EnableRules>
+        <EnableRule Id="Mscrm.FormStateExistingOrReadOnly" />
+        <EnableRule Id="agc.Chiudi.NotClosed.Form.EnableRule" />
+      </EnableRules>
+      <DisplayRules />
+      <Actions>
+        <JavaScriptFunction FunctionName="AgicAspen.AssegnaFascicolo.openCloseDialog"
+          Library="$webresource:agc_assignfascicolo.js">
+          <CrmParameter Value="PrimaryControl" />
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+
     <!-- Command GRID -->
     <CommandDefinition Id="agc.HomepageGrid.agc_fascicolo.Assegna.Command">
       <EnableRules>
@@ -101,6 +133,15 @@
       <!-- Form: disabilita se agc_magistratoassegnato già valorizzato -->
       <EnableRule Id="agc.Assegna.NotAssigned.Form.EnableRule">
         <CustomRule FunctionName="AgicAspen.AssegnaFascicolo.isEnabledForm"
+          Library="$webresource:agc_assignfascicolo.js"
+          Default="false">
+          <CrmParameter Value="PrimaryControl" />
+        </CustomRule>
+      </EnableRule>
+
+      <!-- Form: disabilita chiusura se già chiuso -->
+      <EnableRule Id="agc.Chiudi.NotClosed.Form.EnableRule">
+        <CustomRule FunctionName="AgicAspen.AssegnaFascicolo.isCloseEnabledForm"
           Library="$webresource:agc_assignfascicolo.js"
           Default="false">
           <CrmParameter Value="PrimaryControl" />

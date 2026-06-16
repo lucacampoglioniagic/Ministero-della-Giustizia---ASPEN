@@ -3,6 +3,8 @@
 const COLOR_GREEN = "#107C10";
 const COLOR_YELLOW = "#FFB900";
 const COLOR_RED = "#D13438";
+const CLOSED_STATUS_LABEL = "chiuso";
+const CLOSED_STATUS_VALUE = 2;
 
 interface CaricoCanestro {
   canestroId: string;
@@ -42,9 +44,7 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
     this._context = context;
     // context.page non è nei tipi pubblici PCF ma esiste a runtime — cast sicuro
     const page = (context as unknown as { page?: { entityId?: string } }).page;
-    const newId = (page?.entityId ?? "")
-      .replace(/[{}]/g, "")
-      .toLowerCase();
+    const newId = (page?.entityId ?? "").replace(/[{}]/g, "").toLowerCase();
     if (newId && newId !== this._currentMagistratoId) {
       this._currentMagistratoId = newId;
       this._loadData(newId);
@@ -74,14 +74,19 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
     this._context.webAPI
       .retrieveMultipleRecords(
         "agc_fascicolo",
-        `?$select=agc_fascicoloid,agc_peso,_agc_canestro_value` +
+        `?$select=agc_fascicoloid,agc_peso,agc_statocaso,_agc_canestro_value` +
           `&$filter=_agc_magistratoassegnato_value eq ${magistratoId} and agc_peso ne null`,
       )
       .then((res) => {
         const map: Record<string, CaricoCanestro> = {};
         for (const f of res.entities) {
+          if (this._isClosedFascicolo(f as Record<string, unknown>)) continue;
+
           const cId = (f["_agc_canestro_value"] as string) ?? "__nessuno__";
-          const cName = (f["_agc_canestro_value@OData.Community.Display.V1.FormattedValue"] as string) ?? "Senza canestro";
+          const cName =
+            (f[
+              "_agc_canestro_value@OData.Community.Display.V1.FormattedValue"
+            ] as string) ?? "Senza canestro";
           const peso = (f["agc_peso"] as number) ?? 0;
           if (!map[cId])
             map[cId] = {
@@ -102,6 +107,23 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
       .catch((err) => this._renderError(String(err)));
   }
 
+  private _isClosedFascicolo(entity: Record<string, unknown>): boolean {
+    const formatted = String(
+      entity["agc_statocaso@OData.Community.Display.V1.FormattedValue"] ?? "",
+    )
+      .trim()
+      .toLowerCase();
+    if (formatted === CLOSED_STATUS_LABEL) return true;
+
+    const raw = entity["agc_statocaso"];
+    if (typeof raw === "number") return raw === CLOSED_STATUS_VALUE;
+    if (typeof raw === "string") {
+      const parsed = Number(raw);
+      return Number.isFinite(parsed) && parsed === CLOSED_STATUS_VALUE;
+    }
+    return false;
+  }
+
   private _barColor(peso: number): string {
     if (peso >= this._pesoLimiteCanestro) return COLOR_RED;
     if (peso >= this._pesoLimiteCanestro * 0.8) return COLOR_YELLOW;
@@ -120,7 +142,7 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
 
     if (rows.length === 0) {
       const empty = document.createElement("p");
-      empty.textContent = "Nessun fascicolo assegnato a questo magistrato.";
+      empty.textContent = "Nessun fascicolo aperto assegnato a questo magistrato.";
       empty.style.cssText = "color:#666;font-size:13px;";
       this._container.appendChild(empty);
       return;

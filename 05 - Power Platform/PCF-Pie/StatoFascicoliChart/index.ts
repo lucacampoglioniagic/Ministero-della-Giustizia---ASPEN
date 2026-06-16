@@ -6,8 +6,15 @@ Chart.register(PieController, ArcElement, Tooltip, Legend);
 const STATE_COLORS: Record<string, string> = {
   Validato: "#107C10",
   Proposto: "#0F6CBD",
+  Chiuso: "#6B7280",
 };
-const FALLBACK_PALETTE = ["#FFB900", "#D13438", "#8764B8", "#038387", "#CA5010"];
+const FALLBACK_PALETTE = [
+  "#FFB900",
+  "#D13438",
+  "#8764B8",
+  "#038387",
+  "#CA5010",
+];
 
 interface FascicoloRow {
   rg: string;
@@ -17,60 +24,112 @@ interface FascicoloRow {
   data: string;
 }
 
-export class StatoFascicoliChart
-  implements ComponentFramework.StandardControl<IInputs, IOutputs>
-{
+export class StatoFascicoliChart implements ComponentFramework.StandardControl<
+  IInputs,
+  IOutputs
+> {
+  private _context: ComponentFramework.Context<IInputs>;
   private _container: HTMLDivElement;
   private _canvas: HTMLCanvasElement;
+  private _yearSelect: HTMLSelectElement;
   private _chart: Chart<"pie", number[], string> | null = null;
   private _labels: string[] = [];
   private _fascicoliPerStato: Record<string, FascicoloRow[]> = {};
+  private _selectedYear = "all";
 
   constructor() {
     // PCF required constructor
   }
 
   public init(
-    _context: ComponentFramework.Context<IInputs>,
+    context: ComponentFramework.Context<IInputs>,
     _notifyOutputChanged: () => void,
     _state: ComponentFramework.Dictionary,
     container: HTMLDivElement,
   ): void {
+    this._context = context;
     this._container = container;
     this._container.classList.add("stato-fascicoli-chart");
 
     const wrapper = document.createElement("div");
     wrapper.className = "chart-wrapper";
 
+    const header = document.createElement("div");
+    header.className = "chart-header";
+
     const title = document.createElement("h2");
     title.className = "chart-title";
     title.textContent = "Fascicoli per Stato";
+
+    const filterWrap = document.createElement("div");
+    filterWrap.className = "year-filter";
+
+    const filterLabel = document.createElement("span");
+    filterLabel.className = "year-filter-label";
+    filterLabel.textContent = "Anno";
+
+    this._yearSelect = document.createElement("select");
+    this._yearSelect.className = "year-filter-select";
+    this._yearSelect.innerHTML = `<option value="all">Tutti gli anni</option>`;
+    this._yearSelect.addEventListener("change", () => {
+      this._selectedYear = this._yearSelect.value;
+      if (this._context) this.updateView(this._context);
+    });
+
+    filterWrap.appendChild(filterLabel);
+    filterWrap.appendChild(this._yearSelect);
+    header.appendChild(title);
+    header.appendChild(filterWrap);
 
     this._canvas = document.createElement("canvas");
     this._canvas.className = "chart-canvas";
     this._canvas.style.cursor = "pointer";
 
-    wrapper.appendChild(title);
+    wrapper.appendChild(header);
     wrapper.appendChild(this._canvas);
     this._container.appendChild(wrapper);
   }
 
   public updateView(context: ComponentFramework.Context<IInputs>): void {
+    this._context = context;
     const dataset = context.parameters.fascicoliDataSet;
     if (dataset.loading) return;
+
+    const yearsSet = new Set<number>();
+    for (const id of dataset.sortedRecordIds) {
+      const record = dataset.records[id];
+      const year = this._extractYear(record);
+      if (year !== null) yearsSet.add(year);
+    }
+    const years = Array.from(yearsSet).sort((a, b) => b - a);
+    this._syncYearFilter(years);
 
     const counts: Record<string, number> = {};
     this._fascicoliPerStato = {};
 
     for (const id of dataset.sortedRecordIds) {
       const record = dataset.records[id];
+      const year = this._extractYear(record);
+      if (
+        this._selectedYear !== "all" &&
+        year !== Number(this._selectedYear)
+      ) {
+        continue;
+      }
+
       const stato = record.getFormattedValue("statoField") || "(sconosciuto)";
       counts[stato] = (counts[stato] ?? 0) + 1;
 
       const row: FascicoloRow = {
         rg: (record.getValue("agc_numeroregistrogenerale") as string) || "—",
-        magistrato: record.getFormattedValue("agc_magistratoassegnato") || record.getFormattedValue("agc_magistratoassegnatoname") || "—",
-        canestro: record.getFormattedValue("agc_canestro") || record.getFormattedValue("agc_canestroname") || "—",
+        magistrato:
+          record.getFormattedValue("agc_magistratoassegnato") ||
+          record.getFormattedValue("agc_magistratoassegnatoname") ||
+          "—",
+        canestro:
+          record.getFormattedValue("agc_canestro") ||
+          record.getFormattedValue("agc_canestroname") ||
+          "—",
         peso: Number(record.getValue("agc_peso")) || 0,
         data: record.getFormattedValue("agc_datacaso") || "—",
       };
@@ -83,7 +142,8 @@ export class StatoFascicoliChart
     const labels = Object.keys(counts);
     const values = labels.map((l) => counts[l]);
     const colors = labels.map(
-      (l, i) => STATE_COLORS[l] ?? FALLBACK_PALETTE[i % FALLBACK_PALETTE.length],
+      (l, i) =>
+        STATE_COLORS[l] ?? FALLBACK_PALETTE[i % FALLBACK_PALETTE.length],
     );
 
     this._labels = labels;
@@ -100,7 +160,14 @@ export class StatoFascicoliChart
       type: "pie",
       data: {
         labels,
-        datasets: [{ data: values, backgroundColor: colors, borderWidth: 2, borderColor: "#fff" }],
+        datasets: [
+          {
+            data: values,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: "#fff",
+          },
+        ],
       },
       options: {
         animation: { duration: 900 },
@@ -120,8 +187,12 @@ export class StatoFascicoliChart
           tooltip: {
             callbacks: {
               label: (ctx) => {
-                const total = (ctx.dataset.data as number[]).reduce((a, b) => a + b, 0);
-                const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : "0";
+                const total = (ctx.dataset.data as number[]).reduce(
+                  (a, b) => a + b,
+                  0,
+                );
+                const pct =
+                  total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : "0";
                 return ` ${ctx.label}: ${ctx.parsed} (${pct}%) — clicca per dettaglio`;
               },
             },
@@ -129,6 +200,39 @@ export class StatoFascicoliChart
         },
       },
     });
+  }
+
+  private _syncYearFilter(years: number[]): void {
+    const selectedStillValid =
+      this._selectedYear === "all" ||
+      years.some((y) => String(y) === this._selectedYear);
+    if (!selectedStillValid) this._selectedYear = "all";
+
+    const options = [
+      `<option value="all">Tutti gli anni</option>`,
+      ...years.map((y) => `<option value="${y}">${y}</option>`),
+    ];
+    this._yearSelect.innerHTML = options.join("");
+    this._yearSelect.value = this._selectedYear;
+  }
+
+  private _extractYear(
+    record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord,
+  ): number | null {
+    const raw = record.getValue("agc_datacaso");
+    if (raw instanceof Date && !Number.isNaN(raw.getTime())) {
+      return raw.getFullYear();
+    }
+    if (typeof raw === "string") {
+      const rawDate = new Date(raw);
+      if (!Number.isNaN(rawDate.getTime())) return rawDate.getFullYear();
+    }
+
+    const formatted = record.getFormattedValue("agc_datacaso") || "";
+    const match = formatted.match(/(19|20)\d{2}/);
+    if (match) return Number(match[0]);
+
+    return null;
   }
 
   private _openModal(stato: string): void {
@@ -155,7 +259,9 @@ export class StatoFascicoliChart
       <span class="aspen-modal-title">Fascicoli con stato <strong>${stato}</strong> (${rows.length})</span>
       <button class="aspen-modal-close" aria-label="Chiudi">&times;</button>
     `;
-    header.querySelector(".aspen-modal-close")!.addEventListener("click", () => overlay.remove());
+    header
+      .querySelector(".aspen-modal-close")!
+      .addEventListener("click", () => overlay.remove());
 
     const body = document.createElement("div");
     body.className = "aspen-modal-body";
