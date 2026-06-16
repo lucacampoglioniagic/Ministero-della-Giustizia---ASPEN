@@ -1,0 +1,167 @@
+# ============================================================================
+# ASPEN — Custom Page "Home" (canvas page) per la Model-Driven App
+# ----------------------------------------------------------------------------
+# Sorgente Power Fx (formato Power Apps YAML / "Power Apps source") della custom
+# page usata come HOME della Model-Driven App ASPEN.
+#
+# La pagina espone 3 pulsanti:
+#   1) Creazione fascicolo   -> apre la form di creazione di un nuovo agc_fascicolo
+#   2) Assegnazione fascicolo-> apre l'area/pagina di Assegnazione fascicoli
+#   3) Cruscotto             -> redirect alla dashboard "Cruscotto ASPEN"
+#
+# La navigazione in-app verso pagine model-driven da una custom page si fa con la
+# funzione Power Fx Launch(), i cui parametri ricalcano Xrm.Navigation.navigateTo
+# (pagetype/etn/dashboardId/name...). Vedi note "PLACEHOLDER" più sotto.
+#
+# ----------------------------------------------------------------------------
+# PLACEHOLDER DA VALORIZZARE (ambiente: LCC-MINISTEROGIUSTIZIA-DEMO)
+# ----------------------------------------------------------------------------
+#   __APP_ID__         GUID della Model-Driven App ASPEN (appid). Necessario solo
+#                      se si vuole forzare l'app target; in navigazione in-app può
+#                      essere omesso. Recuperabile da: Power Apps maker portal >
+#                      Apps > ASPEN > Details > App ID.
+#   __DASHBOARD_ID__   GUID della dashboard "Cruscotto ASPEN" (system dashboard).
+#                      Recuperabile da: solution > Dashboards > Cruscotto ASPEN
+#                      (formId nell'URL del designer) oppure tabella savedquery/
+#                      systemform. Usato nel pulsante "Cruscotto".
+#   __ASSEGNA_PAGE__   Nome logico della custom page di Assegnazione, se esiste
+#                      come pagina dedicata (es. "agc_assegnazione_page"). In
+#                      assenza di una custom page dedicata, il pulsante 2 apre la
+#                      vista elenco dei fascicoli "Da assegnare" (vedi OnSelect).
+#
+# Tabella fascicolo (già esistente nel modello dati POC): agc_fascicolo
+# ----------------------------------------------------------------------------
+# NOTA DEPLOY: questo file è il sorgente leggibile/versionabile della pagina.
+# Per pubblicarlo serve impacchettarlo in .msapp (pac canvas pack) e importarlo
+# nella soluzione, oppure ricreare i 3 pulsanti nel designer della custom page
+# copiando le formule OnSelect qui sotto. Vedi README.md > "App model-driven".
+# ============================================================================
+
+App:
+  Properties:
+    BackEnabled: =false
+
+Screens:
+  scrAspenHome:
+    Properties:
+      Fill: =RGBA(243, 242, 241, 1)
+    Children:
+      # ---- Header ---------------------------------------------------------
+      - recHeader:
+          Control: Rectangle@2.3.0
+          Properties:
+            Fill: =RGBA(0, 120, 212, 1)
+            Height: =96
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - lblTitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="ASPEN — Assegnazione fascicoli giudiziari"
+            Color: =RGBA(255, 255, 255, 1)
+            Size: =24
+            FontWeight: =FontWeight.Semibold
+            Align: =Align.Center
+            VerticalAlign: =VerticalAlign.Middle
+            Height: =96
+            Width: =Parent.Width
+            X: =0
+            Y: =0
+      - lblSubtitle:
+          Control: Label@2.5.1
+          Properties:
+            Text: ="Seleziona un'operazione"
+            Color: =RGBA(50, 49, 48, 1)
+            Size: =16
+            Align: =Align.Center
+            Height: =40
+            Width: =Parent.Width
+            X: =0
+            Y: =128
+
+      # ---- 1) Creazione fascicolo ----------------------------------------
+      - btnCreaFascicolo:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Creazione fascicolo"
+            Fill: =RGBA(0, 120, 212, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            HoverFill: =RGBA(0, 95, 168, 1)
+            Size: =16
+            BorderRadius: =4
+            Width: =320
+            Height: =64
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =200
+            # Apre la form di creazione di un nuovo record Fascicolo (agc_fascicolo)
+            OnSelect: |
+              =Launch(
+                  "main.aspx",
+                  {
+                      pagetype: "entityrecord",
+                      etn: "agc_fascicolo"
+                  }
+              )
+
+      # ---- 2) Assegnazione fascicolo -------------------------------------
+      - btnAssegnaFascicolo:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Assegnazione fascicolo"
+            Fill: =RGBA(16, 124, 16, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            HoverFill: =RGBA(13, 100, 13, 1)
+            Size: =16
+            BorderRadius: =4
+            Width: =320
+            Height: =64
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =284
+            # Apre l'area di Assegnazione.
+            # Variante A (default): vista elenco fascicoli da assegnare
+            #   (sostituire viewid con la GUID della vista "Fascicoli da assegnare"
+            #   se si vuole puntare a una vista specifica).
+            # Variante B (custom page dedicata): scommentare il blocco "custom"
+            #   e valorizzare __ASSEGNA_PAGE__.
+            OnSelect: |
+              =Launch(
+                  "main.aspx",
+                  {
+                      pagetype: "entitylist",
+                      etn: "agc_fascicolo"
+                  }
+              )
+              // Variante B — custom page di Assegnazione dedicata:
+              // Launch(
+              //     "main.aspx",
+              //     {
+              //         pagetype: "custom",
+              //         name: "__ASSEGNA_PAGE__"
+              //     }
+              // )
+
+      # ---- 3) Redirect al Cruscotto --------------------------------------
+      - btnCruscotto:
+          Control: Classic/Button@2.2.0
+          Properties:
+            Text: ="Cruscotto"
+            Fill: =RGBA(50, 49, 48, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            HoverFill: =RGBA(32, 31, 30, 1)
+            Size: =16
+            BorderRadius: =4
+            Width: =320
+            Height: =64
+            X: =(Parent.Width - Self.Width) / 2
+            Y: =368
+            # Redirect alla dashboard "Cruscotto ASPEN".
+            # Valorizzare __DASHBOARD_ID__ con la GUID della system dashboard.
+            OnSelect: |
+              =Launch(
+                  "main.aspx",
+                  {
+                      pagetype: "dashboard",
+                      dashboardId: "__DASHBOARD_ID__"
+                  }
+              )

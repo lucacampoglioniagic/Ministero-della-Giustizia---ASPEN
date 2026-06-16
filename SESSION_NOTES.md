@@ -4,6 +4,68 @@
 
 ---
 
+## Session 2026-06-16
+
+### What was done
+- Consolidata la chiusura della sessione documentando lo stato della **Custom Page "ASPEN Home"** (già presente nei file di progetto).
+- Registrato il tentativo di rilascio su `https://lccministerogiustiziademo.crm4.dynamics.com`: autenticazione PAC riuscita e identificazione corretta di app **ASPEN** e solution **ASPENPOC**.
+- Allineata la documentazione sui riferimenti di solution target per la custom page, usando **ASPEN POC / ASPENPOC** dove pertinente.
+
+### Decisions made
+- Il rilascio della custom page non è al momento fully automated con il PAC CLI disponibile: import diretto da `.pa.yaml`/`.msapp` non gestibile end-to-end solo da CLI in questo setup.
+- Scelta operativa: eseguire il **primo publish dal Maker Portal**, poi proseguire con manutenzione/versioning dal repository.
+- Standardizzato il naming della solution target in documentazione: `ASPENPOC` (label: ASPEN POC).
+
+### Current status
+- ✅ Custom page home presente e documentata.
+- ✅ Accesso PAC all’ambiente DEMO funzionante, con discovery di app e solution target completata.
+- ⚠️ Pipeline di deploy custom page non ancora completamente automatizzabile con gli strumenti CLI attuali.
+
+### Next steps
+1. Effettuare il primo publish della custom page da Maker Portal nella solution `ASPENPOC`.
+2. Verificare apertura app ASPEN con home custom page impostata come default.
+3. Rivalutare automazione CLI dopo primo publish (pack/import/publish) e aggiornare la runbook tecnica.
+
+### Files changed
+- `SESSION_NOTES.md` — aggiunta sessione di chiusura con stato deploy, blocco PAC CLI e decisioni operative.
+- `README.md` — allineati i riferimenti di solution target per la custom page e nota sul vincolo di primo publish da Maker Portal.
+
+---
+
+## Session 2026-06-12
+
+### What was done
+- Creata la **Custom Page "ASPEN Home"** (canvas page) da usare come home della Model-Driven App, con 3 pulsanti operativi: **Creazione fascicolo**, **Assegnazione fascicolo**, **Cruscotto**.
+- Implementata la logica di navigazione in-app con la funzione Power Fx `Launch("main.aspx", { … })`:
+  - Creazione → `pagetype: "entityrecord", etn: "agc_fascicolo"`
+  - Assegnazione → `pagetype: "entitylist", etn: "agc_fascicolo"` (variante documentata: custom page dedicata via `pagetype: "custom"`)
+  - Cruscotto → `pagetype: "dashboard", dashboardId: "__DASHBOARD_ID__"`
+- Sorgente versionabile in formato Power Apps YAML (`.pa.yaml`) sotto `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/`.
+- Documentati i placeholder (`__DASHBOARD_ID__`, `__APP_ID__`, `__ASSEGNA_PAGE__`) sia in testa al file `.pa.yaml` sia nel `README.md`.
+- Aggiornato `README.md` con la sezione "Custom Page — Home ASPEN" e i passi manuali residui nel maker portal.
+
+### Decisions made
+- La navigazione verso pagine model-driven da custom page si fa con `Launch` (parametri allineati a `Xrm.Navigation.navigateTo`), non con `Navigate` (riservato agli screen canvas).
+- Il repo conserva il **sorgente leggibile** della pagina (`.pa.yaml`); l'impacchettamento `.msapp` e l'integrazione come home avvengono nel maker portal / `pac canvas pack`, non essendo presenti nel repo né l'App Module né il binario `.msapp`.
+- Il pulsante "Assegnazione fascicolo" punta di default alla vista elenco fascicoli; pronto a passare a una custom page dedicata (`__ASSEGNA_PAGE__`) se verrà creata.
+
+### Current status
+- ✅ Sorgente custom page con 3 pulsanti e formule di navigazione versionato nel repo
+- ✅ Documentazione README e placeholder allineati
+- ⚠️ Da completare in ambiente: valorizzare `__DASHBOARD_ID__`, impacchettare/importare la pagina, aggiungerla all'app e impostarla come home (Set as default)
+
+### Next steps
+1. Recuperare la GUID della dashboard "Cruscotto ASPEN" e valorizzare `__DASHBOARD_ID__`.
+2. Impacchettare il sorgente (`pac canvas pack`) o ricreare i pulsanti nel designer e importare la custom page nella soluzione `ASPENPOC`.
+3. Aggiungere la custom page alla Model-Driven App e impostarla come pagina di default (home).
+4. Valutare una custom page dedicata di Assegnazione (variante `pagetype: "custom"`).
+
+### Files changed
+- `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/agc_aspenhome.pa.yaml` — custom page home creata (3 pulsanti + navigazione `Launch`)
+- `README.md` — aggiunta sezione "Custom Page — Home ASPEN" + passi manuali maker portal
+
+---
+
 ## Session 2026-06-11
 
 ### What was done

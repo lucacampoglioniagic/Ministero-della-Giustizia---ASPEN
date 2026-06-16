@@ -168,6 +168,42 @@ Visibile solo su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 ### App model-driven
 - Sitemap: **Operatività** (Fascicoli, Cruscotto) · **Anagrafiche** (Magistrati, Canestri) · **Impostazioni** (Configurazioni, accesso vincolato da privilegi)
 - Dashboard "Cruscotto ASPEN" con entrambi i PCF
+- **Home page**: Custom Page "ASPEN Home" (vedi sotto)
+
+### Custom Page — Home ASPEN
+
+Custom page (canvas page) usata come **home** della Model-Driven App, con 3 pulsanti operativi:
+
+| Pulsante | Azione | Navigazione Power Fx |
+|---|---|---|
+| **Creazione fascicolo** | Apre la form di creazione di un nuovo `agc_fascicolo` | `Launch("main.aspx", { pagetype: "entityrecord", etn: "agc_fascicolo" })` |
+| **Assegnazione fascicolo** | Apre l'area di Assegnazione (vista elenco fascicoli; variante: custom page dedicata) | `Launch("main.aspx", { pagetype: "entitylist", etn: "agc_fascicolo" })` |
+| **Cruscotto** | Redirect alla dashboard "Cruscotto ASPEN" | `Launch("main.aspx", { pagetype: "dashboard", dashboardId: "__DASHBOARD_ID__" })` |
+
+**File sorgente: `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/`**
+
+| File | Tipo | Descrizione |
+|---|---|---|
+| `Source/agc_aspenhome.pa.yaml` | Power Apps source (Power Fx YAML) | Definizione della custom page: header + 3 pulsanti con formule `OnSelect` di navigazione in-app |
+
+**Placeholder da valorizzare in ambiente** (documentati anche in testa al file `.pa.yaml`):
+
+| Placeholder | Significato | Dove recuperarlo |
+|---|---|---|
+| `__DASHBOARD_ID__` | GUID della dashboard "Cruscotto ASPEN" | Designer dashboard (formId nell'URL) o tabella `systemform`/`savedquery` |
+| `__APP_ID__` | GUID della Model-Driven App ASPEN (`appid`), opzionale in navigazione in-app | Maker portal > Apps > ASPEN > Details > App ID |
+| `__ASSEGNA_PAGE__` | Nome logico della custom page di Assegnazione (solo se si usa una pagina dedicata) | Nome della custom page nella soluzione |
+
+**Note tecniche:**
+- La navigazione da una custom page verso pagine model-driven usa la funzione Power Fx `Launch("main.aspx", { … })`, i cui parametri ricalcano `Xrm.Navigation.navigateTo` (`pagetype`, `etn`, `dashboardId`, `name`).
+- Il file `.pa.yaml` è il **sorgente versionabile** della pagina; per pubblicarlo va impacchettato in `.msapp` (`pac canvas pack`) e importato nella soluzione target `ASPENPOC`, oppure i 3 pulsanti vanno ricreati nel designer copiando le formule `OnSelect`.
+- Con il PAC CLI attualmente disponibile, il rilascio della custom page non risulta fully automated end-to-end: è richiesto un **primo publish dal Maker Portal**.
+
+**Passi manuali residui (maker portal)** — necessari perché non esistono nel repo né l'App Module né il `.msapp` impacchettato:
+1. **Creare/importare la custom page** `agc_aspenhome` nella soluzione `ASPENPOC` (designer canvas o `pac canvas pack` del sorgente `.pa.yaml`; primo publish da Maker Portal).
+2. **Valorizzare i placeholder** (`__DASHBOARD_ID__`, ecc.) nelle formule `OnSelect` dei pulsanti.
+3. **Aggiungere la custom page alla Model-Driven App** dall'app designer (Pages > + New page > Custom page).
+4. **Impostarla come home**: nell'app designer selezionare la pagina e attivare **"Set as default"** (oppure ordinarla come prima voce di navigazione), quindi **Save & Publish**.
 
 ---
 
