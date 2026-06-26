@@ -96,13 +96,7 @@ Screens:
             Y: =200
             # Apre la form di creazione di un nuovo record Fascicolo (agc_fascicolo)
             OnSelect: |
-              =Launch(
-                  "main.aspx",
-                  {
-                      pagetype: "entityrecord",
-                      etn: "agc_fascicolo"
-                  }
-              )
+              =Launch("https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entityrecord&etn=agc_fascicolo")
 
       # ---- 2) Assegnazione fascicolo -------------------------------------
       - btnAssegnaFascicolo:
@@ -125,21 +119,7 @@ Screens:
             # Variante B (custom page dedicata): scommentare il blocco "custom"
             #   e valorizzare __ASSEGNA_PAGE__.
             OnSelect: |
-              =Launch(
-                  "main.aspx",
-                  {
-                      pagetype: "entitylist",
-                      etn: "agc_fascicolo"
-                  }
-              )
-              // Variante B — custom page di Assegnazione dedicata:
-              // Launch(
-              //     "main.aspx",
-              //     {
-              //         pagetype: "custom",
-              //         name: "__ASSEGNA_PAGE__"
-              //     }
-              // )
+              =Launch("https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entitylist&etn=agc_fascicolo&viewid=4383387a-7597-4c57-af91-65c34a6c2562&viewType=1039")
 
       # ---- 3) Redirect al Cruscotto --------------------------------------
       - btnCruscotto:
@@ -158,10 +138,4 @@ Screens:
             # Redirect alla dashboard "Cruscotto ASPEN".
             # Valorizzare __DASHBOARD_ID__ con la GUID della system dashboard.
             OnSelect: |
-              =Launch(
-                  "main.aspx",
-                  {
-                      pagetype: "dashboard",
-                      dashboardId: "d4cd81e8-5963-f111-ab0c-7ced8d72f54e"
-                  }
-              )
+              =Launch("https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=dashboard&id=d4cd81e8-5963-f111-ab0c-7ced8d72f54e&type=system&_canOverride=true")
