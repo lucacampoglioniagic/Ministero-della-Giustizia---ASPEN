@@ -203,7 +203,7 @@ Custom page (canvas page) usata come **home** della Model-Driven App, con 3 puls
 
 | Placeholder | Significato | Dove recuperarlo |
 |---|---|---|
-| `__DASHBOARD_ID__` | GUID della dashboard "Cruscotto ASPEN" | Designer dashboard (formId nell'URL) o tabella `systemform`/`savedquery` |
+| ~~`__DASHBOARD_ID__`~~ | ✅ Valorizzato: `d4cd81e8-5963-f111-ab0c-7ced8d72f54e` (dashboard "Cruscotto ASPEN") | Recuperato dall'URL del dashboard editor |
 | `__APP_ID__` | GUID della Model-Driven App ASPEN (`appid`), opzionale in navigazione in-app | Maker portal > Apps > ASPEN > Details > App ID |
 | `__ASSEGNA_PAGE__` | Nome logico della custom page di Assegnazione (solo se si usa una pagina dedicata) | Nome della custom page nella soluzione |
 

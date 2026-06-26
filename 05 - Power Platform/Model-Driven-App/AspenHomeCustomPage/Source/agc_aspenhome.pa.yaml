@@ -162,6 +162,6 @@ Screens:
                   "main.aspx",
                   {
                       pagetype: "dashboard",
-                      dashboardId: "__DASHBOARD_ID__"
+                      dashboardId: "d4cd81e8-5963-f111-ab0c-7ced8d72f54e"
                   }
               )
