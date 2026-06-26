@@ -4,6 +4,39 @@
 
 ---
 
+## Session 2026-06-26
+
+### What was done
+- **Layout responsivo** della Custom Page "ASPEN Home": ricostruita con container AutoLayout annidati (`conRoot` → `conCards` → card containers). `conCards` e `conStats` usano `LayoutWrap: true` per adattarsi a schermi stretti; ogni card ha `FillPortions: 1` e `LayoutMinWidth: 280`.
+- **KPI dinamici da Dataverse**: aggiunto data source "Fascicoli" (`agc_fascicolo`). 4 indicatori live: Fascicoli Attivi (`CountRows`), Creati ultimi 7 giorni (`Filter` + `DateAdd`), Peso medio (`Average`), Imputati totali (`Sum`).
+- **Icone SVG inline**: sostituiti i rettangoli placeholder (`recIconD`, `recIconL`, `recIconC`) con controlli `Image` contenenti SVG inline (48×48 px, colore `#003366`): grafico a barre (Cruscotto), documento con righe (Lista Fascicoli), cerchio con + (Nuovo Fascicolo).
+- Tutte le modifiche applicate direttamente in **Power Apps Studio** via automazione Playwright e pubblicate sull'ambiente.
+
+### Decisions made
+- **AutoLayout containers** scelti per il layout responsivo (LayoutWrap per wrap automatico delle card su schermi stretti).
+- **Image controls con SVG data URI** per le icone, perché il tipo `Icon` nativo non è supportato via YAML paste/import nel designer.
+- **Power Apps Studio come sorgente primaria**: le modifiche live non sono state riportate nel file `.pa.yaml` locale, che resta come riferimento storico. Future modifiche vanno fatte direttamente in Power Apps Studio.
+- **Automazione Playwright** usata per interagire con Power Apps Studio (click, type, navigazione) in modo programmatico.
+
+### Current status
+- ✅ Layout responsivo con AutoLayout containers pubblicato e funzionante.
+- ✅ KPI dinamici da Dataverse operativi (19 fascicoli, peso medio 14.2, 156 imputati totali).
+- ✅ Icone SVG visibili su tutte e 3 le card operative.
+- ✅ Pagina pubblicata e attiva come home della Model-Driven App ASPEN.
+- ⚠️ Il file `.pa.yaml` locale è divergente dalla versione live (riferimento storico).
+
+### Next steps
+1. Mantenere il file `.pa.yaml` locale come riferimento storico; future modifiche alla home vanno fatte in **Power Apps Studio** direttamente.
+2. Valutare export periodico della pagina da Studio per tenere aggiornato il sorgente nel repository (se il formato lo consente).
+3. Proseguire con i prossimi step del POC: rimuovi assegnazione, command bar cleanup, notifiche Power Automate.
+
+### Files changed
+- `README.md` — aggiornata sezione "Custom Page — Home ASPEN" con layout responsivo, KPI dinamici, icone SVG; aggiornata data POC a 26/06/2026; aggiunto `Mockup/` all'albero repository.
+- `SESSION_NOTES.md` — aggiunta sessione 2026-06-26.
+- ⚠️ `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/agc_aspenhome.pa.yaml` — **NON modificato** intenzionalmente (la versione live in Power Apps Studio è la fonte di verità).
+
+---
+
 ## Session 2026-06-16
 
 ### What was done

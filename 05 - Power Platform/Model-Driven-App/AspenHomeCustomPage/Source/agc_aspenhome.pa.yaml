@@ -4,6 +4,9 @@
 # Sorgente Power Fx (formato Power Apps YAML / "Power Apps source") della custom
 # page usata come HOME della Model-Driven App ASPEN.
 #
+# Data Source: Fascicoli (agc_fascicolo) - Microsoft Dataverse
+# KPI dinamici: CountRows, Filter by 'Data creazione', Average(Peso), Sum('N. imputati')
+#
 # La pagina espone 3 pulsanti:
 #   1) Creazione fascicolo   -> apre la form di creazione di un nuovo agc_fascicolo
 #   2) Assegnazione fascicolo-> apre l'area/pagina di Assegnazione fascicoli
@@ -44,98 +47,355 @@ App:
 Screens:
   scrAspenHome:
     Properties:
-      Fill: =RGBA(243, 242, 241, 1)
+      Fill: =RGBA(249, 247, 245, 1)
     Children:
-      # ---- Header ---------------------------------------------------------
-      - recHeader:
-          Control: Rectangle@2.3.0
+      - lblHeroTitle:
+          Control: Label
           Properties:
-            Fill: =RGBA(0, 120, 212, 1)
-            Height: =96
-            Width: =Parent.Width
-            X: =0
-            Y: =0
-      - lblTitle:
-          Control: Label@2.5.1
-          Properties:
-            Text: ="ASPEN — Assegnazione fascicoli giudiziari"
-            Color: =RGBA(255, 255, 255, 1)
-            Size: =24
+            Text: ="Benvenuto nel Sistema ASPEN"
+            Color: =RGBA(11, 52, 106, 1)
+            Size: =32
             FontWeight: =FontWeight.Semibold
-            Align: =Align.Center
-            VerticalAlign: =VerticalAlign.Middle
-            Height: =96
-            Width: =Parent.Width
-            X: =0
-            Y: =0
-      - lblSubtitle:
-          Control: Label@2.5.1
+            Height: =52
+            Width: =800
+            X: =48
+            Y: =32
+      - lblHeroSubtitle:
+          Control: Label
           Properties:
-            Text: ="Seleziona un'operazione"
-            Color: =RGBA(50, 49, 48, 1)
+            Text: ="Gestione avanzata e analisi dei carichi di lavoro giudiziari."
+            Color: =RGBA(97, 106, 120, 1)
             Size: =16
-            Align: =Align.Center
-            Height: =40
-            Width: =Parent.Width
-            X: =0
-            Y: =128
-
-      # ---- 1) Creazione fascicolo ----------------------------------------
-      - btnCreaFascicolo:
-          Control: Classic/Button@2.2.0
+            Height: =32
+            Width: =800
+            X: =48
+            Y: =84
+      # === 3 CARD DI NAVIGAZIONE (400px ciascuna, gap 16px) ===
+      - recCardDashboard:
+          Control: Rectangle
           Properties:
-            Text: ="Creazione fascicolo"
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(213, 216, 221, 1)
+            BorderThickness: =1
+            Height: =340
+            Width: =400
+            X: =48
+            Y: =148
+      - recCardList:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(213, 216, 221, 1)
+            BorderThickness: =1
+            Height: =340
+            Width: =400
+            X: =464
+            Y: =148
+      - recCardCreate:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(213, 216, 221, 1)
+            BorderThickness: =1
+            Height: =340
+            Width: =400
+            X: =880
+            Y: =148
+      - recIconDashboard:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(228, 238, 255, 1)
+            Height: =52
+            Width: =52
+            X: =80
+            Y: =180
+      - recIconList:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(228, 238, 255, 1)
+            Height: =52
+            Width: =52
+            X: =496
+            Y: =180
+      - recIconCreate:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(228, 238, 255, 1)
+            Height: =52
+            Width: =52
+            X: =912
+            Y: =180
+      - lblIconDashboard:
+          Control: Label
+          Properties:
+            Text: ="▥"
+            Color: =RGBA(0, 96, 171, 1)
+            Size: =22
+            FontWeight: =FontWeight.Bold
+            Align: =Align.Center
+            Height: =52
+            Width: =52
+            X: =80
+            Y: =180
+      - lblIconList:
+          Control: Label
+          Properties:
+            Text: ="☷"
+            Color: =RGBA(0, 96, 171, 1)
+            Size: =22
+            FontWeight: =FontWeight.Bold
+            Align: =Align.Center
+            Height: =52
+            Width: =52
+            X: =496
+            Y: =180
+      - lblIconCreate:
+          Control: Label
+          Properties:
+            Text: ="+"
+            Color: =RGBA(0, 96, 171, 1)
+            Size: =24
+            FontWeight: =FontWeight.Bold
+            Align: =Align.Center
+            Height: =52
+            Width: =52
+            X: =912
+            Y: =180
+      - lblDashboardTitle:
+          Control: Label
+          Properties:
+            Text: ="Cruscotto ASPEN"
+            Color: =RGBA(6, 38, 84, 1)
+            Size: =20
+            FontWeight: =FontWeight.Semibold
+            Height: =32
+            Width: =320
+            X: =80
+            Y: =256
+      - lblDashboardBody:
+          Control: Label
+          Properties:
+            Text: ="Analisi statistiche e monitoraggio costante dei carichi magistrati per un'efficienza ottimizzata."
+            Color: =RGBA(62, 72, 86, 1)
+            Size: =14
+            Height: =72
+            Width: =320
+            X: =80
+            Y: =296
+      - btnCruscotto:
+          Control: Classic/Button
+          Properties:
+            Text: ="Vai al dashboard  ->"
             Fill: =RGBA(0, 120, 212, 1)
             Color: =RGBA(255, 255, 255, 1)
-            HoverFill: =RGBA(0, 95, 168, 1)
-            Size: =16
-            BorderRadius: =4
-            Width: =320
-            Height: =64
-            X: =(Parent.Width - Self.Width) / 2
-            Y: =200
-            # Apre la form di creazione di un nuovo record Fascicolo (agc_fascicolo)
+            HoverFill: =RGBA(0, 96, 171, 1)
+            Size: =14
+            Width: =300
+            Height: =40
+            X: =80
+            Y: =396
             OnSelect: |
-              =Launch("https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entityrecord&etn=agc_fascicolo")
-
-      # ---- 2) Assegnazione fascicolo -------------------------------------
+              =Launch(
+                  "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=dashboard&id=d4cd81e8-5963-f111-ab0c-7ced8d72f54e&type=system&_canOverride=true",
+                  {},
+                  LaunchTarget.Replace
+              )
+      - lblListTitle:
+          Control: Label
+          Properties:
+            Text: ="Lista Fascicoli"
+            Color: =RGBA(6, 38, 84, 1)
+            Size: =20
+            FontWeight: =FontWeight.Semibold
+            Height: =32
+            Width: =320
+            X: =496
+            Y: =256
+      - lblListBody:
+          Control: Label
+          Properties:
+            Text: ="Consulta l'elenco completo dei procedimenti aperti e lo stato di avanzamento di ogni pratica."
+            Color: =RGBA(62, 72, 86, 1)
+            Size: =14
+            Height: =72
+            Width: =320
+            X: =496
+            Y: =296
       - btnAssegnaFascicolo:
-          Control: Classic/Button@2.2.0
+          Control: Classic/Button
           Properties:
-            Text: ="Assegnazione fascicolo"
-            Fill: =RGBA(16, 124, 16, 1)
-            Color: =RGBA(255, 255, 255, 1)
-            HoverFill: =RGBA(13, 100, 13, 1)
-            Size: =16
-            BorderRadius: =4
-            Width: =320
-            Height: =64
-            X: =(Parent.Width - Self.Width) / 2
-            Y: =284
-            # Apre l'area di Assegnazione.
-            # Variante A (default): vista elenco fascicoli da assegnare
-            #   (sostituire viewid con la GUID della vista "Fascicoli da assegnare"
-            #   se si vuole puntare a una vista specifica).
-            # Variante B (custom page dedicata): scommentare il blocco "custom"
-            #   e valorizzare __ASSEGNA_PAGE__.
+            Text: ="Apri elenco"
+            Fill: =RGBA(255, 255, 255, 1)
+            Color: =RGBA(6, 38, 84, 1)
+            HoverFill: =RGBA(244, 247, 251, 1)
+            BorderColor: =RGBA(213, 216, 221, 1)
+            BorderThickness: =1
+            Size: =14
+            Width: =300
+            Height: =40
+            X: =496
+            Y: =396
             OnSelect: |
-              =Launch("https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entitylist&etn=agc_fascicolo&viewid=4383387a-7597-4c57-af91-65c34a6c2562&viewType=1039")
-
-      # ---- 3) Redirect al Cruscotto --------------------------------------
-      - btnCruscotto:
-          Control: Classic/Button@2.2.0
+              =Launch(
+                  "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entitylist&etn=agc_fascicolo&viewid=4383387a-7597-4c57-af91-65c34a6c2562&viewType=1039",
+                  {},
+                  LaunchTarget.Replace
+              )
+      - lblCreateTitle:
+          Control: Label
           Properties:
-            Text: ="Cruscotto"
-            Fill: =RGBA(50, 49, 48, 1)
-            Color: =RGBA(255, 255, 255, 1)
-            HoverFill: =RGBA(32, 31, 30, 1)
-            Size: =16
-            BorderRadius: =4
+            Text: ="Nuovo Fascicolo"
+            Color: =RGBA(6, 38, 84, 1)
+            Size: =20
+            FontWeight: =FontWeight.Semibold
+            Height: =32
             Width: =320
-            Height: =64
-            X: =(Parent.Width - Self.Width) / 2
-            Y: =368
-            # Redirect alla dashboard "Cruscotto ASPEN".
-            # Valorizzare __DASHBOARD_ID__ con la GUID della system dashboard.
+            X: =912
+            Y: =256
+      - lblCreateBody:
+          Control: Label
+          Properties:
+            Text: ="Inserimento rapido di un nuovo elemento procedurale nel sistema centrale ASPEN."
+            Color: =RGBA(62, 72, 86, 1)
+            Size: =14
+            Height: =72
+            Width: =320
+            X: =912
+            Y: =296
+      - btnCreaFascicolo:
+          Control: Classic/Button
+          Properties:
+            Text: ="Crea ora"
+            Fill: =RGBA(11, 52, 106, 1)
+            Color: =RGBA(255, 255, 255, 1)
+            HoverFill: =RGBA(8, 42, 84, 1)
+            Size: =14
+            Width: =300
+            Height: =40
+            X: =912
+            Y: =396
             OnSelect: |
-              =Launch("https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=dashboard&id=d4cd81e8-5963-f111-ab0c-7ced8d72f54e&type=system&_canOverride=true")
+              =Launch(
+                  "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entityrecord&etn=agc_fascicolo",
+                  {},
+                  LaunchTarget.Replace
+              )
+      # === BARRA KPI DINAMICI (dati reali da Dataverse) ===
+      - recStatsPanel:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(255, 255, 255, 1)
+            BorderColor: =RGBA(213, 216, 221, 1)
+            BorderThickness: =1
+            Height: =110
+            Width: =1232
+            X: =48
+            Y: =516
+      - recStatDivider1:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(222, 225, 229, 1)
+            Height: =60
+            Width: =1
+            X: =340
+            Y: =538
+      - recStatDivider2:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(222, 225, 229, 1)
+            Height: =60
+            Width: =1
+            X: =640
+            Y: =538
+      - recStatDivider3:
+          Control: Rectangle
+          Properties:
+            Fill: =RGBA(222, 225, 229, 1)
+            Height: =60
+            Width: =1
+            X: =940
+            Y: =538
+      - lblStat1Title:
+          Control: Label
+          Properties:
+            Text: ="FASCICOLI ATTIVI"
+            Color: =RGBA(115, 119, 128, 1)
+            Size: =11
+            Height: =20
+            Width: =200
+            X: =80
+            Y: =536
+      - lblStat1Value:
+          Control: Label
+          Properties:
+            Text: =Text(CountRows(Fascicoli), "#,##0")
+            Color: =RGBA(11, 52, 106, 1)
+            Size: =28
+            FontWeight: =FontWeight.Semibold
+            Height: =40
+            Width: =200
+            X: =80
+            Y: =558
+      - lblStat2Title:
+          Control: Label
+          Properties:
+            Text: ="CREATI ULTIMA SETTIMANA"
+            Color: =RGBA(115, 119, 128, 1)
+            Size: =11
+            Height: =20
+            Width: =220
+            X: =380
+            Y: =536
+      - lblStat2Value:
+          Control: Label
+          Properties:
+            Text: =Text(CountRows(Filter(Fascicoli, 'Data creazione' >= DateAdd(Today(), -7, TimeUnit.Days))), "#,##0")
+            Color: =RGBA(191, 42, 36, 1)
+            Size: =28
+            FontWeight: =FontWeight.Semibold
+            Height: =40
+            Width: =200
+            X: =380
+            Y: =558
+      - lblStat3Title:
+          Control: Label
+          Properties:
+            Text: ="PESO MEDIO"
+            Color: =RGBA(115, 119, 128, 1)
+            Size: =11
+            Height: =20
+            Width: =200
+            X: =680
+            Y: =536
+      - lblStat3Value:
+          Control: Label
+          Properties:
+            Text: =Text(Round(Average(Fascicoli, Peso), 1), "#,##0.0")
+            Color: =RGBA(11, 52, 106, 1)
+            Size: =28
+            FontWeight: =FontWeight.Semibold
+            Height: =40
+            Width: =200
+            X: =680
+            Y: =558
+      - lblStat4Title:
+          Control: Label
+          Properties:
+            Text: ="IMPUTATI TOTALI"
+            Color: =RGBA(115, 119, 128, 1)
+            Size: =11
+            Height: =20
+            Width: =200
+            X: =980
+            Y: =536
+      - lblStat4Value:
+          Control: Label
+          Properties:
+            Text: =Text(Sum(Fascicoli, 'N. imputati'), "#,##0")
+            Color: =RGBA(11, 52, 106, 1)
+            Size: =28
+            FontWeight: =FontWeight.Semibold
+            Height: =40
+            Width: =200
+            X: =980
+            Y: =558

@@ -53,7 +53,8 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 │   ├── Plugin-Custom-API/           # Plugin Dataverse / Custom API per logica assegnazione
 │   ├── PCF/                         # CaricoMagistratiChart — barre orizzontali carico magistrati
 │   ├── PCF-Pie/                     # StatoFascicoliChart — torta fascicoli per stato
-│   └── AssegnaFascicolo/            # Ribbon button + dialog "Assegna Fascicolo" su agc_fascicolo
+│   ├── AssegnaFascicolo/            # Ribbon button + dialog "Assegna Fascicolo" su agc_fascicolo
+│   └── Mockup/                      # Mockup visivi della UI (screenshot, bozze layout)
 
 📁 06 - Riferimenti Normativi e Tecnici/   # Normativa, lettere istituzionali, docs tecnici
 ```
@@ -80,7 +81,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ---
 
-## POC — stato attuale (09/06/2026)
+## POC — stato attuale (26/06/2026)
 
 **Ambiente Dataverse:** `LCC-MINISTEROGIUSTIZIA-DEMO` (https://lccministerogiustiziademo.crm4.dynamics.com)  
 **Publisher prefix:** `agc_`
@@ -185,21 +186,72 @@ Visibili su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 
 ### Custom Page — Home ASPEN
 
-Custom page (canvas page) usata come **home** della Model-Driven App, con 3 pulsanti operativi:
+Custom page (canvas page) usata come **home** della Model-Driven App. Presenta 3 card operative e 4 KPI dinamici in un layout completamente responsivo.
+
+#### Layout responsivo (AutoLayout containers)
+
+La pagina è costruita con container AutoLayout annidati per adattarsi a qualsiasi larghezza dello schermo:
+
+```
+conRoot (Vertical, fills Parent.Width/Height, LayoutOverflowY: Scroll)
+├── [Header — titolo e sottotitolo]
+├── conCards (Horizontal, LayoutWrap: true)
+│   ├── conCardDashboard  (Vertical, FillPortions: 1, LayoutMinWidth: 280)
+│   ├── conCardList        (Vertical, FillPortions: 1, LayoutMinWidth: 280)
+│   └── conCardCreate      (Vertical, FillPortions: 1, LayoutMinWidth: 280)
+└── conStats (Horizontal, LayoutWrap: true)
+    ├── [Fascicoli Attivi]
+    ├── [Creati (7 giorni)]
+    ├── [Peso medio]
+    └── [Imputati totali]
+```
+
+- `conCards` usa `LayoutWrap: true` — le 3 card si dispongono su più righe quando lo schermo è stretto.
+- Ogni card ha `FillPortions: 1` e `LayoutMinWidth: 280` per distribuzione equa e soglia minima di wrapping.
+- `conStats` usa lo stesso pattern wrap per le 4 KPI stat box.
+
+#### KPI dinamici da Dataverse
+
+Data source: **Fascicoli** (`agc_fascicolo`). I 4 indicatori si aggiornano in tempo reale:
+
+| KPI | Formula Power Fx | Valore attuale (POC) |
+|---|---|---|
+| Fascicoli Attivi | `CountRows(Fascicoli)` | 19 |
+| Creati (7 giorni) | `CountRows(Filter(Fascicoli, 'Data creazione' >= DateAdd(Today(), -7, TimeUnit.Days)))` | 1 |
+| Peso medio | `Round(Average(Fascicoli, Peso), 1)` | 14.2 |
+| Imputati totali | `Sum(Fascicoli, 'N. imputati')` | 156 |
+
+#### Icone SVG inline
+
+Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 px, colore primario `#003366`):
+
+| Controllo | Card | Icona |
+|---|---|---|
+| `imgIconDashboard` | Cruscotto | Grafico a barre |
+| `imgIconList` | Lista Fascicoli | Documento con righe |
+| `imgIconCreate` | Nuovo Fascicolo | Cerchio con segno + |
+
+> **Nota:** le icone usano controlli `Image` con SVG data URI anziché il tipo `Icon` nativo, che non è supportato nel formato `.pa.yaml` e quindi non è utilizzabile via paste/import YAML.
+
+#### Pulsanti di navigazione
 
 | Pulsante | Azione | Navigazione Power Fx |
 |---|---|---|
-| **Creazione fascicolo** | Apre la form di creazione di un nuovo `agc_fascicolo` | `Launch("main.aspx", { pagetype: "entityrecord", etn: "agc_fascicolo" })` |
-| **Assegnazione fascicolo** | Apre l'area di Assegnazione (vista elenco fascicoli; variante: custom page dedicata) | `Launch("main.aspx", { pagetype: "entitylist", etn: "agc_fascicolo" })` |
-| **Cruscotto** | Redirect alla dashboard "Cruscotto ASPEN" | `Launch("main.aspx", { pagetype: "dashboard", dashboardId: "__DASHBOARD_ID__" })` |
+| **Nuovo fascicolo** | Apre la form di creazione di un nuovo `agc_fascicolo` nella stessa scheda | `Launch("https://...&pagetype=entityrecord&etn=agc_fascicolo", {}, LaunchTarget.Replace)` |
+| **Lista fascicoli** | Apre la vista operativa dei fascicoli nella stessa scheda | `Launch("https://...&pagetype=entitylist&etn=agc_fascicolo&viewid=4383387a-7597-4c57-af91-65c34a6c2562&viewType=1039", {}, LaunchTarget.Replace)` |
+| **Cruscotto ASPEN** | Redirect alla dashboard "Cruscotto ASPEN" nella stessa scheda | `Launch("https://...&pagetype=dashboard&id=d4cd81e8-5963-f111-ab0c-7ced8d72f54e&type=system&_canOverride=true", {}, LaunchTarget.Replace)` |
 
-**File sorgente: `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/`**
+#### File sorgente
+
+**Directory:** `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/`
 
 | File | Tipo | Descrizione |
 |---|---|---|
-| `Source/agc_aspenhome.pa.yaml` | Power Apps source (Power Fx YAML) | Definizione della custom page: header + 3 pulsanti con formule `OnSelect` di navigazione in-app |
+| `Source/agc_aspenhome.pa.yaml` | Power Apps source (Power Fx YAML) | ⚠️ **Riferimento storico** — contiene la versione iniziale (header + 3 pulsanti). La versione live in Power Apps Studio è stata significativamente evoluta con layout responsivo, KPI dinamici e icone SVG che non sono rappresentati in questo file |
 
-**Placeholder da valorizzare in ambiente** (documentati anche in testa al file `.pa.yaml`):
+> **⚠️ Divergenza sorgente locale / versione live:** Il file `.pa.yaml` nel repository rappresenta lo stato iniziale della custom page. La versione attualmente pubblicata in Power Apps Studio include container AutoLayout responsivi, KPI dinamici dalla tabella `agc_fascicolo` e icone SVG inline che non possono essere completamente rappresentati nel formato YAML flat. Per modifiche future, operare direttamente in **Power Apps Studio**; il file locale va considerato come riferimento storico.
+
+**Placeholder presenti nel file `.pa.yaml` (riferimento storico):**
 
 | Placeholder | Significato | Dove recuperarlo |
 |---|---|---|
@@ -208,15 +260,10 @@ Custom page (canvas page) usata come **home** della Model-Driven App, con 3 puls
 | `__ASSEGNA_PAGE__` | Nome logico della custom page di Assegnazione (solo se si usa una pagina dedicata) | Nome della custom page nella soluzione |
 
 **Note tecniche:**
-- La navigazione da una custom page verso pagine model-driven usa la funzione Power Fx `Launch("main.aspx", { … })`, i cui parametri ricalcano `Xrm.Navigation.navigateTo` (`pagetype`, `etn`, `dashboardId`, `name`).
-- Il file `.pa.yaml` è il **sorgente versionabile** della pagina; per pubblicarlo va impacchettato in `.msapp` (`pac canvas pack`) e importato nella soluzione target `ASPENPOC`, oppure i 3 pulsanti vanno ricreati nel designer copiando le formule `OnSelect`.
+- Per evitare l'apertura di una nuova scheda, i pulsanti usano `Launch(..., {}, LaunchTarget.Replace)`, che sostituisce la scheda corrente del browser.
+- La funzione `Navigate(...)` supporta navigazione inline verso tabelle, viste e form supportate, ma **non** supporta dashboard; per questo il pulsante Cruscotto usa `LaunchTarget.Replace`.
+- La versione live della pagina è stata costruita e iterata in **Power Apps Studio** con automazione Playwright; future modifiche vanno apportate direttamente nello Studio.
 - Con il PAC CLI attualmente disponibile, il rilascio della custom page non risulta fully automated end-to-end: è richiesto un **primo publish dal Maker Portal**.
-
-**Passi manuali residui (maker portal)** — necessari perché non esistono nel repo né l'App Module né il `.msapp` impacchettato:
-1. **Creare/importare la custom page** `agc_aspenhome` nella soluzione `ASPENPOC` (designer canvas o `pac canvas pack` del sorgente `.pa.yaml`; primo publish da Maker Portal).
-2. **Valorizzare i placeholder** (`__DASHBOARD_ID__`, ecc.) nelle formule `OnSelect` dei pulsanti.
-3. **Aggiungere la custom page alla Model-Driven App** dall'app designer (Pages > + New page > Custom page).
-4. **Impostarla come home**: nell'app designer selezionare la pagina e attivare **"Set as default"** (oppure ordinarla come prima voce di navigazione), quindi **Save & Publish**.
 
 ---
 
@@ -246,5 +293,4 @@ Custom page (canvas page) usata come **home** della Model-Driven App, con 3 puls
 
 **Partecipanti call 04/06/2026 (AGIC):** Chiara D'Innocenzi, Linda Tomasello, Vincenzo Picone, Giuseppe Scalabrino, Riccardo Vedovato, Luca Campoglioni  
 **Microsoft:** Daiana D'Agostino
-
 
