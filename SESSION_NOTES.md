@@ -4,6 +4,94 @@
 
 ---
 
+## Session 2026-07-06
+
+### What was done
+- **Migrazione tabelle Dataverse**: la tabella `agc_fascicolo` presentava una ghost relationship corrotta (`agc_CanestroName` nel SQL) che impediva la creazione di nuovi fascicoli. Come soluzione permanente sono state create due nuove tabelle pulite:
+  - `agc_fascicolo2` — sostituisce `agc_fascicolo` come tabella principale dei fascicoli
+  - `agc_canestrofascicolo` — sostituisce `agc_canestro` come tabella delle materie/competenze
+- **Migrazione dati**: 20 record migrati da `agc_fascicolo` → `agc_fascicolo2`.
+- **PCF `CaricoPerCanestro`**: aggiornato per interrogare `agc_fascicolo2`; lookup canestro ora letta come `_agc_canestrofascicolo_value`.
+- **PCF `CaricoMagistratiChart`**: modal aggiornato per usare i campi `agc_canestrofascicolo` / `agc_canestrofascicoloname`.
+- **PCF `StatoFascicoliChart`**: modal aggiornato per usare i campi `agc_canestrofascicolo` / `agc_canestrofascicoloname`.
+- **`agc_assignfascicolo.js`**: `updateRecord` aggiornato a `"agc_fascicolo2"`; controllo assegnazione usa `agc_canestrofascicolo`.
+- **`agc_assignfascicolodialog.html`**: endpoint aggiornato da `agc_fascicolos` a `agc_fascicolo2s`.
+- **Plugin `SetOwnerTeamPlugin`**: registrato su `agc_fascicolo2` (messaggio `Create`, stage Pre-Operation 20).
+
+### Decisions made
+- **Nuove tabelle anziché fix sulla tabella corrotta**: scelto approccio di creazione di tabelle pulite per evitare rischi di reintroduzione del problema a livello di metadati Dataverse.
+- **Naming**: `agc_fascicolo2` (non rinominata perché Dataverse non supporta il rinomino del LogicalName); `agc_canestrofascicolo` come nome più descrittivo per la tabella canestri.
+- **Migrazione dati**: i 20 record esistenti trasferiti manualmente prima dello switch del codice.
+
+### Current status
+- ✅ `agc_fascicolo2` operativa; creazione nuovi fascicoli funzionante.
+- ✅ `agc_canestrofascicolo` operativa come tabella canestri.
+- ✅ Tutti i PCF aggiornati per usare le nuove tabelle.
+- ✅ Ribbon dialog aggiornato per endpoint `agc_fascicolo2s`.
+- ✅ Plugin `SetOwnerTeamPlugin` attivo su `agc_fascicolo2`.
+- ✅ 20 record migrati correttamente.
+- ⚠️ Le tabelle originali `agc_fascicolo` e `agc_canestro` restano in ambiente ma non sono più usate dal codice applicativo.
+
+### Next steps
+1. Verificare in ambiente che la creazione di nuovi fascicoli su `agc_fascicolo2` sia stabile end-to-end.
+2. Valutare la dismissione (disattivazione) delle tabelle legacy `agc_fascicolo` e `agc_canestro` dopo periodo di stabilizzazione.
+3. Aggiornare la Custom Page "ASPEN Home" in Power Apps Studio: data source e URL di navigazione (`etn=agc_fascicolo2`).
+
+### Files changed
+- `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts` — query su `agc_fascicolo2`, lookup `_agc_canestrofascicolo_value`
+- `05 - Power Platform/PCF/CaricoMagistratiChart/index.ts` — modal campo `agc_canestrofascicolo`/`agc_canestrofascicoloname`
+- `05 - Power Platform/PCF-Pie/StatoFascicoliChart/index.ts` — modal campo `agc_canestrofascicolo`/`agc_canestrofascicoloname`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js` — `updateRecord("agc_fascicolo2")`, controllo `agc_canestrofascicolo`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolodialog.html` — endpoint `agc_fascicolo2s`
+- `README.md` — modello dati aggiornato, nota migrazione, sezione Plugin, riferimenti `agc_fascicolo2`/`agc_canestrofascicolo` in tutta la documentazione; item 10 Prossimi Passi marcato risolto
+- `SESSION_NOTES.md` — aggiunta sessione 2026-07-06
+
+---
+
+## Session 2026-07-06
+
+### What was done
+- **Migrazione completa agc_fascicolo → agc_fascicolo2** per bypassare la corruzione SQL nella tabella vecchia (ghost relationship `agc_canestro` causava `SqlException: Invalid column name 'agc_CanestroName'` su ogni schema change).
+- Creata `agc_fascicolo2` su Dataverse via REST API (MetadataId: `3ebfe566-5379-f111-ab0e-0022489974e1`) con tutti i campi + 2 relazioni (→ `agc_canestrofascicolo`, → `agc_giudice`). Il campo `agc_peso` ora è Decimal normale (non più formula, ValidForCreate/Update=1).
+- Migrati 20 record da `agc_fascicolos` → `agc_fascicolo2s` preservando il magistrato assegnato.
+- Aggiornati e caricati su Dataverse: PCF **CaricoPerCanestro** (entity `agc_fascicolo2`, field `_agc_canestrofascicolo_value`), **CaricoMagistratiChart**, **StatoFascicoliChart** (canestro field aggiornato nel modal).
+- Aggiornati e pubblicati su Dataverse: `agc_assignfascicolo.js` (updateRecord su `agc_fascicolo2`, control `agc_canestrofascicolo`) e `agc_assignfascicolodialog.html` (endpoint `agc_fascicolo2s`).
+- Registrato **SetOwnerTeamPlugin** su `agc_fascicolo2` (step ID: `764dea2a-7779-f111-ab0e-002248996a6d`, Pre-Create, stage 20).
+- Rimossa soluzione temporanea `AgicTempWR` da Dataverse e file temporanei dalla repo.
+- Commit `7ca5685` pushato su GitHub.
+
+### Decisions made
+- **`pac pcf push` workaround**: il comando fallisce sempre sul cleanup (file lock), ma il zip viene generato in `obj/PowerAppsToolsTemp_agc/bin/Debug/`. Soluzione operativa: `pac solution import --path <zip> --force-overwrite`. Questo è il **flusso standard** per i PCF da ora in poi.
+- **Publisher prefix per PCF**: i custom control sono registrati con prefix `agc` (non `cc`). Il prefix `cc` era errato e causava il conflitto "already created by another publisher". Usare sempre `--publisher-prefix agc` con `pac pcf push`.
+- **agc_fascicolo (vecchia)** lasciata intatta per ora — i 20 record storici restano come backup. Decisione su hide/disable rimandata alla prossima sessione.
+- La corruzione della solution `ASPENPOC` (ghost relationship ID: `1e8be637-4f63-f111-ab0c-7ced8d4558ae`) impedisce ancora l'export della solution — non impatta il funzionamento operativo ma blocca il pack automatico.
+
+### Current status
+- ✅ `agc_fascicolo2` operativa su Dataverse con 20 record migrati.
+- ✅ Tutti i PCF (CaricoPerCanestro, CaricoMagistratiChart, StatoFascicoliChart) aggiornati e caricati su Dataverse.
+- ✅ Webresource JS e HTML aggiornate e pubblicate.
+- ✅ Plugin SetOwnerTeamPlugin attivo su agc_fascicolo2.
+- ⚠️ Form di agc_fascicolo2 nel Maker Portal **non configurata** (i controlli PCF non sono ancora aggiunti alla form — da fare manualmente nel portal).
+- ⚠️ Test end-to-end creazione fascicolo **non ancora eseguito**.
+- ⚠️ Vecchia tabella `agc_fascicolo` ancora presente (non nascosta/disabilitata).
+
+### Next steps
+1. Aprire **Maker Portal** e configurare la form di `agc_fascicolo2`: aggiungere i controlli PCF (CaricoPerCanestro, CaricoMagistratiChart, StatoFascicoliChart) alla form principale.
+2. Eseguire test end-to-end: creare un nuovo fascicolo su `agc_fascicolo2`, verificare assegnazione magistrato, canestro, plugin SetOwnerTeam.
+3. Valutare se **nascondere o disabilitare** la vecchia tabella `agc_fascicolo` per evitare confusione agli utenti.
+4. Verificare il **cruscotto** (Custom Page Home) e aggiornare le query KPI che ancora puntano ad `agc_fascicolos`.
+
+### Files changed
+- `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts` — entity `agc_fascicolo2`, field `_agc_canestrofascicolo_value`
+- `05 - Power Platform/PCF/CaricoMagistratiChart/index.ts` — modal canestro field → `agc_canestrofascicolo`
+- `05 - Power Platform/PCF-Pie/StatoFascicoliChart/index.ts` — modal canestro field → `agc_canestrofascicolo`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js` — updateRecord su `agc_fascicolo2`, control `agc_canestrofascicolo`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolodialog.html` — endpoint `agc_fascicolo2s` (GET + PATCH)
+- `05 - Power Platform/PCF/tsconfig.json`, `eslint.config.mjs`, `PCF.pcfproj` — fix multi-project ESLint/tsconfig conflict per CaricoPerCanestro
+- `SESSION_NOTES.md` — aggiunta sessione 2026-07-06
+
+---
+
 ## Session 2026-06-26
 
 ### What was done

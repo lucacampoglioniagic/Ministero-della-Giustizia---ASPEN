@@ -53,7 +53,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 │   ├── Plugin-Custom-API/           # Plugin Dataverse / Custom API per logica assegnazione
 │   ├── PCF/                         # CaricoMagistratiChart — barre orizzontali carico magistrati
 │   ├── PCF-Pie/                     # StatoFascicoliChart — torta fascicoli per stato
-│   ├── AssegnaFascicolo/            # Ribbon button + dialog "Assegna Fascicolo" su agc_fascicolo
+│   ├── AssegnaFascicolo/            # Ribbon button + dialog "Assegna Fascicolo" su agc_fascicolo2
 │   └── Mockup/                      # Mockup visivi della UI (screenshot, bozze layout)
 
 📁 06 - Riferimenti Normativi e Tecnici/   # Normativa, lettere istituzionali, docs tecnici
@@ -81,7 +81,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ---
 
-## POC — stato attuale (26/06/2026)
+## POC — stato attuale (06/07/2026)
 
 **Ambiente Dataverse:** `LCC-MINISTEROGIUSTIZIA-DEMO` (https://lccministerogiustiziademo.crm4.dynamics.com)  
 **Publisher prefix:** `agc_`
@@ -90,12 +90,14 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 | Tabella Dataverse | LogicalName | Descrizione |
 |---|---|---|
-| Canestro | `agc_canestro` | Materie/competenze (es. Stupefacenti, Omicidio…) |
+| Canestro | `agc_canestrofascicolo` | Materie/competenze (es. Stupefacenti, Omicidio…) — ex `agc_canestro` |
 | Magistrato | `agc_giudice` | Giudici GIP/GUP con ruolo e stato attivo |
-| Fascicolo/Assegnazione | `agc_fascicolo` | Fascicoli con peso calcolato e lookup a magistrato+canestro |
+| Fascicolo/Assegnazione | `agc_fascicolo2` | Fascicoli con peso calcolato e lookup a magistrato+canestro — ex `agc_fascicolo` |
 | Configurazione | `agc_configurazione` | Parametri di sistema (`PesoLimite = 20`, `PesoLimiteCanestro = 30`) |
 
-**Colonne chiave `agc_fascicolo`:**
+> **Migrazione 06/07/2026:** le tabelle originali `agc_fascicolo` e `agc_canestro` sono state sostituite da `agc_fascicolo2` e `agc_canestrofascicolo`. La causa era una ghost relationship corrotta (`agc_CanestroName`) sulla tabella `agc_fascicolo` che impediva la creazione di nuovi fascicoli. Sono stati migrati 20 record. Commit: `7ca5685`.
+
+**Colonne chiave `agc_fascicolo2`:**
 
 | Colonna | LogicalName | Tipo |
 |---|---|---|
@@ -104,7 +106,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | N. imputazioni | `agc_numeroimputazioni` | Integer |
 | Punti imputati | `agc_puntiimputati` | Integer |
 | Punti imputazioni | `agc_puntiimputazioni` | Integer |
-| Canestro | `agc_canestro` | Lookup → agc_canestro |
+| Canestro | `agc_canestrofascicolo` | Lookup → agc_canestrofascicolo |
 | Magistrato assegnato | `agc_magistratoassegnato` | Lookup → agc_giudice |
 | Peso | `agc_peso` | Decimal (calcolato) |
 | Stato | `agc_statocaso` | OptionSet: 0=Validato, 1=Proposto, 2=Chiuso |
@@ -122,7 +124,7 @@ Grafico a barre orizzontali del carico per magistrato.
 - Esclude i fascicoli in stato **Chiuso** dal calcolo carico
 - Refresh automatico one-shot a 2s dal primo caricamento per riallineare i colori
 - **Legenda colori** inline sotto il grafico
-- **Click su barra** → modal con elenco fascicoli assegnati al magistrato
+- **Click su barra** → modal con elenco fascicoli assegnati al magistrato; colonna canestro letta da `agc_canestrofascicolo` / `agc_canestrofascicoloname`
 - **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_peso`
 
 #### `AgicAspen.CaricoPerCanestro` — `05 - Power Platform/PCF/CaricoPerCanestro/`
@@ -133,19 +135,19 @@ Grafico a barre del carico per canestro (materia giudiziaria).
   - 🔴 Rosso `#D13438` — carico ≥ soglia
 - Esclude i fascicoli in stato **Chiuso** dal calcolo carico
 - Empty state: `Nessun fascicolo aperto assegnato a questo magistrato.`
-- **OData fix**: lookup field letto come `_agc_canestro_value`; nome canestro via annotazione `@OData.Community.Display.V1.FormattedValue`
+- **OData fix**: query su `agc_fascicolo2`; lookup field canestro letto come `_agc_canestrofascicolo_value`; nome canestro via annotazione `@OData.Community.Display.V1.FormattedValue`
 
 #### `AgicAspen.StatoFascicoliChart` — `05 - Power Platform/PCF-Pie/`
 Grafico a torta distribuzione fascicoli per stato.
 - Verde = Validato, Blu = Proposto, Grigio = Chiuso
 - Tooltip con valore assoluto e percentuale
 - Selettore **Anno** (pill UI) con opzione `Tutti gli anni` + elenco annualità presenti nei dati
-- **Click su fetta** → modal con elenco fascicoli di quello stato
+- **Click su fetta** → modal con elenco fascicoli di quello stato; colonna canestro letta da `agc_canestrofascicolo` / `agc_canestrofascicoloname`
 - **Mapping nel designer:** `statoField` → `agc_statocaso`
 
 ### Ribbon button — Assegna / Chiudi Fascicolo
 
-Tasti custom **"Assegna Fascicolo"** e **"Chiudi Caso"** nella command bar della form `agc_fascicolo`.  
+Tasti custom **"Assegna Fascicolo"** e **"Chiudi Caso"** nella command bar della form `agc_fascicolo2`.  
 Visibili su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 
 **File sorgente: `05 - Power Platform/AssegnaFascicolo/`**
@@ -161,7 +163,7 @@ Visibili su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 **Comportamento del dialog (implementazione reale):**
 1. Carica lista magistrati da `agc_giudices` via REST (`/api/data/v9.2/agc_giudices`)
 2. Permette selezione multipla di magistrati **incompatibili** (evidenziati in giallo con badge contatore)
-3. **Conferma** → PATCH su `agc_fascicolos({id})` con navigation property `agc_Magistratoassegnato@odata.bind` → schermata successo → chiusura automatica
+3. **Conferma** → PATCH su `agc_fascicolo2s({id})` con navigation property `agc_Magistratoassegnato@odata.bind` → schermata successo → chiusura automatica
 4. **Annulla** → chiude il dialog
 5. **Refresh automatico**: alla chiusura, la form chiama `formContext.data.refresh(false)` e la griglia chiama `selectedControl.refresh()`
 6. **Assegnazione automatica**: il calcolo del carico magistrato esclude i fascicoli in stato **Chiuso**
@@ -178,6 +180,23 @@ Visibili su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 - Navigation property PATCH è **case-sensitive**: `agc_Magistratoassegnato` (M maiuscola)
 - `refreshRibbon(true)` nell'`onFormLoad` (delay 1s) è necessario per rivalutare le enable rules dopo il caricamento dati della form
 - La soluzione ribbon va **sempre reimportata** dopo modifiche a `RibbonDiff.xml`; il deploy della web resource JS non aggiorna il ribbon
+- `agc_assignfascicolo.js` chiama `updateRecord("agc_fascicolo2")` e verifica la lookup `agc_canestrofascicolo` per il controllo di assegnazione
+- `agc_assignfascicolodialog.html` interroga l'endpoint `agc_fascicolo2s` per il caricamento del record fascicolo
+
+### Plugin — SetOwnerTeamPlugin
+
+Plugin registrato su **`agc_fascicolo2`** per la gestione automatica del team proprietario del fascicolo alla creazione.
+
+| Proprietà | Valore |
+|---|---|
+| Assembly | `SetOwnerTeamPlugin` |
+| Tabella target | `agc_fascicolo2` |
+| Messaggio | `Create` |
+| Stage | `Pre-Operation (20)` |
+
+**Directory:** `05 - Power Platform/Plugin-Custom-API/`
+
+---
 
 ### App model-driven
 - Sitemap: **Operatività** (Fascicoli, Cruscotto) · **Anagrafiche** (Magistrati, Canestri) · **Impostazioni** (Configurazioni, accesso vincolato da privilegi)
@@ -212,7 +231,7 @@ conRoot (Vertical, fills Parent.Width/Height, LayoutOverflowY: Scroll)
 
 #### KPI dinamici da Dataverse
 
-Data source: **Fascicoli** (`agc_fascicolo`). I 4 indicatori si aggiornano in tempo reale:
+Data source: **Fascicoli** (`agc_fascicolo2`). I 4 indicatori si aggiornano in tempo reale:
 
 | KPI | Formula Power Fx | Valore attuale (POC) |
 |---|---|---|
@@ -237,8 +256,8 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 
 | Pulsante | Azione | Navigazione Power Fx |
 |---|---|---|
-| **Nuovo fascicolo** | Apre la form di creazione di un nuovo `agc_fascicolo` nella stessa scheda | `Launch("https://...&pagetype=entityrecord&etn=agc_fascicolo", {}, LaunchTarget.Replace)` |
-| **Lista fascicoli** | Apre la vista operativa dei fascicoli nella stessa scheda | `Launch("https://...&pagetype=entitylist&etn=agc_fascicolo&viewid=4383387a-7597-4c57-af91-65c34a6c2562&viewType=1039", {}, LaunchTarget.Replace)` |
+| **Nuovo fascicolo** | Apre la form di creazione di un nuovo `agc_fascicolo2` nella stessa scheda | `Launch("https://...&pagetype=entityrecord&etn=agc_fascicolo2", {}, LaunchTarget.Replace)` |
+| **Lista fascicoli** | Apre la vista operativa dei fascicoli nella stessa scheda | `Launch("https://...&pagetype=entitylist&etn=agc_fascicolo2&viewid=4383387a-7597-4c57-af91-65c34a6c2562&viewType=1039", {}, LaunchTarget.Replace)` |
 | **Cruscotto ASPEN** | Redirect alla dashboard "Cruscotto ASPEN" nella stessa scheda | `Launch("https://...&pagetype=dashboard&id=d4cd81e8-5963-f111-ab0c-7ced8d72f54e&type=system&_canOverride=true", {}, LaunchTarget.Replace)` |
 
 #### File sorgente
@@ -249,7 +268,7 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 |---|---|---|
 | `Source/agc_aspenhome.pa.yaml` | Power Apps source (Power Fx YAML) | ⚠️ **Riferimento storico** — contiene la versione iniziale (header + 3 pulsanti). La versione live in Power Apps Studio è stata significativamente evoluta con layout responsivo, KPI dinamici e icone SVG che non sono rappresentati in questo file |
 
-> **⚠️ Divergenza sorgente locale / versione live:** Il file `.pa.yaml` nel repository rappresenta lo stato iniziale della custom page. La versione attualmente pubblicata in Power Apps Studio include container AutoLayout responsivi, KPI dinamici dalla tabella `agc_fascicolo` e icone SVG inline che non possono essere completamente rappresentati nel formato YAML flat. Per modifiche future, operare direttamente in **Power Apps Studio**; il file locale va considerato come riferimento storico.
+> **⚠️ Divergenza sorgente locale / versione live:** Il file `.pa.yaml` nel repository rappresenta lo stato iniziale della custom page. La versione attualmente pubblicata in Power Apps Studio include container AutoLayout responsivi, KPI dinamici dalla tabella `agc_fascicolo2` e icone SVG inline che non possono essere completamente rappresentati nel formato YAML flat. Per modifiche future, operare direttamente in **Power Apps Studio**; il file locale va considerato come riferimento storico.
 
 **Placeholder presenti nel file `.pa.yaml` (riferimento storico):**
 
@@ -278,7 +297,7 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 7. **Storico assegnazioni** (audit trail su tabella dedicata)
 8. Assegnazione **bulk** da griglia (selezione multipla fascicoli)
 9. Persistere le **incompatibilità** su Dataverse (tabella o campo dedicato)
-10. Risolvere in ambiente l'errore SQL `0x80044150` su apertura/assegnazione record **Canestro** (riallineamento metadati e, se necessario, escalation Microsoft)
+10. ✅ **Risolto (06/07/2026)** — errore SQL `0x80044150` su record Canestro: causa identificata in ghost relationship `agc_CanestroName` sulla tabella `agc_fascicolo`; risolto con migrazione a `agc_fascicolo2` + `agc_canestrofascicolo` (20 record migrati, commit `7ca5685`).
 11. Strategia migrazione storico + integrazione **SICP**
 
 ---
