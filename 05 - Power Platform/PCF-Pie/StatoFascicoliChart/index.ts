@@ -110,10 +110,7 @@ export class StatoFascicoliChart implements ComponentFramework.StandardControl<
     for (const id of dataset.sortedRecordIds) {
       const record = dataset.records[id];
       const year = this._extractYear(record);
-      if (
-        this._selectedYear !== "all" &&
-        year !== Number(this._selectedYear)
-      ) {
+      if (this._selectedYear !== "all" && year !== Number(this._selectedYear)) {
         continue;
       }
 
@@ -127,8 +124,8 @@ export class StatoFascicoliChart implements ComponentFramework.StandardControl<
           record.getFormattedValue("agc_magistratoassegnatoname") ||
           "—",
         canestro:
-          record.getFormattedValue("agc_canestro") ||
-          record.getFormattedValue("agc_canestroname") ||
+          record.getFormattedValue("agc_canestrofascicolo") ||
+          record.getFormattedValue("agc_canestrofascicoloname") ||
           "—",
         peso: Number(record.getValue("agc_peso")) || 0,
         data: record.getFormattedValue("agc_datacaso") || "—",

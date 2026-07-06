@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <EntityRelationships xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <EntityRelationship Name="agc_fascicolo_Canestro_agc_canestro" />
+
   <EntityRelationship Name="agc_fascicolo_Magistratoassegnato_agc_giudice" />
   <EntityRelationship Name="business_unit_agc_fascicolo" />
   <EntityRelationship Name="lk_agc_fascicolo_createdby" />
@@ -8,4 +8,6 @@
   <EntityRelationship Name="owner_agc_fascicolo" />
   <EntityRelationship Name="team_agc_fascicolo" />
   <EntityRelationship Name="user_agc_fascicolo" />
+  <EntityRelationship Name="agc_fascicolo2_Canestrofascicolo_agc_canestrofascicolo" />
+  <EntityRelationship Name="agc_fascicolo2_Magistratoassegnato_agc_giudice" />
 </EntityRelationships>

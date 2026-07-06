@@ -1,1 +1,1 @@
-agc_peso: =agc_numeroimputati + agc_numeroimputazioni + 1 + agc_Canestro.agc_pesocanestro
+agc_peso: =agc_numeroimputati + agc_numeroimputazioni + 1

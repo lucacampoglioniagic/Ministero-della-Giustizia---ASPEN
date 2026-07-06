@@ -495,7 +495,7 @@
             }).join(" or ");
 
             return fetch(
-              orgUrl + "/api/data/v9.2/agc_fascicolos?$select=agc_peso,agc_statocaso,_agc_magistratoassegnato_value&$filter=(" + filter + ") and agc_peso ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
+              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_peso,agc_statocaso,_agc_magistratoassegnato_value&$filter=(" + filter + ") and agc_peso ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
               { headers: apiHeaders }
             )
               .then(function (r) { return r.json(); })
@@ -519,7 +519,7 @@
                 });
 
                 return fetch(
-                  orgUrl + "/api/data/v9.2/agc_fascicolos(" + fascicoloId + ")",
+                  orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")",
                   {
                     method: "PATCH",
                     headers: Object.assign({}, apiHeaders, {

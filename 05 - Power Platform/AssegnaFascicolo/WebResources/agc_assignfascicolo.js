@@ -78,7 +78,7 @@ AgicAspen.AssegnaFascicolo = (function () {
             if (!result.confirmed) return;
 
             Xrm.Utility.showProgressIndicator("Chiusura fascicolo in corso...");
-            return Xrm.WebApi.updateRecord("agc_fascicolo", id, {
+            return Xrm.WebApi.updateRecord("agc_fascicolo2", id, {
                 agc_statocaso: STATO_CHIUSO
             }).then(function () {
                 return formContext.data.refresh(false).then(function () {
@@ -102,12 +102,9 @@ AgicAspen.AssegnaFascicolo = (function () {
             ? executionContext.getFormContext()
             : executionContext;
 
-        // Disabilita il campo Canestro: la relazione è in stato ghost nell'ambiente POC.
-        // Workaround temporaneo finché il ticket Microsoft non risolve la corruzione metadata.
-        // Il campo resta visibile (read-only) ma non modificabile, evitando l'errore 400 al salvataggio.
         try {
-            var canestroCtrl = formContext.getControl("agc_canestro");
-            if (canestroCtrl) canestroCtrl.setDisabled(true);
+            var canestroCtrl = formContext.getControl("agc_canestrofascicolo");
+            if (canestroCtrl) canestroCtrl.setDisabled(false);
         } catch (e) { /* ignore */ }
 
         setTimeout(function () {

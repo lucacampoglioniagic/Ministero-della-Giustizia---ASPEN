@@ -73,8 +73,8 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
     this._renderLoading();
     this._context.webAPI
       .retrieveMultipleRecords(
-        "agc_fascicolo",
-        `?$select=agc_fascicoloid,agc_peso,agc_statocaso,_agc_canestro_value` +
+        "agc_fascicolo2",
+        `?$select=agc_fascicoloid,agc_peso,agc_statocaso,_agc_canestrofascicolo_value` +
           `&$filter=_agc_magistratoassegnato_value eq ${magistratoId} and agc_peso ne null`,
       )
       .then((res) => {
@@ -82,10 +82,10 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
         for (const f of res.entities) {
           if (this._isClosedFascicolo(f as Record<string, unknown>)) continue;
 
-          const cId = (f["_agc_canestro_value"] as string) ?? "__nessuno__";
+          const cId = (f["_agc_canestrofascicolo_value"] as string) ?? "__nessuno__";
           const cName =
             (f[
-              "_agc_canestro_value@OData.Community.Display.V1.FormattedValue"
+              "_agc_canestrofascicolo_value@OData.Community.Display.V1.FormattedValue"
             ] as string) ?? "Senza canestro";
           const peso = (f["agc_peso"] as number) ?? 0;
           if (!map[cId])
