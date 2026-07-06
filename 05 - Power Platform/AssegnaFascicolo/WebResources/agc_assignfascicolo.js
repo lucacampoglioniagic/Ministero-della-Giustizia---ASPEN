@@ -101,6 +101,15 @@ AgicAspen.AssegnaFascicolo = (function () {
         var formContext = executionContext.getFormContext
             ? executionContext.getFormContext()
             : executionContext;
+
+        // Disabilita il campo Canestro: la relazione è in stato ghost nell'ambiente POC.
+        // Workaround temporaneo finché il ticket Microsoft non risolve la corruzione metadata.
+        // Il campo resta visibile (read-only) ma non modificabile, evitando l'errore 400 al salvataggio.
+        try {
+            var canestroCtrl = formContext.getControl("agc_canestro");
+            if (canestroCtrl) canestroCtrl.setDisabled(true);
+        } catch (e) { /* ignore */ }
+
         setTimeout(function () {
             try { formContext.ui.refreshRibbon(true); } catch (e) { /* ignore */ }
         }, 1000);
