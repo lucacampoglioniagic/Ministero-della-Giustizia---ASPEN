@@ -5,7 +5,17 @@
 # page usata come HOME della Model-Driven App ASPEN.
 #
 # Data Source: Fascicoli (agc_fascicolo2) - Microsoft Dataverse
-# KPI dinamici: CountRows, Filter by 'Data creazione', Average('Peso calcolato'), Sum('N. imputati')
+# KPI dinamici: CountIf, Filter by 'Data creazione', Average('Peso calcolato'), Sum('N. imputati')
+#
+# NOTA CACHE CountRows (07/07/2026): il KPI "FASCICOLI ATTIVI" usava CountRows(Fascicoli).
+# Su data source Dataverse senza filtro, Power Fx ottimizza CountRows() in una chiamata
+# RetrieveTotalRecordCount, che restituisce una statistica SQL aggiornata in modo
+# asincrono/periodico da Dataverse (NON in tempo reale). Dopo la pulizia dei duplicati
+# in agc_fascicolo2 (40 -> 21 record) il KPI continuava a mostrare 40, perché la
+# statistica cache non si era ancora aggiornata. Fix: sostituito con
+# CountIf(Fascicoli, true), che forza sempre una query aggregata live
+# ($apply=aggregate($count as result)). Qualsiasi futuro CountRows() su data source
+# Dataverse senza filtro va valutato con lo stesso sospetto.
 #
 # NOTA MIGRAZIONE (vedi README.md > "Migrazione a Fascicolo 2 e Canestro fascicolo"):
 # la pagina è stata migrata dalla vecchia tabella agc_fascicolo alla nuova
@@ -346,7 +356,7 @@ Screens:
       - lblStat1Value:
           Control: Label
           Properties:
-            Text: =Text(CountRows(Fascicoli), "#,##0")
+            Text: =Text(CountIf(Fascicoli, true), "#,##0")
             Color: =RGBA(11, 52, 106, 1)
             Size: =28
             FontWeight: =FontWeight.Semibold

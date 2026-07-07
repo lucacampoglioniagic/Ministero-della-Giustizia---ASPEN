@@ -138,6 +138,30 @@ Durante la verifica visiva post-migrazione, la form "Fascicoli" del magistrato m
 - `SESSION_NOTES.md`
 - Dataverse live: canvas app "ASPEN HOME" ripubblicata da Power Apps Studio; solution temporanea `TempAspenHomeExport` eliminata
 
+### Update 07/07/2026 (2) — KPI "Fascicoli Attivi" mostrava 40 invece di 21 (cache `RetrieveTotalRecordCount`)
+
+**Segnalazione utente**: "Perché mi dice che i fascicoli aperti sono 40? Sono 21 i fascicoli nella tabella agc_fascicolo2".
+
+**Verifica dati**: interrogata direttamente `agc_fascicolo2s` via Web API — confermati esattamente **21 record**, tutti con `statecode=0` (attivi). Nessuna incoerenza nei dati.
+
+**Causa**: la formula del KPI "Fascicoli Attivi" era `Text(CountRows(Fascicoli), "#,##0")`. Su un data source Dataverse **senza filtro**, Power Fx ottimizza `CountRows()` in una chiamata `RetrieveTotalRecordCount(EntityNames=["agc_fascicolo2"])`, che restituisce **una statistica SQL mantenuta da Dataverse e aggiornata in modo asincrono/periodico**, non un conteggio live. Verificato chiamando direttamente l'endpoint: restituiva `Count: 40`, un residuo della situazione precedente alla pulizia dei duplicati (la tabella era passata da 40 → 20 → 21 record in sessioni precedenti, ma la statistica cache non si era mai aggiornata).
+
+**Decisione utente**: il KPI deve mostrare il conteggio totale corretto di tutti i record (non filtrato per stato "attivo/chiuso") — chiesto esplicitamente via domanda di chiarimento, l'utente ha confermato questa opzione.
+
+**Fix**: nel vero editor di Power Apps Studio (stesso percorso di accesso già documentato: App Designer → hover "Home" → icona matita "Modifica pagina personalizzata"), individuato il controllo `lblStat1Value` (`Screen1 > conRoot > conStats > conStat1`) e sostituita la formula con `Text(CountIf(Fascicoli, true), "#,##0")`. `CountIf(DataSource, true)` forza sempre una query aggregata live (`$apply=aggregate($count as result)`), bypassando la statistica cache. Utile conferma: Power Apps Studio mostra nativamente un tooltip di warning sulla formula `CountRows`: *"CountRows può restituire un valore memorizzato nella cache. Usa CountIf(DataSource, true) per ottenere il conteggio più recente."*
+
+**Pubblicazione**: cliccato **Pubblica → "Pubblica questa versione"** nell'editor Studio (notifica "Publish successful — ASPEN HOME is now available to everyone").
+
+**Verifica finale**: ricaricata la pagina live — il KPI "Fascicoli Attivi" mostra ora **21**, coerente con "Creati (7 giorni)" = 21 (unico fascicolo/tutti creati di recente in questo ambiente demo). Verificata anche la network request: la vecchia chiamata `RetrieveTotalRecordCount` su `agc_fascicolo2` non compare più; al suo posto `agc_fascicolo2s?$apply=aggregate($count as result)`, una query live.
+
+**Lezione tecnica riutilizzabile**: qualsiasi uso futuro di `CountRows(DataSource)` **senza filtro** su un data source Dataverse in un'app canvas va considerato a rischio di mostrare un conteggio stale/cache. Preferire sempre `CountIf(DataSource, true)` quando serve un conteggio esatto e aggiornato in tempo reale.
+
+**Files changed**:
+- `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/agc_aspenhome.pa.yaml` (formula KPI "Fascicoli Attivi" `CountRows` → `CountIf`, nuova nota tecnica in testa al file)
+- `README.md` (tabella KPI aggiornata: formula e valore "Fascicoli Attivi"; nuova nota tecnica sulla cache `RetrieveTotalRecordCount`; Prossimi passi item 17)
+- `SESSION_NOTES.md`
+- Dataverse live: canvas app "ASPEN HOME" ripubblicata da Power Apps Studio (secondo publish della giornata)
+
 ---
 
 ## Session 2026-07-06
