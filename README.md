@@ -101,19 +101,21 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 **Colonne chiave `agc_fascicolo2`:**
 
-| Colonna | LogicalName | Tipo |
-|---|---|---|
-| Numero RG | `agc_numeroregistrogenerale` | String |
-| N. imputati | `agc_numeroimputati` | Integer |
-| N. imputazioni | `agc_numeroimputazioni` | Integer |
-| Punti imputati | `agc_puntiimputati` | Integer |
-| Punti imputazioni | `agc_puntiimputazioni` | Integer |
-| Canestro | `agc_canestrofascicolo` | Lookup → agc_canestrofascicolo |
-| Magistrato assegnato | `agc_magistratoassegnato` | Lookup → agc_giudice |
-| Peso (dismesso) | `agc_peso` | Decimal — **NON PIÙ USATO** dal 07/07/2026: rimosso da form/viste, sostituito da `agc_pesocalcolato`. Rimane in schema solo come colonna storica |
-| Peso calcolato | `agc_pesocalcolato` | Decimal — campo calcolato (formula), sostituisce `agc_peso` in tutti i PCF, dashboard e logiche di assegnazione automatica |
-| Stato | `agc_statocaso` | OptionSet: 0=Validato, 1=Proposto, 2=Chiuso |
-| Data | `agc_datacaso` | DateTime |
+| Colonna | LogicalName | Tipo | Obbligatorio |
+|---|---|---|---|
+| Numero RG | `agc_numeroregistrogenerale` | String | ✅ **Sì** (ApplicationRequired) |
+| N. imputati | `agc_numeroimputati` | Integer | ✅ **Sì** (ApplicationRequired) |
+| N. imputazioni | `agc_numeroimputazioni` | Integer | ✅ **Sì** (ApplicationRequired) |
+| Canestro fascicolo | `agc_canestrofascicolo` | Lookup → agc_canestrofascicolo | ✅ **Sì** (ApplicationRequired) |
+| Punti imputati | `agc_puntiimputati` | Integer | No |
+| Punti imputazioni | `agc_puntiimputazioni` | Integer | No |
+| Magistrato assegnato | `agc_magistratoassegnato` | Lookup → agc_giudice | No |
+| Peso (dismesso) | `agc_peso` | Decimal — **NON PIÙ USATO** dal 07/07/2026: rimosso da form/viste, sostituito da `agc_pesocalcolato`. Rimane in schema solo come colonna storica | No |
+| Peso calcolato | `agc_pesocalcolato` | Decimal — campo calcolato (formula), sostituisce `agc_peso` in tutti i PCF, dashboard e logiche di assegnazione automatica | No (calcolato) |
+| Stato | `agc_statocaso` | OptionSet: 0=Validato, 1=Proposto, 2=Chiuso | No |
+| Data | `agc_datacaso` | DateTime | No |
+
+> **Obbligatorietà campi (07/07/2026):** su richiesta del cliente sono stati impostati come **ApplicationRequired** (obbligatori in form, bloccanti al salvataggio) i campi Numero RG, N. imputati, N. imputazioni e Canestro fascicolo. Verificato via metadati Dataverse (`EntityDefinitions(agc_fascicolo2)/Attributes`).
 
 **Tabella `agc_canestrofascicolo` (13 record, popolati il 07/07/2026 da `agc_canestro`):**
 
@@ -263,10 +265,14 @@ Data source: **Fascicoli** (`agc_fascicolo2`). I 4 indicatori si aggiornano in t
 
 | KPI | Formula Power Fx | Valore attuale (POC) |
 |---|---|---|
-| Fascicoli Attivi | `CountRows(Fascicoli)` | 19 |
-| Creati (7 giorni) | `CountRows(Filter(Fascicoli, 'Data creazione' >= DateAdd(Today(), -7, TimeUnit.Days)))` | 1 |
-| Peso medio | `Round(Average(Fascicoli, Peso), 1)` | 14.2 |
-| Imputati totali | `Sum(Fascicoli, 'N. imputati')` | 156 |
+| Fascicoli Attivi | `CountRows(Fascicoli)` | 40 |
+| Creati (7 giorni) | `CountRows(Filter(Fascicoli, 'Data creazione' >= DateAdd(Today(), -7, TimeUnit.Days)))` | 21 |
+| Peso medio | `Round(Average(Fascicoli, 'Peso calcolato'), 1)` | 13,9 |
+| Imputati totali | `Sum(Fascicoli, 'N. imputati')` | 171 |
+
+> ✅ **Fix 07/07/2026 — custom page ancora legata alla vecchia tabella `agc_fascicolo`:** dopo la migrazione a `agc_fascicolo2` la pagina Home continuava a interrogare (in produzione) `agc_fascicolo`/`Peso` invece di `agc_fascicolo2`/`Peso calcolato` (URL `Launch()` delle card e formula KPI "Peso medio"). Corretti sia il documento canvas (`DataSources/Fascicoli.json`, formula `Average(Fascicoli, 'Peso calcolato')`, URL delle 3 card) sia la cache di schema `pkgs/TableDefinitions/Fascicoli.json`.
+>
+> ⚠️ **Lezione tecnica importante:** per una custom page/canvas app embeddata in una Model-Driven App, **`pac solution import --publish-changes` NON è sufficiente** a rendere effettiva la modifica lato runtime. Il comando aggiorna correttamente il documento `.msapp` in Dataverse (verificato ispezionando il pacchetto ri-esportato), ma il **player pubblicato continua a servire la versione compilata precedente** — non è cache del browser (verificato svuotando Cache Storage/IndexedDB/Service Worker via CDP), ma una cache lato piattaforma legata alla compilazione. L'unico modo per invalidarla è aprire la pagina nel **vero editor di Power Apps Studio** (App Designer della Model-Driven App → hover sulla pagina "Home" nell'albero → icona a matita "Modifica pagina personalizzata" — **non** il semplice click sul nome pagina, che mostra solo un'anteprima in sola lettura del player pubblicato) e cliccare **Pubblica → "Pubblica questa versione"**. Solo questa azione ricompila e invalida la cache del player pubblicato. Verificato post-fix: tutte le query di rete della pagina ora puntano a `agc_fascicolo2s` (incluso `RetrieveTotalRecordCount`, `$apply=aggregate(agc_pesocalcolato ...)`) e i 4 KPI mostrano valori coerenti; i pulsanti "Apri elenco" e "Crea ora" navigano correttamente su `agc_fascicolo2`.
 
 #### Icone SVG inline
 
@@ -285,7 +291,7 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 | Pulsante | Azione | Navigazione Power Fx |
 |---|---|---|
 | **Nuovo fascicolo** | Apre la form di creazione di un nuovo `agc_fascicolo2` nella stessa scheda | `Launch("https://...&pagetype=entityrecord&etn=agc_fascicolo2", {}, LaunchTarget.Replace)` |
-| **Lista fascicoli** | Apre la vista operativa dei fascicoli nella stessa scheda | `Launch("https://...&pagetype=entitylist&etn=agc_fascicolo2&viewid=4383387a-7597-4c57-af91-65c34a6c2562&viewType=1039", {}, LaunchTarget.Replace)` |
+| **Lista fascicoli** | Apre la vista operativa dei fascicoli nella stessa scheda | `Launch("https://...&pagetype=entitylist&etn=agc_fascicolo2&viewid=66ef2ecc-32ca-4275-901c-80f0637f1003&viewType=1039", {}, LaunchTarget.Replace)` |
 | **Cruscotto ASPEN** | Redirect alla dashboard "Cruscotto ASPEN" nella stessa scheda | `Launch("https://...&pagetype=dashboard&id=d4cd81e8-5963-f111-ab0c-7ced8d72f54e&type=system&_canOverride=true", {}, LaunchTarget.Replace)` |
 
 #### File sorgente
@@ -294,7 +300,7 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 
 | File | Tipo | Descrizione |
 |---|---|---|
-| `Source/agc_aspenhome.pa.yaml` | Power Apps source (Power Fx YAML) | ⚠️ **Riferimento storico** — contiene la versione iniziale (header + 3 pulsanti). La versione live in Power Apps Studio è stata significativamente evoluta con layout responsivo, KPI dinamici e icone SVG che non sono rappresentati in questo file |
+| `Source/agc_aspenhome.pa.yaml` | Power Apps source (Power Fx YAML) | ⚠️ **Riferimento storico** — contiene la versione iniziale (header + 3 pulsanti), aggiornata il 07/07/2026 solo nei riferimenti a tabella/campo (`agc_fascicolo2`, `Peso calcolato`, viewid). La versione live in Power Apps Studio è stata significativamente evoluta con layout responsivo, KPI dinamici e icone SVG che non sono rappresentati in questo file |
 
 > **⚠️ Divergenza sorgente locale / versione live:** Il file `.pa.yaml` nel repository rappresenta lo stato iniziale della custom page. La versione attualmente pubblicata in Power Apps Studio include container AutoLayout responsivi, KPI dinamici dalla tabella `agc_fascicolo2` e icone SVG inline che non possono essere completamente rappresentati nel formato YAML flat. Per modifiche future, operare direttamente in **Power Apps Studio**; il file locale va considerato come riferimento storico.
 
@@ -330,6 +336,8 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 12. ✅ **Risolto (07/07/2026)** — pulizia dati post-migrazione: rimossi 20 record duplicati da `agc_fascicolo2` (migrazione era stata eseguita due volte), popolata `agc_canestrofascicolo` con i 13 canestri storici (da `agc_canestro`), riassociati 18/20 fascicoli al rispettivo canestro (2 fascicoli — `2024` e `RG-2026/11122` — non avevano canestro nemmeno nella tabella storica, restano senza associazione). Vedi `SESSION_NOTES.md` — sessione 2026-07-07.
 13. Dismissione definitiva (disattivazione/hide) delle tabelle legacy `agc_fascicolo` e `agc_canestro`, ora **non più utilizzate** e mantenute solo come backup storico
 14. ✅ **Risolto (07/07/2026)** — migrazione campo Peso → Peso calcolato su `agc_fascicolo2`: `agc_peso` rimosso da form/viste e sostituito da `agc_pesocalcolato` (campo formula). Aggiornati `CaricoPerCanestro`, `StatoFascicoliChart`, il binding `pesoField` di `CaricoMagistratiChart` nel dashboard, le 2 view del cruscotto e la logica di assegnazione automatica (`agc_assignfascicolodialog.html`). Vedi `SESSION_NOTES.md` — sessione 2026-07-07.
+15. ✅ **Risolto (07/07/2026)** — obbligatorietà campi `agc_fascicolo2`: impostati come **ApplicationRequired** Numero RG, N. imputati, N. imputazioni e Canestro fascicolo (vedi tabella "Colonne chiave" sopra).
+16. ✅ **Risolto (07/07/2026)** — custom page "ASPEN Home" ancora legata alla vecchia tabella `agc_fascicolo`/`Peso`: corretta e ripubblicata via Power Apps Studio (non solo `pac solution import`). Vedi nota tecnica nella sezione "Custom Page — Home ASPEN" sopra e `SESSION_NOTES.md` — sessione 2026-07-07.
 
 ---
 

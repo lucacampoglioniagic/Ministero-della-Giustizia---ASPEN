@@ -4,11 +4,16 @@
 # Sorgente Power Fx (formato Power Apps YAML / "Power Apps source") della custom
 # page usata come HOME della Model-Driven App ASPEN.
 #
-# Data Source: Fascicoli (agc_fascicolo) - Microsoft Dataverse
-# KPI dinamici: CountRows, Filter by 'Data creazione', Average(Peso), Sum('N. imputati')
+# Data Source: Fascicoli (agc_fascicolo2) - Microsoft Dataverse
+# KPI dinamici: CountRows, Filter by 'Data creazione', Average('Peso calcolato'), Sum('N. imputati')
+#
+# NOTA MIGRAZIONE (vedi README.md > "Migrazione a Fascicolo 2 e Canestro fascicolo"):
+# la pagina è stata migrata dalla vecchia tabella agc_fascicolo alla nuova
+# agc_fascicolo2. Il campo "Peso" (vecchia tabella) è stato sostituito dal campo
+# calcolato "Peso calcolato" (agc_pesocalcolato) sulla nuova tabella.
 #
 # La pagina espone 3 pulsanti:
-#   1) Creazione fascicolo   -> apre la form di creazione di un nuovo agc_fascicolo
+#   1) Creazione fascicolo   -> apre la form di creazione di un nuovo agc_fascicolo2
 #   2) Assegnazione fascicolo-> apre l'area/pagina di Assegnazione fascicoli
 #   3) Cruscotto             -> redirect alla dashboard "Cruscotto ASPEN"
 #
@@ -32,12 +37,25 @@
 #                      assenza di una custom page dedicata, il pulsante 2 apre la
 #                      vista elenco dei fascicoli "Da assegnare" (vedi OnSelect).
 #
-# Tabella fascicolo (già esistente nel modello dati POC): agc_fascicolo
+# Tabella fascicolo (nuova tabella, sostituisce la legacy agc_fascicolo): agc_fascicolo2
 # ----------------------------------------------------------------------------
 # NOTA DEPLOY: questo file è il sorgente leggibile/versionabile della pagina.
 # Per pubblicarlo serve impacchettarlo in .msapp (pac canvas pack) e importarlo
 # nella soluzione, oppure ricreare i 3 pulsanti nel designer della custom page
 # copiando le formule OnSelect qui sotto. Vedi README.md > "App model-driven".
+#
+# ATTENZIONE - IMPORTANTE: per una custom page/canvas app embeddata in una
+# Model-Driven App, importare la soluzione con `pac solution import
+# --publish-changes` NON è sufficiente a rendere effettive le modifiche lato
+# runtime: aggiorna correttamente il documento .msapp in Dataverse (verificabile
+# ispezionando il pacchetto), ma il player pubblicato continua a servire la
+# versione compilata precedente (cache lato Dataverse/CDN, non browser). Per
+# rendere effettiva una modifica occorre APRIRE la pagina nel vero editor di
+# Power Apps Studio (App Designer della Model-Driven App > hover sulla pagina
+# "Home" nell'albero > icona a matita "Modifica pagina personalizzata", NON il
+# semplice click sul nome pagina che mostra solo un'anteprima in sola lettura)
+# e cliccare Pubblica > "Pubblica questa versione". Solo questa azione
+# ricompila e invalida correttamente la cache del player pubblicato.
 # ============================================================================
 
 App:
@@ -237,7 +255,7 @@ Screens:
             Y: =396
             OnSelect: |
               =Launch(
-                  "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entitylist&etn=agc_fascicolo&viewid=4383387a-7597-4c57-af91-65c34a6c2562&viewType=1039",
+                  "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entitylist&etn=agc_fascicolo2&viewid=66ef2ecc-32ca-4275-901c-80f0637f1003&viewType=1039",
                   {},
                   LaunchTarget.Replace
               )
@@ -276,7 +294,7 @@ Screens:
             Y: =396
             OnSelect: |
               =Launch(
-                  "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entityrecord&etn=agc_fascicolo",
+                  "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entityrecord&etn=agc_fascicolo2",
                   {},
                   LaunchTarget.Replace
               )
@@ -370,7 +388,7 @@ Screens:
       - lblStat3Value:
           Control: Label
           Properties:
-            Text: =Text(Round(Average(Fascicoli, Peso), 1), "#,##0.0")
+            Text: =Text(Round(Average(Fascicoli, 'Peso calcolato'), 1), "#,##0.0")
             Color: =RGBA(11, 52, 106, 1)
             Size: =28
             FontWeight: =FontWeight.Semibold

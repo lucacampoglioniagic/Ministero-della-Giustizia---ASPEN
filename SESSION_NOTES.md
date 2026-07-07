@@ -116,6 +116,28 @@ Durante la verifica visiva post-migrazione, la form "Fascicoli" del magistrato m
 
 **Verifica**: ricaricata la form del magistrato "Dott.ssa Laura Verdi", tab "Fascicoli" — il grafico "Carico per Canestro" ora renderizza correttamente le barre per canestro (pesi 17.0 pt e 14.0 pt), escludendo correttamente dal calcolo il fascicolo con stato "Chiuso" (12.00), coerentemente con la logica `_isClosedFascicolo`. Nessun errore residuo in console riferito al componente.
 
+### Update 07/07/2026 (fine sessione) — Obbligatorietà campi + fix custom page "ASPEN Home"
+
+**1. Obbligatorietà campi `agc_fascicolo2`**: il cliente ha impostato come **ApplicationRequired** i campi Numero RG (`agc_numeroregistrogenerale`), N. imputati (`agc_numeroimputati`), N. imputazioni (`agc_numeroimputazioni`) e Canestro fascicolo (`agc_canestrofascicolo`). Verificato via `EntityDefinitions(agc_fascicolo2)/Attributes` (Web API) e documentato in `README.md` (nuova colonna "Obbligatorio" nella tabella "Colonne chiave `agc_fascicolo2`").
+
+**2. Fix custom page "ASPEN Home" ancora legata alla vecchia tabella**: la pagina Home (canvas page `agc_pagina1_61ee0`, canvasappid `66552b91-9f59-4952-8bb5-f95dab97291c`) continuava a interrogare in produzione `agc_fascicolo`/`Peso` invece di `agc_fascicolo2`/`Peso calcolato`, nonostante il documento canvas fosse già stato corretto (`DataSources/Fascicoli.json`, formula KPI, URL `Launch()` delle 3 card) e reimportato più volte con `pac solution import --force-overwrite --publish-changes`.
+
+**Causa**: per una custom page/canvas app embeddata in una Model-Driven App, l'import di soluzione aggiorna correttamente il documento `.msapp` in Dataverse (verificato più volte ispezionando il pacchetto ri-esportato: `References/DataSources.json` e `Properties.json` mostravano sempre il binding corretto a `agc_fascicolo2`), ma **non ricompila/ripubblica il player** — il runtime pubblicato continuava a servire la versione compilata precedente. Escluso un problema di cache browser (svuotata Cache Storage/IndexedDB/Service Worker via CDP `Storage.clearDataForOrigin`, nessun effetto) e di prefetch app-wide (altre pagine dell'app non mostravano riferimenti a `agc_fascicolo`).
+
+**Fix risolutivo**: individuato il vero editor Power Apps Studio per una custom page embeddata (non ovvio): Maker Portal → app "ASPEN" → "Modifica" (apre l'App Designer) → nell'albero "Pagine", **hover** sulla pagina "Home" → icona a matita "Modifica pagina personalizzata" (il semplice click sul nome pagina mostra solo un'anteprima in sola lettura del player pubblicato, non l'editor). Nell'editor Studio i valori KPI risultavano già corretti in live-preview (PESO MEDIO = 13,9, non vuoto), confermando che formula e data source erano giusti e il problema era solo di pubblicazione. Cliccato **Pubblica → "Pubblica questa versione"** (dopo aver chiuso il dialog "Salvataggio della pagina completato" con "Ignora").
+
+**Verifica finale**: ricaricata la pagina live — tutte le query di rete ora puntano a `agc_fascicolo2s` (incluso `RetrieveTotalRecordCount(EntityNames=["agc_fascicolo2"])` e `$apply=aggregate(agc_pesocalcolato with average as result)`); i 4 KPI mostrano FASCICOLI ATTIVI=40, CREATI (7 GIORNI)=21, PESO MEDIO=13,9, IMPUTATI TOTALI=171 (coerenti tra loro); i pulsanti "Apri elenco" e "Crea ora" navigano correttamente su `pagetype=entitylist&etn=agc_fascicolo2` e `pagetype=entityrecord&etn=agc_fascicolo2`. Nessun errore console riconducibile al fix (solo rumore framework UCI preesistente/non correlato: 404 logo webresource, "Can't find me-control-container").
+
+**Lezione tecnica riutilizzabile**: qualsiasi futura modifica a una custom page/canvas app applicata tramite il workaround di solution-import (necessario perché `pac canvas` non vede le custom page embeddate in una Model-Driven App) **deve essere seguita da un publish reale in Power Apps Studio**, non solo da `pac solution import --publish-changes`, altrimenti il fix non sarà mai visibile agli utenti nonostante il documento in Dataverse sia corretto.
+
+**File di riferimento aggiornato**: `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/agc_aspenhome.pa.yaml` — aggiornati i riferimenti a tabella (`agc_fascicolo` → `agc_fascicolo2`), campo (`Peso` → `'Peso calcolato'`) e viewid del pulsante "Apri elenco" (`4383387a-...` → `66ef2ecc-32ca-4275-901c-80f0637f1003`), più una nota tecnica sulla necessità del publish Studio. Rimossi tutti gli artefatti di scratch usati per il debug (export/estrazioni temporanee, screenshot) e la solution Dataverse temporanea `TempAspenHomeExport` usata come workaround per accedere alla custom page via `pac`.
+
+**Files changed**:
+- `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/agc_aspenhome.pa.yaml`
+- `README.md` (tabella "Colonne chiave" con obbligatorietà, KPI/pulsanti navigazione custom page, nota tecnica fix + lezione publish, Prossimi passi)
+- `SESSION_NOTES.md`
+- Dataverse live: canvas app "ASPEN HOME" ripubblicata da Power Apps Studio; solution temporanea `TempAspenHomeExport` eliminata
+
 ---
 
 ## Session 2026-07-06
