@@ -37,6 +37,20 @@
 - `SESSION_NOTES.md` — aggiunta sessione 2026-07-07
 - Dati Dataverse: `agc_fascicolo2` (20 record, deduplicati), `agc_canestrofascicolo` (13 record creati), associazioni fascicolo↔canestro aggiornate
 
+### Update 07/07/2026 (pomeriggio) — Fix binding dashboard "Cruscotto ASPEN"
+
+**Problema rilevato**: rispondendo alla domanda "il PCF del cruscotto recupera i canestri dalla nuova tabella?", verifica del `formxml` live del dashboard "Cruscotto ASPEN" (via Web API `systemforms`) ha rivelato che i controlli `CaricoMagistratiChart` e `StatoFascicoliChart` erano ancora bindati (tramite `TargetEntityType` e `ViewId` del dataset) alle view Dataverse **"Fascicoli aperti"** e **"Fascicoli (tutti)"**, entrambe costruite sulla **vecchia tabella `agc_fascicolo`** (dismessa). Il codice TypeScript dei due PCF era già stato aggiornato il 06/07 per leggere `agc_canestrofascicolo`/`agc_canestrofascicoloname`, ma questi campi non esistono sulla vecchia entità (che ha `agc_canestro`/`agc_canestroname`) — quindi il canestro nel modal sarebbe risultato vuoto, e i dati mostrati nel grafico non includevano gli aggiornamenti presenti solo su `agc_fascicolo2`.
+
+**Fix applicato**:
+1. Create due nuove view pubbliche su `agc_fascicolo2`: `Fascicoli 2 aperti (Cruscotto)` (id `9cdb22db-db79-f111-ab0e-70a8a581677c`) e `Fascicoli 2 (tutti) (Cruscotto)` (id `3c5b46e1-db79-f111-ab0e-70a8a581677c`), fetchxml/layoutxml equivalenti alle originali ma sull'entità `agc_fascicolo2` (con in più l'attributo `agc_canestrofascicolo`).
+2. Aggiornato il `formxml` del dashboard (`systemforms`, formid `d4cd81e8-5963-f111-ab0c-7ced8d72f54e`): sostituito `TargetEntityType` (`agc_fascicolo` → `agc_fascicolo2`) e `ViewId` (verso le nuove view) su entrambi i controlli custom.
+3. Pubblicazione con `PublishAllXml`.
+4. Verificato che il `formxml` risultante non contiene più riferimenti a `agc_fascicolo` (solo `agc_fascicolo2`, 10 occorrenze).
+
+**Nota**: `CaricoPerCanestro` (sulla form Magistrato) non era interessato — interroga `agc_fascicolo2` direttamente via WebAPI nel codice, indipendentemente da view/dashboard.
+
+**Files changed**: `README.md` (sezione PCF + nota migrazione)
+
 ---
 
 ## Session 2026-07-06

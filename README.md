@@ -137,6 +137,7 @@ Grafico a barre orizzontali del carico per magistrato.
 - **Legenda colori** inline sotto il grafico
 - **Click su barra** → modal con elenco fascicoli assegnati al magistrato; colonna canestro letta da `agc_canestrofascicolo` / `agc_canestrofascicoloname`
 - **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_peso`
+- **Dataset bindato al dashboard "Cruscotto ASPEN"** tramite view Dataverse (non hardcoded nel codice PCF). ⚠️ **Fix 07/07/2026:** la view era ancora puntata su `agc_fascicolo` (vecchia tabella dismessa) — vedi nota migrazione sotto
 
 #### `AgicAspen.CaricoPerCanestro` — `05 - Power Platform/PCF/CaricoPerCanestro/`
 Grafico a barre del carico per canestro (materia giudiziaria).
@@ -155,6 +156,9 @@ Grafico a torta distribuzione fascicoli per stato.
 - Selettore **Anno** (pill UI) con opzione `Tutti gli anni` + elenco annualità presenti nei dati
 - **Click su fetta** → modal con elenco fascicoli di quello stato; colonna canestro letta da `agc_canestrofascicolo` / `agc_canestrofascicoloname`
 - **Mapping nel designer:** `statoField` → `agc_statocaso`
+- **Dataset bindato al dashboard "Cruscotto ASPEN"** tramite view Dataverse (non hardcoded nel codice PCF). ⚠️ **Fix 07/07/2026:** la view era ancora puntata su `agc_fascicolo` (vecchia tabella dismessa) — vedi nota migrazione sotto
+
+> ⚠️ **Fix binding dashboard 07/07/2026:** il codice di `CaricoMagistratiChart` e `StatoFascicoliChart` era già aggiornato (06/07/2026) per leggere i campi `agc_canestrofascicolo`/`agc_canestrofascicoloname`, ma il **dashboard "Cruscotto ASPEN"** risultava ancora bindato — tramite le view Dataverse "Fascicoli aperti" e "Fascicoli (tutti)" — alla **vecchia tabella `agc_fascicolo`** (che non ha quei campi, causando canestro vuoto nel modal e dati non aggiornati). Risolto creando due nuove view pubbliche su `agc_fascicolo2` (`Fascicoli 2 aperti (Cruscotto)`, `Fascicoli 2 (tutti) (Cruscotto)`) e aggiornando il `formxml` del dashboard (`TargetEntityType` e `ViewId` di entrambi i controlli) per puntare a `agc_fascicolo2`. Pubblicazione eseguita con `PublishAllXml`. `CaricoPerCanestro` non era interessato dal problema perché interroga `agc_fascicolo2` direttamente via WebAPI nel codice, senza dipendere da una view del dashboard.
 
 ### Ribbon button — Assegna / Chiudi Fascicolo
 
