@@ -1,21 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <RibbonDiffXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <CustomActions>
-    <!-- Nasconde comandi standard non necessari nella homepage grid Fascicoli -->
-    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.ShowChart"
-      Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.Visualize.ShowChart"
-      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.ShowChart.Hide" />
+    <!-- Nasconde comandi standard non necessari nella homepage grid Fascicoli 2.
+         Location verificate il 07/07/2026 tramite RetrieveEntityRibbon sull'ambiente live
+         (le precedenti Location erano ID "di manuale" mai esistiti sull'entita' e quindi
+         non avevano alcun effetto). "Mostra grafico" (ShowChartPane) non e' inclusa: e'
+         un comando della command bar moderna iniettato dalla piattaforma, non presente nel
+         RibbonXml classico, quindi non nascondibile con HideCustomAction; e' presente anche
+         su agc_fascicolo (vecchia tabella), quindi la parita' resta comunque garantita. -->
     <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.ShowThisView"
-      Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.View.ShowAs"
+      Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.QuickPowerBI.Button"
       HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.ShowThisView.Hide" />
     <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.SendLinkByEmail"
-      Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.Collaborate.SendLink"
+      Location="Mscrm.HomepageGrid.agc_fascicolo2.Send"
       HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.SendLinkByEmail.Hide" />
+    <!-- "Invia link tramite messaggio e-mail" e' anche renderizzato da questi due controlli
+         OOB paralleli (versione classica e "modern"): senza nasconderli entrambi il pulsante
+         resta comunque visibile in griglia. -->
+    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.SendDirectEmail"
+      Location="Mscrm.HomepageGrid.agc_fascicolo2.SendDirectEmail"
+      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.SendDirectEmail.Hide" />
+    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.ModernSendDirectEmail"
+      Location="Mscrm.HomepageGrid.agc_fascicolo2.modern.SendDirectEmail"
+      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.ModernSendDirectEmail.Hide" />
     <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.RunFlow"
-      Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.Flow.RunFlow"
+      Location="Mscrm.HomepageGrid.agc_fascicolo2.Flows.RefreshCommandBar"
       HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.RunFlow.Hide" />
+    <!-- Sotto-voce annidata con lo stesso Command/Label: e' quella effettivamente
+         renderizzata nella griglia web, va nascosta separatamente dall'anchor sopra. -->
+    <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.RunFlowNested"
+      Location="Mscrm.HomepageGrid.agc_fascicolo2.Flows.RefreshCommandBar.Flows"
+      HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.RunFlowNested.Hide" />
     <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.RunReport"
-      Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.Actions.RunReport"
+      Location="Mscrm.HomepageGrid.agc_fascicolo2.RunReport"
       HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.RunReport.Hide" />
 
     <!-- Tasto nella FORM del fascicolo -->

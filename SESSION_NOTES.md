@@ -51,6 +51,33 @@
 
 **Files changed**: `README.md` (sezione PCF + nota migrazione)
 
+### Update 07/07/2026 (sera) — Command bar Fascicolo 2 allineata alla vecchia tabella
+
+**Richiesta**: "aggiorniamo la commandbar di fascicolo 2, deve essere uguale a quella della vecchia tabella fascicolo, nascondiamo i tasti non necessari e aggiungiamo i tasti chiudi fascicolo e assegnazione automatica, con le stesse logiche della vecchia tabella".
+
+**Verifica pulsanti custom (nessuna modifica necessaria)**: testando live su form e griglia di entrambe le tabelle, i pulsanti **"Assegna Fascicolo"** (form + griglia) e **"Chiudi Caso"** (form) su `agc_fascicolo2` sono risultati già identici a `agc_fascicolo`, incluse le enable rule (nascosti quando il fascicolo ha già un magistrato assegnato/è già chiuso). Chiarito con il cliente che **"assegnazione automatica" coincide con il pulsante esistente "Assegna Fascicolo"** (dialog con algoritmo del magistrato meno carico) — non serve un pulsante distinto.
+
+**Bug reale trovato e corretto**: i 5 pulsanti standard che il `RibbonDiff.xml` doveva nascondere in griglia (Mostra grafico, Mostra questa visualizzazione, Invia link tramite messaggio e-mail, Flusso, Esegui report) **non venivano mai nascosti**, su nessuna delle due tabelle, da quando questa personalizzazione è stata introdotta: gli attributi `Location` degli `HideCustomAction` erano ID "di manuale"/copiati che non corrispondevano a nessun controllo reale della ribbon compilata (Dataverse ignora silenziosamente un `Location` che non trova, senza errori).
+
+ID reali individuati confrontando la ribbon compilata (`RetrieveEntityRibbon`) prima e dopo l'ipotesi di fix, e ispezionando il DOM dei pulsanti live:
+- `Mscrm.HomepageGrid.agc_fascicolo2.MainTab.QuickPowerBI.Button` (Mostra questa visualizzazione)
+- `Mscrm.HomepageGrid.agc_fascicolo2.Send` **+** `Mscrm.HomepageGrid.agc_fascicolo2.SendDirectEmail` **+** `Mscrm.HomepageGrid.agc_fascicolo2.modern.SendDirectEmail` (Invia link tramite messaggio e-mail — la piattaforma renderizza questo comando tramite 3 controlli OOB paralleli, vanno nascosti tutti e 3)
+- `Mscrm.HomepageGrid.agc_fascicolo2.Flows.RefreshCommandBar` **+** `Mscrm.HomepageGrid.agc_fascicolo2.Flows.RefreshCommandBar.Flows` (Flusso — anche qui esistono un anchor esterno e una voce annidata con la stessa label, entrambe da nascondere)
+- `Mscrm.HomepageGrid.agc_fascicolo2.RunReport` (Esegui report)
+- **"Mostra grafico" (`ShowChartPane`) resta visibile**: è un comando iniettato dalla command bar moderna, non esiste nel `RibbonXml` classico e quindi non è nascondibile con `HideCustomAction`. È presente identico anche sulla vecchia tabella `agc_fascicolo`, quindi la parità tra le due tabelle resta comunque garantita — resta un limite noto della piattaforma (il Command Designer visuale avrebbe l'azione "Nascondi", ma è risultata disabilitata/non selezionabile in questo ambiente per questo comando).
+
+**Fix applicato**: aggiornato `05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Entities/agc_Fascicolo2/RibbonDiff.xml` con gli 8 `HideCustomAction` corretti sopra elencati (versione solution `1.0.0.2`).
+
+**Nota importante sul deploy**: la reimportazione della solution `AgicAspenRibbon` **fallisce se include anche `agc_fascicolo`** (vecchia tabella), perché quest'ultima ha ancora l'errore SQL storico `Invalid column name 'agc_CanestroName'` (la stessa ghost relationship già documentata nella sessione 2026-07-06, mai risolta sulla tabella dismessa) che impedisce a Dataverse di rigenerare la sua filtered view durante l'import. Poiché `agc_fascicolo` non è stata toccata da questa modifica (e resta comunque dismessa/da non usare), il deploy è stato **scoperto solo su `agc_fascicolo2`**: creata una copia temporanea della solution con `agc_fascicolo` escluso dai `RootComponents`, pacchettizzata e importata con `pac solution import --force-overwrite --publish-changes`. Il file sorgente `RibbonDiff.xml` di `agc_Fascicolo` (vecchia tabella) **non è stato modificato** — resta con i vecchi `Location` inefficaci, coerente con il fatto che quella tabella non deve più essere usata.
+
+**Verifica**: rifatta una `RetrieveEntityRibbon` dopo l'import — confermato via confronto testuale che tutti gli 8 controlli sopra elencati non compaiono più nella ribbon compilata di `agc_fascicolo2` (in precedenza c'era esattamente 1 occorrenza di ciascuno). Non è stato possibile fare una verifica visiva finale nel browser perché la sessione autenticata di test è stata persa per errore (cancellazione accidentale dei cookie durante un tentativo di forzare il refresh della cache client della command bar) — il cliente ha confermato di fidarsi della verifica lato server. **Si raccomanda un controllo visivo con refresh forzato (Ctrl+F5) sulla griglia "Fascicoli 2" alla prima occasione utile.**
+
+**Files changed**:
+- `05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Entities/agc_Fascicolo2/RibbonDiff.xml` — 8 `HideCustomAction` con `Location` corrette
+- `05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Other/Solution.xml` — versione `1.0.0.1` → `1.0.0.2`
+- Solution Dataverse `AgicAspenRibbon` reimportata (solo componente `agc_fascicolo2`) e pubblicata nell'ambiente `LCC-MINISTEROGIUSTIZIA-DEMO`
+- `README.md` / `SESSION_NOTES.md` aggiornati
+
 ---
 
 ## Session 2026-07-06

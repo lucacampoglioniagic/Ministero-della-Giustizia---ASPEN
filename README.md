@@ -198,6 +198,9 @@ Visibili su record esistenti. Soluzione Dataverse: `AgicAspenRibbon`.
 - `agc_assignfascicolo.js` chiama `updateRecord("agc_fascicolo2")` e verifica la lookup `agc_canestrofascicolo` per il controllo di assegnazione
 - `agc_assignfascicolodialog.html` interroga l'endpoint `agc_fascicolo2s` per il caricamento del record fascicolo
 
+**Pulsanti standard nascosti in griglia** (`HideCustomAction` in `RibbonDiff.xml`, corretti il 07/07/2026): "Mostra questa visualizzazione", "Invia link tramite messaggio e-mail" (+ varianti OOB `SendDirectEmail`/`modern.SendDirectEmail`), "Flusso" (+ voce annidata `.Flows`), "Esegui report". "Mostra grafico" resta visibile su entrambe le tabelle: è un comando della command bar moderna, non presente nel `RibbonXml` classico e quindi non gestibile con `HideCustomAction`.
+⚠️ La solution `AgicAspenRibbon` **non può essere reimportata includendo `agc_fascicolo`** (vecchia tabella): la ghost relationship storica (`agc_CanestroName`, vedi nota migrazione) fa fallire la rigenerazione della sua filtered view. Eventuali futuri aggiornamenti al ribbon vanno quindi pacchettizzati/importati **solo con `agc_fascicolo2`** nei `RootComponents` (vedi `SESSION_NOTES.md` — sessione 2026-07-07 sera per il dettaglio).
+
 ### Plugin — SetOwnerTeamPlugin
 
 Plugin registrato su **`agc_fascicolo2`** per la gestione automatica del team proprietario del fascicolo alla creazione.
@@ -307,7 +310,7 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 2. Approfondire il modello dati – richiedere dump anonimizzato
 3. Pianificare sessioni su: sicurezza, incompatibilità, reportistica, migrazione dati
 4. Tasto **"Rimuovi assegnazione"** e enable rule stabile "magistrato già assegnato"
-5. Rifinire la command bar di **Fascicoli** con **Command Designer** (nascondere: Mostra grafico, Mostra questa visualizzazione, Invia link e-mail, Flusso, Esegui report)
+5. ✅ **Risolto (07/07/2026)** — command bar griglia `agc_fascicolo2` allineata a `agc_fascicolo`: nascosti via `RibbonDiff.xml` (Location corrette) i comandi standard "Mostra questa visualizzazione", "Invia link tramite messaggio e-mail" e "Flusso" (compresi i controlli OOB duplicati/annidati) ed "Esegui report". "Mostra grafico" (`ShowChartPane`) resta visibile su **entrambe** le tabelle: è un comando della command bar moderna non presente nel `RibbonXml` classico, quindi non nascondibile con `HideCustomAction` — limite noto della piattaforma, non una differenza tra le due tabelle. Confermato inoltre che "Assegna Fascicolo"/"Chiudi Caso" erano già a parità e che "assegnazione automatica" coincide con il pulsante "Assegna Fascicolo" esistente. Vedi `SESSION_NOTES.md` — sessione 2026-07-07 (sera).
 6. **Notifica al magistrato** via Power Automate alla conferma assegnazione
 7. **Storico assegnazioni** (audit trail su tabella dedicata)
 8. Assegnazione **bulk** da griglia (selezione multipla fascicoli)
