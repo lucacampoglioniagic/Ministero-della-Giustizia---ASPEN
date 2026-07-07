@@ -110,7 +110,8 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | Punti imputazioni | `agc_puntiimputazioni` | Integer |
 | Canestro | `agc_canestrofascicolo` | Lookup → agc_canestrofascicolo |
 | Magistrato assegnato | `agc_magistratoassegnato` | Lookup → agc_giudice |
-| Peso | `agc_peso` | Decimal (calcolato) |
+| Peso (dismesso) | `agc_peso` | Decimal — **NON PIÙ USATO** dal 07/07/2026: rimosso da form/viste, sostituito da `agc_pesocalcolato`. Rimane in schema solo come colonna storica |
+| Peso calcolato | `agc_pesocalcolato` | Decimal — campo calcolato (formula), sostituisce `agc_peso` in tutti i PCF, dashboard e logiche di assegnazione automatica |
 | Stato | `agc_statocaso` | OptionSet: 0=Validato, 1=Proposto, 2=Chiuso |
 | Data | `agc_datacaso` | DateTime |
 
@@ -136,7 +137,7 @@ Grafico a barre orizzontali del carico per magistrato.
 - Refresh automatico one-shot a 2s dal primo caricamento per riallineare i colori
 - **Legenda colori** inline sotto il grafico
 - **Click su barra** → modal con elenco fascicoli assegnati al magistrato; colonna canestro letta da `agc_canestrofascicolo` / `agc_canestrofascicoloname`
-- **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_peso`
+- **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_pesocalcolato` (aggiornato 07/07/2026, ex `agc_peso` — vedi nota migrazione sotto)
 - **Dataset bindato al dashboard "Cruscotto ASPEN"** tramite view Dataverse (non hardcoded nel codice PCF). ⚠️ **Fix 07/07/2026:** la view era ancora puntata su `agc_fascicolo` (vecchia tabella dismessa) — vedi nota migrazione sotto
 
 #### `AgicAspen.CaricoPerCanestro` — `05 - Power Platform/PCF/CaricoPerCanestro/`
@@ -147,7 +148,7 @@ Grafico a barre del carico per canestro (materia giudiziaria).
   - 🔴 Rosso `#D13438` — carico ≥ soglia
 - Esclude i fascicoli in stato **Chiuso** dal calcolo carico
 - Empty state: `Nessun fascicolo aperto assegnato a questo magistrato.`
-- **OData fix**: query su `agc_fascicolo2`; lookup field canestro letto come `_agc_canestrofascicolo_value`; nome canestro via annotazione `@OData.Community.Display.V1.FormattedValue`
+- **OData fix**: query su `agc_fascicolo2`; lookup field canestro letto come `_agc_canestrofascicolo_value`; nome canestro via annotazione `@OData.Community.Display.V1.FormattedValue`; peso letto da `agc_pesocalcolato` (aggiornato 07/07/2026, ex `agc_peso`)
 
 #### `AgicAspen.StatoFascicoliChart` — `05 - Power Platform/PCF-Pie/`
 Grafico a torta distribuzione fascicoli per stato.
@@ -155,10 +156,19 @@ Grafico a torta distribuzione fascicoli per stato.
 - Tooltip con valore assoluto e percentuale
 - Selettore **Anno** (pill UI) con opzione `Tutti gli anni` + elenco annualità presenti nei dati
 - **Click su fetta** → modal con elenco fascicoli di quello stato; colonna canestro letta da `agc_canestrofascicolo` / `agc_canestrofascicoloname`
-- **Mapping nel designer:** `statoField` → `agc_statocaso`
+- **Mapping nel designer:** `statoField` → `agc_statocaso`; colonna "Peso" nel modal drill-down letta da `agc_pesocalcolato` (aggiornato 07/07/2026, ex `agc_peso` — richiede che la view Dataverse bindata includa questa colonna)
 - **Dataset bindato al dashboard "Cruscotto ASPEN"** tramite view Dataverse (non hardcoded nel codice PCF). ⚠️ **Fix 07/07/2026:** la view era ancora puntata su `agc_fascicolo` (vecchia tabella dismessa) — vedi nota migrazione sotto
 
 > ⚠️ **Fix binding dashboard 07/07/2026:** il codice di `CaricoMagistratiChart` e `StatoFascicoliChart` era già aggiornato (06/07/2026) per leggere i campi `agc_canestrofascicolo`/`agc_canestrofascicoloname`, ma il **dashboard "Cruscotto ASPEN"** risultava ancora bindato — tramite le view Dataverse "Fascicoli aperti" e "Fascicoli (tutti)" — alla **vecchia tabella `agc_fascicolo`** (che non ha quei campi, causando canestro vuoto nel modal e dati non aggiornati). Risolto creando due nuove view pubbliche su `agc_fascicolo2` (`Fascicoli 2 aperti (Cruscotto)`, `Fascicoli 2 (tutti) (Cruscotto)`) e aggiornando il `formxml` del dashboard (`TargetEntityType` e `ViewId` di entrambi i controlli) per puntare a `agc_fascicolo2`. Pubblicazione eseguita con `PublishAllXml`. `CaricoPerCanestro` non era interessato dal problema perché interroga `agc_fascicolo2` direttamente via WebAPI nel codice, senza dipendere da una view del dashboard.
+>
+> ⚠️ **Migrazione Peso → Peso calcolato (07/07/2026):** il campo `agc_peso` (Decimal, manuale) è stato **rimosso da form e viste** di `agc_fascicolo2` e sostituito da un nuovo campo calcolato **`agc_pesocalcolato`** (Decimal, formula). `agc_peso` resta presente nello schema solo come colonna storica non più aggiornata — **non usarlo in nuovi sviluppi**. Componenti aggiornati per usare `agc_pesocalcolato`:
+> - `CaricoPerCanestro` (PCF form Magistrato): query WebAPI aggiornata (`$select`/`$filter`/somma) — codice e build ridistribuiti via `pac pcf push` + `pac solution import`.
+> - `StatoFascicoliChart` (PCF cruscotto): lettura `record.getValue(...)` aggiornata — codice e build ridistribuiti via `pac pcf push` + `pac solution import`.
+> - `CaricoMagistratiChart` (PCF cruscotto): il campo `pesoField` è configurabile da designer, non hardcoded nel codice — aggiornato il binding `pesoField` nel `formxml` del dashboard "Cruscotto ASPEN" (3 occorrenze, una per `formFactor`) via Web API (`systemforms` + `PublishAllXml`).
+> - Le due view del dashboard `Fascicoli 2 aperti (Cruscotto)` e `Fascicoli 2 (tutti) (Cruscotto)`: colonna `agc_peso` sostituita con `agc_pesocalcolato` in `fetchxml` e `layoutxml` via Web API (`savedqueries` + `PublishAllXml`).
+> - `agc_assignfascicolodialog.html` (dialog "Assegnazione automatica"): la logica di bilanciamento del carico tra magistrati sommava `agc_peso` — aggiornata per sommare `agc_pesocalcolato`, altrimenti l'assegnazione automatica avrebbe usato dati non più mantenuti. Webresource aggiornato via Web API (`webresourceset` + `PublishXml`).
+>
+> Tutte le modifiche sono state applicate live nell'ambiente `LCC-MINISTEROGIUSTIZIA-DEMO` e verificate via Web API (rilettura post-update di view, formxml e webresource).
 
 ### Ribbon button — Assegna / Chiudi Fascicolo
 
@@ -319,6 +329,7 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 11. Strategia migrazione storico + integrazione **SICP**
 12. ✅ **Risolto (07/07/2026)** — pulizia dati post-migrazione: rimossi 20 record duplicati da `agc_fascicolo2` (migrazione era stata eseguita due volte), popolata `agc_canestrofascicolo` con i 13 canestri storici (da `agc_canestro`), riassociati 18/20 fascicoli al rispettivo canestro (2 fascicoli — `2024` e `RG-2026/11122` — non avevano canestro nemmeno nella tabella storica, restano senza associazione). Vedi `SESSION_NOTES.md` — sessione 2026-07-07.
 13. Dismissione definitiva (disattivazione/hide) delle tabelle legacy `agc_fascicolo` e `agc_canestro`, ora **non più utilizzate** e mantenute solo come backup storico
+14. ✅ **Risolto (07/07/2026)** — migrazione campo Peso → Peso calcolato su `agc_fascicolo2`: `agc_peso` rimosso da form/viste e sostituito da `agc_pesocalcolato` (campo formula). Aggiornati `CaricoPerCanestro`, `StatoFascicoliChart`, il binding `pesoField` di `CaricoMagistratiChart` nel dashboard, le 2 view del cruscotto e la logica di assegnazione automatica (`agc_assignfascicolodialog.html`). Vedi `SESSION_NOTES.md` — sessione 2026-07-07.
 
 ---
 

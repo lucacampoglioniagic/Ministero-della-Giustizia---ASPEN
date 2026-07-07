@@ -470,7 +470,7 @@
           return;
         }
 
-        // 1. Recupera tutti i magistrati con il loro peso totale (sum agc_peso fascicoli assegnati)
+        // 1. Recupera tutti i magistrati con il loro peso totale (sum agc_pesocalcolato fascicoli assegnati)
         fetch(
           orgUrl + "/api/data/v9.2/agc_giudices?$select=agc_giudiceid,agc_nomecompleto",
           { headers: apiHeaders }
@@ -495,7 +495,7 @@
             }).join(" or ");
 
             return fetch(
-              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_peso,agc_statocaso,_agc_magistratoassegnato_value&$filter=(" + filter + ") and agc_peso ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
+              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratoassegnato_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
               { headers: apiHeaders }
             )
               .then(function (r) { return r.json(); })
@@ -504,7 +504,7 @@
                   if (f.agc_statocaso === 2) return;
                   var mid = f["_agc_magistratoassegnato_value"];
                   if (mid && pesoPer.hasOwnProperty(mid)) {
-                    pesoPer[mid] += (f.agc_peso || 0);
+                    pesoPer[mid] += (f.agc_pesocalcolato || 0);
                   }
                 });
 

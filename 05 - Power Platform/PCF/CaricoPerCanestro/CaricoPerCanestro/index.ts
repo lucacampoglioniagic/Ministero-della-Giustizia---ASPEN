@@ -74,20 +74,21 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
     this._context.webAPI
       .retrieveMultipleRecords(
         "agc_fascicolo2",
-        `?$select=agc_fascicoloid,agc_peso,agc_statocaso,_agc_canestrofascicolo_value` +
-          `&$filter=_agc_magistratoassegnato_value eq ${magistratoId} and agc_peso ne null`,
+        `?$select=agc_fascicoloid,agc_pesocalcolato,agc_statocaso,_agc_canestrofascicolo_value` +
+          `&$filter=_agc_magistratoassegnato_value eq ${magistratoId} and agc_pesocalcolato ne null`,
       )
       .then((res) => {
         const map: Record<string, CaricoCanestro> = {};
         for (const f of res.entities) {
           if (this._isClosedFascicolo(f as Record<string, unknown>)) continue;
 
-          const cId = (f["_agc_canestrofascicolo_value"] as string) ?? "__nessuno__";
+          const cId =
+            (f["_agc_canestrofascicolo_value"] as string) ?? "__nessuno__";
           const cName =
             (f[
               "_agc_canestrofascicolo_value@OData.Community.Display.V1.FormattedValue"
             ] as string) ?? "Senza canestro";
-          const peso = (f["agc_peso"] as number) ?? 0;
+          const peso = (f["agc_pesocalcolato"] as number) ?? 0;
           if (!map[cId])
             map[cId] = {
               canestroId: cId,
@@ -142,7 +143,8 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
 
     if (rows.length === 0) {
       const empty = document.createElement("p");
-      empty.textContent = "Nessun fascicolo aperto assegnato a questo magistrato.";
+      empty.textContent =
+        "Nessun fascicolo aperto assegnato a questo magistrato.";
       empty.style.cssText = "color:#666;font-size:13px;";
       this._container.appendChild(empty);
       return;

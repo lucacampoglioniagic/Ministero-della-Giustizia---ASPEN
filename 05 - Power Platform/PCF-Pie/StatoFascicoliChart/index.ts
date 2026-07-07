@@ -127,7 +127,7 @@ export class StatoFascicoliChart implements ComponentFramework.StandardControl<
           record.getFormattedValue("agc_canestrofascicolo") ||
           record.getFormattedValue("agc_canestrofascicoloname") ||
           "—",
-        peso: Number(record.getValue("agc_peso")) || 0,
+        peso: Number(record.getValue("agc_pesocalcolato")) || 0,
         data: record.getFormattedValue("agc_datacaso") || "—",
       };
       if (!this._fascicoliPerStato[stato]) {

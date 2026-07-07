@@ -6,10 +6,10 @@
     control-type="standard">
     <external-service-usage enabled="false" />
     <!--
-      Tabella sorgente: agc_fascicolo
+      Tabella sorgente: agc_fascicolo2
       Mapping consigliato:
         magistratoField  →  agc_magistratoassegnato  (Lookup → agc_giudice [display: Magistrato])
-        pesoField        →  agc_peso                 (Decimal)
+        pesoField        →  agc_pesocalcolato         (Decimal, campo calcolato — sostituisce agc_peso dal 07/07/2026)
     -->
     <type-group name="pesoTypes">
       <type>Whole.None</type>

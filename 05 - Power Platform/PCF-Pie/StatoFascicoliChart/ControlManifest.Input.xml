@@ -6,9 +6,12 @@
     control-type="standard">
     <external-service-usage enabled="false" />
     <!--
-      Tabella sorgente: agc_fascicolo
+      Tabella sorgente: agc_fascicolo2
       Mapping consigliato:
         statoField  →  agc_statocaso  (Picklist — OptionSet)
+      Colonne aggiuntive lette dal dataset (non dichiarate come property-set, richiedono
+      che la view Dataverse bindata al dashboard le includa): agc_numeroregistrogenerale,
+      agc_magistratoassegnato/name, agc_canestrofascicolo/name, agc_pesocalcolato, agc_datacaso.
     -->
     <data-set name="fascicoliDataSet" display-name-key="Fascicoli">
       <property-set name="statoField" display-name-key="Stato caso"

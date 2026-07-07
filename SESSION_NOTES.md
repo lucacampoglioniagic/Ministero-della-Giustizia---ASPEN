@@ -78,6 +78,36 @@ ID reali individuati confrontando la ribbon compilata (`RetrieveEntityRibbon`) p
 - Solution Dataverse `AgicAspenRibbon` reimportata (solo componente `agc_fascicolo2`) e pubblicata nell'ambiente `LCC-MINISTEROGIUSTIZIA-DEMO`
 - `README.md` / `SESSION_NOTES.md` aggiornati
 
+### Update 07/07/2026 (notte) — Migrazione campo Peso → Peso calcolato
+
+**Contesto**: il cliente ha rimosso il campo `agc_peso` (Decimal, manuale) da form e viste della tabella `agc_fascicolo2` e ha creato un nuovo campo calcolato **"Peso calcolato"** (logical name `agc_pesocalcolato`, tipo Decimal, formula) che sostituisce il vecchio in tutti i calcoli. `agc_peso` resta nello schema come colonna storica non più mantenuta/aggiornata.
+
+**Individuazione del logical name**: la sessione autenticata su `crm4.dynamics.com` era stata persa nel task precedente (incidente cookie clear). Recuperato il logical name navigando la UI del Maker Portal (`make.powerapps.com`, sessione ancora valida) fino alla lista Colonne della tabella "Fascicolo 2": confermato `agc_Pesocalcolato` (schema name) → `agc_pesocalcolato` (logical name).
+
+**Recupero sessione live**: l'utente ha ri-autenticato manualmente il tab Playwright su `crm4.dynamics.com` (verificato con `WhoAmI()` → 200). Il profilo `pac` CLI (`luca.campoglioni@agic.it` su `LCC-MINISTEROGIUSTIZIA-DEMO`) era invece rimasto valido per tutta la sessione, indipendentemente dal browser — utilizzato per il deploy dei PCF.
+
+**Componenti aggiornati**:
+1. **`CaricoPerCanestro`** (`05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts`) — query WebAPI (`$select`, `$filter`, somma per canestro) aggiornata da `agc_peso` a `agc_pesocalcolato`. Ricompilato e ridistribuito con `pac pcf push --publisher-prefix agc` (fallisce sempre sul cleanup finale per file lock, ma genera comunque lo zip in `obj/PowerAppsToolsTemp_agc/bin/Debug/`) + `pac solution import --force-overwrite --publish-changes`.
+2. **`StatoFascicoliChart`** (`05 - Power Platform/PCF-Pie/StatoFascicoliChart/index.ts`) — `record.getValue("agc_peso")` → `record.getValue("agc_pesocalcolato")` nella colonna "Peso" del modal drill-down. Stesso flusso di ricompilazione/redeploy.
+3. **`CaricoMagistratiChart`** — il codice non hardcoda il campo (proprietà bound configurabile `pesoField`), quindi non richiede modifiche/redeploy del codice. Aggiornato solo il commento doc nel manifest (`ControlManifest.Input.xml`) e il **binding live** `pesoField` nel `formxml` del dashboard "Cruscotto ASPEN" (`systemforms`, formid `d4cd81e8-5963-f111-ab0c-7ced8d72f54e`): sostituite le 3 occorrenze (una per `formFactor` 0/1/2) di `<pesoField>agc_peso</pesoField>` con `<pesoField>agc_pesocalcolato</pesoField>` via PATCH Web API.
+4. **Viste del dashboard**: `Fascicoli 2 aperti (Cruscotto)` (id `9cdb22db-db79-f111-ab0e-70a8a581677c`) e `Fascicoli 2 (tutti) (Cruscotto)` (id `3c5b46e1-db79-f111-ab0e-70a8a581677c`) referenziavano `agc_peso` sia in `fetchxml` (attribute) sia in `layoutxml` (cell) — sostituito con `agc_pesocalcolato` in entrambe via PATCH su `savedqueries`. Necessario perché `StatoFascicoliChart` legge la colonna "Peso" direttamente dal dataset bindato alla view, non come proprietà dichiarata nel manifest.
+5. **`agc_assignfascicolodialog.html`** (webresource HTML del dialog "Assegnazione automatica", `05 - Power Platform/AssegnaFascicolo/WebResources/`) — la logica di bilanciamento del carico (punto 2 dei commenti nel file: somma pesi per magistrato compatibile, sceglie il meno carico) sommava `agc_peso`; aggiornata a `agc_pesocalcolato` in query e somma. Senza questo fix l'assegnazione automatica avrebbe continuato a bilanciare il carico su un campo non più mantenuto dagli utenti. Contenuto del webresource aggiornato via PATCH su `webresourceset` (retrieve → find by name → patch content base64 UTF-8 → `PublishXml`).
+
+**Pubblicazione**: tutte le modifiche (view, formxml dashboard, webresource) pubblicate con `PublishAllXml`/`PublishXml` via Web API dal tab browser autenticato dall'utente; i due PCF pubblicati tramite il flusso standard `pac pcf push` + `pac solution import --publish-changes`.
+
+**Verifica**: rilettura post-update via Web API di entrambe le `savedqueries` (fetchxml/layoutxml senza più `agc_peso`, con `agc_pesocalcolato` presente), del `formxml` del dashboard (0 occorrenze `agc_peso`, 3 occorrenze `agc_pesocalcolato`) e del contenuto del webresource (base64 decodificato, `agc_pesocalcolato` presente, nessuna query `$select=agc_peso,` residua).
+
+**Nota**: il campo `agc_peso` **non è stato eliminato** dallo schema di `agc_fascicolo2` (resta come colonna storica non più esposta su form/viste, per compatibilità/backup) — solo i componenti applicativi sono stati aggiornati a leggere `agc_pesocalcolato`.
+
+**Files changed**:
+- `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts`
+- `05 - Power Platform/PCF-Pie/StatoFascicoliChart/index.ts`
+- `05 - Power Platform/PCF/CaricoMagistratiChart/ControlManifest.Input.xml` (commento doc)
+- `05 - Power Platform/PCF-Pie/StatoFascicoliChart/ControlManifest.Input.xml` (commento doc)
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolodialog.html`
+- Dataverse live: `savedqueries` (2 view), `systemforms` (dashboard "Cruscotto ASPEN"), `webresourceset` (`agc_assignfascicolodialog.html`) — tutti pubblicati
+- `README.md` / `SESSION_NOTES.md` aggiornati
+
 ---
 
 ## Session 2026-07-06
