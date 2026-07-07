@@ -4,6 +4,41 @@
 
 ---
 
+## Session 2026-07-07
+
+### What was done
+- **Pulizia dati post-migrazione su Dataverse** (ambiente `LCC-MINISTEROGIUSTIZIA-DEMO`), completando quanto lasciato aperto dalla sessione del 06/07/2026:
+  - **Rimossi 20 record duplicati** da `agc_fascicolo2`: la migrazione del 06/07 era stata eseguita due volte (batch delle 15:59 e batch delle 19:34, contenuto identico), portando la tabella da 40 a 20 record (uno per ogni Numero RG).
+  - **Popolata `agc_canestrofascicolo`** (era vuota): creati 13 record copiando `agc_tipodireato` → `agc_name` e `agc_pesocanestro` → `agc_peso` dalla vecchia tabella `agc_canestro`, usata come unico riferimento disponibile.
+  - **Riassociati i fascicoli al canestro**: recuperato il collegamento originale fascicolo→canestro dalla vecchia tabella `agc_fascicolo` (campo `_agc_canestro_value`, ancora leggibile via Web API nonostante la ghost relationship che ne impediva la scrittura/lo schema change) e replicato su `agc_fascicolo2.agc_Canestrofascicolo` verso i nuovi record di `agc_canestrofascicolo`. **18 fascicoli su 20** associati correttamente; i restanti 2 (`2022`... in realtà `2024` e `RG-2026/11122`) non avevano canestro nemmeno nella tabella storica, quindi restano senza associazione.
+  - Operazioni eseguite via Dataverse Web API (`fetch` autenticato via cookie di sessione sul portale Maker), non tramite script offline.
+- **Documentazione**: chiarito esplicitamente in `README.md` che `agc_fascicolo` e `agc_canestro` sono **dismesse e non vanno più utilizzate** — restano solo come backup storico read-only. Aggiornati i "Prossimi passi".
+
+### Decisions made
+- **Nessuna eliminazione fisica delle tabelle legacy**: `agc_fascicolo` e `agc_canestro` restano in ambiente come backup, ma la documentazione ora vieta esplicitamente il loro utilizzo per qualunque nuovo sviluppo.
+- **Fascicoli senza canestro storico** (`2024`, `RG-2026/11122`) lasciati senza associazione anziché assegnare un canestro arbitrario — da chiarire con il cliente in una sessione futura.
+- **Peso canestro**: tutti i 13 record storici avevano `agc_pesocanestro = 1`; il valore è stato copiato as-is in `agc_canestrofascicolo.agc_peso` senza modifiche/interpretazioni.
+
+### Current status
+- ✅ `agc_fascicolo2`: 20 record, nessun duplicato.
+- ✅ `agc_canestrofascicolo`: 13 record popolati (nomi e peso da `agc_canestro`).
+- ✅ 18/20 fascicoli associati al canestro corretto; 2 senza canestro (dati origine mancanti).
+- ✅ Documentazione aggiornata con divieto esplicito di utilizzo delle tabelle legacy.
+- ⚠️ Tabelle legacy `agc_fascicolo` e `agc_canestro` ancora presenti in ambiente (nessuna azione di hide/disable eseguita in questa sessione).
+
+### Next steps
+1. Verificare con il cliente/referenti a quale canestro assegnare i 2 fascicoli rimasti senza associazione (`2024`, `RG-2026/11122`).
+2. Procedere con la dismissione (hide/disable) delle tabelle legacy `agc_fascicolo` e `agc_canestro`.
+3. Configurare la form di `agc_fascicolo2` nel Maker Portal con i controlli PCF.
+4. Eseguire test end-to-end di creazione fascicolo su `agc_fascicolo2` con associazione canestro.
+
+### Files changed
+- `README.md` — nota esplicita "tabelle legacy dismesse, non usare"; aggiornati Prossimi Passi (item 12 nuovo, item 13 nuovo)
+- `SESSION_NOTES.md` — aggiunta sessione 2026-07-07
+- Dati Dataverse: `agc_fascicolo2` (20 record, deduplicati), `agc_canestrofascicolo` (13 record creati), associazioni fascicolo↔canestro aggiornate
+
+---
+
 ## Session 2026-07-06
 
 ### What was done

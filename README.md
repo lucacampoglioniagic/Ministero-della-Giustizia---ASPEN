@@ -96,6 +96,8 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | Configurazione | `agc_configurazione` | Parametri di sistema (`PesoLimite = 20`, `PesoLimiteCanestro = 30`) |
 
 > **Migrazione 06/07/2026:** le tabelle originali `agc_fascicolo` e `agc_canestro` sono state sostituite da `agc_fascicolo2` e `agc_canestrofascicolo`. La causa era una ghost relationship corrotta (`agc_CanestroName`) sulla tabella `agc_fascicolo` che impediva la creazione di nuovi fascicoli. Sono stati migrati 20 record. Commit: `7ca5685`.
+>
+> ⚠️ **`agc_fascicolo` e `agc_canestro` sono DISMESSE — NON USARE.** Restano in ambiente solo come backup storico dei dati originali (read-only), ma non sono più referenziate da alcun componente applicativo (PCF, ribbon, plugin, custom page). Tutto il codice e la documentazione devono fare riferimento esclusivamente a `agc_fascicolo2` e `agc_canestrofascicolo`. Qualsiasi nuovo sviluppo, form, view o automazione va creato solo sulle nuove tabelle.
 
 **Colonne chiave `agc_fascicolo2`:**
 
@@ -111,6 +113,15 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | Peso | `agc_peso` | Decimal (calcolato) |
 | Stato | `agc_statocaso` | OptionSet: 0=Validato, 1=Proposto, 2=Chiuso |
 | Data | `agc_datacaso` | DateTime |
+
+**Tabella `agc_canestrofascicolo` (13 record, popolati il 07/07/2026 da `agc_canestro`):**
+
+| Colonna | LogicalName | Tipo |
+|---|---|---|
+| Nome | `agc_name` | String (primary) |
+| Peso | `agc_peso` | Integer |
+
+> **Popolamento 07/07/2026:** i 13 canestri sono stati copiati dalla vecchia tabella `agc_canestro` (campi `agc_tipodireato` → `agc_name`, `agc_pesocanestro` → `agc_peso`), usata come unico riferimento disponibile. 18 dei 20 fascicoli di `agc_fascicolo2` sono stati riassociati al canestro corretto recuperando il collegamento originale dalla vecchia tabella `agc_fascicolo` (campo `_agc_canestro_value`, ancora leggibile via Web API). I fascicoli `2024` e `RG-2026/11122` non avevano canestro nemmeno nella tabella storica e restano senza associazione — da chiarire con il cliente. Contestualmente sono stati eliminati 20 record duplicati da `agc_fascicolo2` (migrazione del 06/07/2026 eseguita per errore due volte). Dettagli in `SESSION_NOTES.md` — sessione 2026-07-07.
 
 ### Componenti PCF pubblicati
 
@@ -299,6 +310,8 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 9. Persistere le **incompatibilità** su Dataverse (tabella o campo dedicato)
 10. ✅ **Risolto (06/07/2026)** — errore SQL `0x80044150` su record Canestro: causa identificata in ghost relationship `agc_CanestroName` sulla tabella `agc_fascicolo`; risolto con migrazione a `agc_fascicolo2` + `agc_canestrofascicolo` (20 record migrati, commit `7ca5685`).
 11. Strategia migrazione storico + integrazione **SICP**
+12. ✅ **Risolto (07/07/2026)** — pulizia dati post-migrazione: rimossi 20 record duplicati da `agc_fascicolo2` (migrazione era stata eseguita due volte), popolata `agc_canestrofascicolo` con i 13 canestri storici (da `agc_canestro`), riassociati 18/20 fascicoli al rispettivo canestro (2 fascicoli — `2024` e `RG-2026/11122` — non avevano canestro nemmeno nella tabella storica, restano senza associazione). Vedi `SESSION_NOTES.md` — sessione 2026-07-07.
+13. Dismissione definitiva (disattivazione/hide) delle tabelle legacy `agc_fascicolo` e `agc_canestro`, ora **non più utilizzate** e mantenute solo come backup storico
 
 ---
 
