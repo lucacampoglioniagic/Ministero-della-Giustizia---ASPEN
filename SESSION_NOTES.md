@@ -162,6 +162,31 @@ Durante la verifica visiva post-migrazione, la form "Fascicoli" del magistrato m
 - `SESSION_NOTES.md`
 - Dataverse live: canvas app "ASPEN HOME" ripubblicata da Power Apps Studio (secondo publish della giornata)
 
+### Update 07/07/2026 (notte tarda) — Tasto "Assegna Fascicolo" mancante in griglia + nuovo "Assegnazione massiva"
+
+**Segnalazione utente**: "Manca il tasto assegna fascicoli quando seleziono un fascicolo senza magistrato assegnato nella vista. Inoltre prevediamo un nuovo tasto... 'Assegnazione massiva'... senza che venga richiesta l'incompatibilità".
+
+**Causa scoperta**: la vista principale/griglia di `agc_fascicolo2` **non è più governata dal `RibbonDiff.xml` classico** per i pulsanti custom di assegnazione — nonostante il `CommandDefinition Id="agc.HomepageGrid.agc_fascicolo2.Assegna.Command"` esista ancora nel sorgente solution (con `EnableRule` JS `isEnabledGrid`/`isEnabledForm`), questa vista usa i **comandi moderni** (Command Designer, Maker Portal → tabella → vista → "Modifica comandi"), le cui regole di visibilità sono formule **Power Fx** valutate dal component library canvas app `ASPEN_DefaultCommandLibrary` (app id `ca8c900c-4851-4c1a-8bdd-0badbb28c2ed`), non JavaScript. Il pulsante "Assegna Fascicolo" era configurato lì con la formula `And(CountRows(Self.Selected.AllItems) = 1, IsBlank(Self.Selected.Item.'Magistrato assegnato'))`, che non veniva mai valutata come `true` (il pulsante compariva sempre o mai a seconda dei tentativi, indipendentemente dalla selezione).
+
+**Bug di piattaforma isolato tramite test sistematico** (decine di varianti di formula pubblicate e testate live sulla griglia): `CountRows(Self.Selected.AllItems)` usato come operando di `And()` o come condizione di `If()` insieme a **qualunque altra espressione** (anche un literal banale `true`) fa valutare l'intera formula in modo scorretto quando 0 righe sono selezionate (il comando resta visibile). Non è un problema di refresh/cache dei metadati (ipotesi iniziale, verificata e scartata), né un errore runtime soppresso da `IfError()`. **`CountRows(...)` usato da solo (non composto) funziona correttamente** — infatti la formula del comando "Assegnazione massiva" (`CountRows(Self.Selected.AllItems) = 0`, standalone) è risultata corretta fin da subito.
+
+**Fix**: sostituita la formula `Visible` di "Assegna Fascicolo" con `And(!IsBlank(Self.Selected.Item), IsBlank(Self.Selected.Item.'Magistrato assegnato'))`. `Self.Selected.Item` è blank quando 0 o più di 1 righe sono selezionate ed è valorizzato solo con esattamente 1 riga selezionata — equivalente logico di `CountRows(...) = 1` ma che **evita il bug** perché non usa `CountRows` all'interno di `And()`.
+
+**Nuovo comando "Assegnazione massiva"**: creato in Command Designer, visibile solo con **0 righe selezionate** (`CountRows(Self.Selected.AllItems) = 0`), azione JavaScript `AgicAspen.AssegnaFascicolo.openBulkAssignFromGrid` (nuova funzione in `agc_assignfascicolo.js`). Logica: stessa di "Assegna Fascicolo" (magistrato con minor `agc_pesocalcolato` totale sui fascicoli non chiusi) applicata in sequenza a **tutti** i fascicoli attualmente senza magistrato, aggiornando il carico in memoria dopo ogni assegnazione (per non sovraccaricare lo stesso magistrato), **senza richiedere la selezione di incompatibilità** (a differenza del dialog "Assegna Fascicolo" singolo). Mostra un dialog di conferma prima di procedere e un riepilogo finale ("Assegnati N fascicoli su M").
+
+**Verifica end-to-end sulla griglia live**:
+1. 0 righe selezionate → "Assegna Fascicolo" nascosto, "Assegnazione massiva" visibile. ✅
+2. 1 fascicolo selezionato con magistrato già assegnato (RG-2026/11122) → "Assegna Fascicolo" nascosto, "Assegnazione massiva" nascosto. ✅
+3. 1 fascicolo selezionato senza magistrato (RG-2026/7744) → "Assegna Fascicolo" visibile, "Assegnazione massiva" nascosto. ✅
+4. Click su "Assegna Fascicolo" per RG-2026/7744 → dialog si apre, lista magistrati per incompatibilità, conferma → assegnato correttamente a Dott.ssa Anna Greco (peso più basso, 4.00). ✅
+5. Click su "Assegnazione massiva" con 0 selezionati → dialog di conferma → confermato → i 2 fascicoli rimasti senza magistrato assegnati correttamente, messaggio "Assegnati 2 fascicoli su 2". ✅
+
+**Files changed**:
+- Command Designer (Dataverse, no rappresentazione file locale): formula `Visible` di "Assegna Fascicolo" corretta; nuovo comando "Assegnazione massiva" creato
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js` — nuova funzione `openBulkAssignFromGrid` + `isBulkAssignVisible` (quest'ultima non più usata dai comandi moderni ma lasciata per eventuale fallback su ribbon classico), pubblicata come webresource
+- `README.md` — nuova sezione "Comandi moderni griglia `agc_fascicolo2`", nota su Command Designer vs RibbonDiff.xml, Prossimi passi item 8 risolto
+- `SESSION_NOTES.md`
+
 ---
 
 ## Session 2026-07-06

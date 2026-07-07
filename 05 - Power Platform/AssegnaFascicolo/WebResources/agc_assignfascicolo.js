@@ -58,6 +58,118 @@ AgicAspen.AssegnaFascicolo = (function () {
         });
     }
 
+    /* ── Assegnazione massiva: assegna tutti i fascicoli senza magistrato ──
+       Stessa logica di "Assegna Fascicolo" (magistrato con minor carico,
+       sommando i pesi calcolati dei fascicoli non chiusi) ma senza richiedere
+       incompatibilità e applicata in sequenza a tutti i fascicoli non assegnati. */
+    function openBulkAssignFromGrid(selectedControl) {
+        Xrm.Navigation.openConfirmDialog(
+            {
+                title: "Conferma assegnazione massiva",
+                text: "Verranno assegnati tutti i fascicoli attualmente senza magistrato al magistrato con il minor carico di lavoro. Continuare?",
+                confirmButtonLabel: "Assegna tutti",
+                cancelButtonLabel: "Annulla"
+            },
+            { height: 220, width: 520 }
+        ).then(function (result) {
+            if (!result.confirmed) return;
+
+            Xrm.Utility.showProgressIndicator("Assegnazione massiva in corso...");
+
+            Xrm.WebApi.retrieveMultipleRecords("agc_giudice", "?$select=agc_giudiceid,agc_nomecompleto&$orderby=agc_nomecompleto")
+                .then(function (magResult) {
+                    var magistrati = magResult.entities || [];
+                    if (magistrati.length === 0) {
+                        Xrm.Utility.closeProgressIndicator();
+                        return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva", text: "Nessun magistrato trovato." });
+                    }
+
+                    var pesoPer = {};
+                    magistrati.forEach(function (m) { pesoPer[m.agc_giudiceid] = 0; });
+
+                    var filter = magistrati.map(function (m) {
+                        return "_agc_magistratoassegnato_value eq " + m.agc_giudiceid;
+                    }).join(" or ");
+
+                    /* 1. Carico attuale di ogni magistrato (fascicoli non chiusi già assegnati) */
+                    return Xrm.WebApi.retrieveMultipleRecords(
+                        "agc_fascicolo2",
+                        "?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratoassegnato_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)"
+                    ).then(function (caricoResult) {
+                        (caricoResult.entities || []).forEach(function (f) {
+                            var mid = f["_agc_magistratoassegnato_value"];
+                            if (mid && pesoPer.hasOwnProperty(mid)) {
+                                pesoPer[mid] += (f.agc_pesocalcolato || 0);
+                            }
+                        });
+
+                        /* 2. Fascicoli attualmente non assegnati e non chiusi */
+                        return Xrm.WebApi.retrieveMultipleRecords(
+                            "agc_fascicolo2",
+                            "?$select=agc_pesocalcolato&$filter=_agc_magistratoassegnato_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
+                        ).then(function (unassignedResult) {
+                            var fascicoli = unassignedResult.entities || [];
+                            if (fascicoli.length === 0) {
+                                Xrm.Utility.closeProgressIndicator();
+                                return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva", text: "Non ci sono fascicoli da assegnare." });
+                            }
+
+                            /* 3. Assegnazione sequenziale: ogni assegnazione aggiorna il carico
+                               prima di calcolare il magistrato migliore per il fascicolo successivo. */
+                            var assignedCount = 0;
+                            var errorCount = 0;
+                            var chain = Promise.resolve();
+
+                            fascicoli.forEach(function (f) {
+                                chain = chain.then(function () {
+                                    var migliore = magistrati.reduce(function (best, m) {
+                                        return pesoPer[m.agc_giudiceid] < pesoPer[best.agc_giudiceid] ? m : best;
+                                    });
+                                    var peso = f.agc_pesocalcolato || 0;
+
+                                    return Xrm.WebApi.updateRecord("agc_fascicolo2", f.agc_fascicolo2id, {
+                                        "agc_Magistratoassegnato@odata.bind": "/agc_giudices(" + migliore.agc_giudiceid + ")"
+                                    }).then(function () {
+                                        pesoPer[migliore.agc_giudiceid] += peso;
+                                        assignedCount++;
+                                    }).catch(function (e) {
+                                        errorCount++;
+                                        console.error("[ASPEN] Errore assegnazione massiva fascicolo " + f.agc_fascicolo2id, e);
+                                    });
+                                });
+                            });
+
+                            return chain.then(function () {
+                                Xrm.Utility.closeProgressIndicator();
+                                try { selectedControl.refresh(); } catch (e) { /* ignore */ }
+
+                                var text = "Assegnati " + assignedCount + " fascicoli su " + fascicoli.length + ".";
+                                if (errorCount > 0) text += " " + errorCount + " assegnazioni non riuscite (vedi console).";
+
+                                return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva completata", text: text });
+                            });
+                        });
+                    });
+                })
+                .catch(function (err) {
+                    Xrm.Utility.closeProgressIndicator();
+                    var msg = (err && err.message) ? err.message : "Errore durante l'assegnazione massiva.";
+                    return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva non riuscita", text: msg });
+                });
+        });
+    }
+
+    /* ── Enable rule per la vista: mostra solo se nessun record è selezionato ── */
+    function isBulkAssignVisible(selectedControl) {
+        try {
+            var rows = selectedControl.getGrid().getSelectedRows();
+            return !rows || rows.getLength() === 0;
+        } catch (e) {
+            console.error("[ASPEN] isBulkAssignVisible error:", e);
+            return false;
+        }
+    }
+
     function openCloseDialog(formContext) {
         var rawId = formContext.data.entity.getId();
         var id = rawId ? rawId.replace(/[{}]/g, "") : "";
@@ -182,10 +294,12 @@ AgicAspen.AssegnaFascicolo = (function () {
     return {
         openDialog: openDialog,
         openDialogFromGrid: openDialogFromGrid,
+        openBulkAssignFromGrid: openBulkAssignFromGrid,
         openCloseDialog: openCloseDialog,
         onFormLoad: onFormLoad,
         isEnabledForm: isEnabledForm,
         isEnabledGrid: isEnabledGrid,
+        isBulkAssignVisible: isBulkAssignVisible,
         isCloseEnabledForm: isCloseEnabledForm
     };
 
