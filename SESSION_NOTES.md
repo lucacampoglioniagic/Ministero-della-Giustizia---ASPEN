@@ -108,6 +108,14 @@ ID reali individuati confrontando la ribbon compilata (`RetrieveEntityRibbon`) p
 - Dataverse live: `savedqueries` (2 view), `systemforms` (dashboard "Cruscotto ASPEN"), `webresourceset` (`agc_assignfascicolodialog.html`) — tutti pubblicati
 - `README.md` / `SESSION_NOTES.md` aggiornati
 
+### Bug aggiuntivo scoperto e risolto: `CaricoPerCanestro` mostrava "Errore: [object Object]"
+
+Durante la verifica visiva post-migrazione, la form "Fascicoli" del magistrato mostrava il messaggio d'errore `Errore: [object Object]` al posto del grafico "Carico per Canestro". Diagnosticato tramite console del browser (`UciError`/`storage` error): la query WebAPI del PCF selezionava ancora `agc_fascicoloid` come chiave primaria, ma la primary key della nuova tabella `agc_fascicolo2` è `agc_fascicolo2id` (verificato via `EntityDefinitions(LogicalName='agc_fascicolo2')?$select=PrimaryIdAttribute` → `agc_fascicolo2id`). Era un refuso residuo della migrazione tabellare del 06/07, non collegato direttamente al cambio Peso→Peso calcolato, ma bloccava proprio il PCF richiesto dall'utente in questo task.
+
+**Fix**: `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts` — `$select=agc_fascicoloid,...` → `$select=agc_fascicolo2id,...`. Ricompilato (`tsc --noEmit` + `npm run build`, entrambi puliti) e ridistribuito con lo stesso flusso `pac pcf push --publisher-prefix agc` + `pac solution import --force-overwrite --publish-changes`.
+
+**Verifica**: ricaricata la form del magistrato "Dott.ssa Laura Verdi", tab "Fascicoli" — il grafico "Carico per Canestro" ora renderizza correttamente le barre per canestro (pesi 17.0 pt e 14.0 pt), escludendo correttamente dal calcolo il fascicolo con stato "Chiuso" (12.00), coerentemente con la logica `_isClosedFascicolo`. Nessun errore residuo in console riferito al componente.
+
 ---
 
 ## Session 2026-07-06

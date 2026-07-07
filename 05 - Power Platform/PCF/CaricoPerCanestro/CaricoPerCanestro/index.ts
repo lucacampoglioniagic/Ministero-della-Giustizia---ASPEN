@@ -74,7 +74,7 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
     this._context.webAPI
       .retrieveMultipleRecords(
         "agc_fascicolo2",
-        `?$select=agc_fascicoloid,agc_pesocalcolato,agc_statocaso,_agc_canestrofascicolo_value` +
+        `?$select=agc_fascicolo2id,agc_pesocalcolato,agc_statocaso,_agc_canestrofascicolo_value` +
           `&$filter=_agc_magistratoassegnato_value eq ${magistratoId} and agc_pesocalcolato ne null`,
       )
       .then((res) => {
