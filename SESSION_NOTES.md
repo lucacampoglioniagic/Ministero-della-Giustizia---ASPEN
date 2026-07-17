@@ -4,6 +4,19 @@
 
 ---
 
+## Session 2026-07-17
+
+### What was done
+- **Script voiceover per video dimostrativo dell'app**: creato testo per TTS (~2,5 minuti di lettura, 350 parole) da montare come sottofondo audio su una registrazione schermo dell'applicazione. Copre, nell'ordine di navigazione concordato: Home (card operative + KPI), Cruscotto ASPEN (`CaricoMagistratiChart`, `StatoFascicoliChart`), griglia Fascicoli (comandi "Assegna Fascicolo" e "Assegnazione massiva"), form Magistrato (`CaricoPerCanestro`) — con enfasi esplicita sui componenti sviluppati con il supporto dell'intelligenza artificiale.
+- Registrazione schermo dell'app effettuata dall'utente (fuori repo) per il montaggio finale del video.
+
+### Files changed
+- `03 - Documentazione Prodotta/Video/ASPEN - Script Voiceover Demo.txt` (nuovo)
+- `README.md` — nuova riga in tabella "Documenti di riferimento" con link allo script
+- `SESSION_NOTES.md` — aggiunta sessione 2026-07-17
+
+---
+
 ## Session 2026-07-07
 
 ### What was done
