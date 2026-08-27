@@ -4,6 +4,42 @@
 
 ---
 
+## Session 2026-08-27 (pomeriggio/sera) — Fix regressioni post-migrazione Contatti + revisione modello Contact/User
+
+### Contesto
+Dopo la migrazione Magistrati → Contatti (vedi sessione 2026-08-27 sotto), l'utente ha segnalato 5 regressioni via screenshot e sollevato un dubbio architetturale: i magistrati accedono alla model-driven app tramite Entra ID con licenza personale, quindi a livello Dataverse dovrebbero autenticarsi come `systemuser`, non come `contact`. Uso di `contact` come "utente applicativo" è formalmente scorretto.
+
+### Decisione architetturale presa con l'utente
+Analizzate 3 opzioni (Opus): (A) tornare a `agc_giudice` + lookup a `systemuser`; (B) usare direttamente `systemuser` con colonne custom aggiunte; (C) mantenere `contact` come anagrafica arricchita, con una nuova lookup `contact → systemuser` per il collegamento all'utente applicativo. **Scelta: Opzione C** — nessun rollback della migrazione già fatta, aggiunta solo la lookup mancante (`agc_utenteapplicativo`, ancora da implementare — vedi todo `fix-lookup-contact-usersu`).
+
+### Regressioni corrette in questa sessione
+1. **Vista/colonna "Magistrato assegnato"** in Fascicoli aperti puntava ancora al vecchio Magistrato → causa: 6 viste salvate rimaste stale + webresource `agc_assignfascicolo.js` non ripubblicato dopo la migrazione. Risolto ripubblicando il webresource e correggendo le viste.
+2. **"Assegna Fascicolo" visibile anche a magistrato già assegnato** → stessa causa radice (webresource stale che rompeva `isEnabledForm`/`isEnabledGrid`). Risolto contestualmente al punto 1.
+3. **Pulsante "Chiudi Caso" non nascondibile** (era solo disabilitabile via `EnableRule`, mai nascosto). Aggiunto `HideCustomAction` dedicato in `RibbonDiff.xml` (Location punta all'ID del pulsante custom, non un alias OOB). Il deployment ha richiesto un **redeploy completo della solution `AgicAspenRibbon`**, bloccato da tempo da un errore `pac solution export` (`Entity Relationship ... not found in MetadataCache`, id `1e8be637-4f63-f111-ab0c-7ced8d4558ae`). **Sbloccato con un nuovo workaround**: `pac solution pack` direttamente dalla cartella unpacked locale (bypassa la query alla metadata cache rotta che blocca `export`), poi `pac solution import --publish-changes --async false`. Import iniziale fallito per `SqlException: Invalid column name 'agc_CanestroName'` causato dal componente deprecato `agc_fascicolo` (vecchia tabella) ancora incluso come RootComponent in `Solution.xml`; risolto rimuovendolo (rimozione mantenuta in via permanente, commit incluso).
+   - **Regressione secondaria emersa post-import**: dialog "Errore di script" — `Web resource method does not exist: AgicAspen.AssegnaFascicolo.onFormLoad` — bloccava di fatto il caricamento della command bar custom su ogni apertura della form Fascicolo. Diagnosticata a lungo (webresource verificato integro, FormXml con evento `onload` marcato `active="false"` ma comunque validato dal runtime, ribbon XML pulito). **Causa reale**: un **Service Worker** registrato sul dominio Dataverse (`navigator.serviceWorker`) serviva risposte cache stale indipendentemente dalle modifiche lato server; risolto con `unregister()` del service worker + cancellazione di tutte le Cache Storage via `caches.keys()`/`caches.delete()`. Rimosso anche, per pulizia, l'evento `onload` orfano (già disattivato ma causa di falsi errori) da entrambe le form "Informazioni" duplicate di `agc_fascicolo2`.
+   - Verificato in browser: nessun errore di script, "Chiudi Caso" correttamente nascosto, "Assegna Fascicolo" correttamente assente quando il magistrato è già assegnato. Commit `f6d20ba`.
+4. **PCF Cruscotto ASPEN**: ancora in attesa di fix — mostra dati riferiti alla vecchia tabella `agc_giudice` e il canestro risulta vuoto nei drill-down (todo `fix-dashboard-magistrati-contact`).
+5. **PCF "Carico per Canestro" mancante sulla form Contatto (magistrato)** — era presente sulla vecchia form Magistrato, va riaggiunto (todo `fix-caricopercanestro-form-contact`).
+
+### Chiarimento funzionale — carico magistrato "monotono" (da resoconto PDF)
+L'utente ha caricato `aspen_resoconto_modifiche.pdf` con una lista di modifiche da valutare una alla volta (Opus per analisi, ok esplicito utente, poi Sonnet per implementazione). Primo punto discusso: **il carico di un magistrato non deve mai diminuire per chiusura fascicolo** (comportamento richiesto esplicitamente dal cliente, pur riconosciuto "strano" dallo stesso). Regole chiarite:
+- Chiusura fascicolo → carico invariato (nessun decremento).
+- Riassegnazione (spostamento fascicolo da magistrato A a B) → il carico di A **deve** essere decrementato.
+- Nuovo magistrato in ingresso → parte dal carico minimo attuale tra i colleghi, meno il 10%, oppure da un punteggio fisso — regola esatta ancora da definire col cliente.
+- Baseline iniziale di carico: non definita, verrà comunicata in seguito dal cliente; non blocca l'implementazione attuale.
+- **Non ancora implementato in questa sessione** — resta todo aperto (`p311-carico-monotono`), da implementare quando si riprende la coda di analisi del PDF.
+
+### File modificati (repo)
+- `05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Entities/agc_Fascicolo2/RibbonDiff.xml` — nuovo `HideCustomAction` per "Chiudi Caso".
+- `05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Other/Solution.xml` — rimosso `agc_fascicolo` (deprecata) da RootComponents.
+- Commit: `f6d20ba`.
+
+### Differito
+- Todo aperti: `fix-lookup-contact-usersu`, `fix-dashboard-magistrati-contact`, `fix-caricopercanestro-form-contact`, e l'intera coda di analisi del PDF (`p31-esoneri` … `p310-integrazioni`, `p311-carico-monotono`, `p312-user-vs-contact`).
+- File `aspen_resoconto_modifiche.pdf` presente in root repo, ancora **non tracciato in git** — da decidere se versionarlo o tenerlo solo come riferimento locale.
+
+---
+
 ## Session 2026-08-27 — Migrazione tabella Magistrati (`agc_giudice`) → Contatti (`contact`)
 
 ### Contesto
