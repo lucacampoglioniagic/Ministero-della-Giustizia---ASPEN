@@ -53,7 +53,6 @@
       </Addresses>
     </Publisher>
     <RootComponents>
-      <RootComponent type="1" schemaName="agc_fascicolo" behavior="0" />
       <RootComponent type="1" schemaName="agc_fascicolo2" behavior="0" />
     </RootComponents>
     <MissingDependencies>

@@ -11,6 +11,11 @@
     <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.ShowThisView"
       Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.QuickPowerBI.Button"
       HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.ShowThisView.Hide" />
+    <!-- Il tasto "Chiudi Caso" nella form non serve piu' al cliente: nascosto (non solo
+         disabilitato) tramite HideCustomAction diretta sul controllo esistente. -->
+    <HideCustomAction Id="agc.Hide.Form.agc_fascicolo2.MainTab.Save.Chiudi"
+      Location="agc.Form.agc_fascicolo2.MainTab.Save.Chiudi.Button"
+      HideActionId="agc.Hide.Form.agc_fascicolo2.MainTab.Save.Chiudi.Hide" />
     <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.SendLinkByEmail"
       Location="Mscrm.HomepageGrid.agc_fascicolo2.Send"
       HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.SendLinkByEmail.Hide" />
