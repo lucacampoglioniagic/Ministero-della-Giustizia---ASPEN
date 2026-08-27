@@ -76,7 +76,7 @@ AgicAspen.AssegnaFascicolo = (function () {
 
             Xrm.Utility.showProgressIndicator("Assegnazione massiva in corso...");
 
-            Xrm.WebApi.retrieveMultipleRecords("agc_giudice", "?$select=agc_giudiceid,agc_nomecompleto&$orderby=agc_nomecompleto")
+            Xrm.WebApi.retrieveMultipleRecords("contact", "?$select=contactid,fullname&$filter=agc_ismagistrato eq true&$orderby=fullname")
                 .then(function (magResult) {
                     var magistrati = magResult.entities || [];
                     if (magistrati.length === 0) {
@@ -85,19 +85,19 @@ AgicAspen.AssegnaFascicolo = (function () {
                     }
 
                     var pesoPer = {};
-                    magistrati.forEach(function (m) { pesoPer[m.agc_giudiceid] = 0; });
+                    magistrati.forEach(function (m) { pesoPer[m.contactid] = 0; });
 
                     var filter = magistrati.map(function (m) {
-                        return "_agc_magistratoassegnato_value eq " + m.agc_giudiceid;
+                        return "_agc_magistratocontatto_value eq " + m.contactid;
                     }).join(" or ");
 
                     /* 1. Carico attuale di ogni magistrato (fascicoli non chiusi già assegnati) */
                     return Xrm.WebApi.retrieveMultipleRecords(
                         "agc_fascicolo2",
-                        "?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratoassegnato_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)"
+                        "?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratocontatto_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)"
                     ).then(function (caricoResult) {
                         (caricoResult.entities || []).forEach(function (f) {
-                            var mid = f["_agc_magistratoassegnato_value"];
+                            var mid = f["_agc_magistratocontatto_value"];
                             if (mid && pesoPer.hasOwnProperty(mid)) {
                                 pesoPer[mid] += (f.agc_pesocalcolato || 0);
                             }
@@ -106,7 +106,7 @@ AgicAspen.AssegnaFascicolo = (function () {
                         /* 2. Fascicoli attualmente non assegnati e non chiusi */
                         return Xrm.WebApi.retrieveMultipleRecords(
                             "agc_fascicolo2",
-                            "?$select=agc_pesocalcolato&$filter=_agc_magistratoassegnato_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
+                            "?$select=agc_pesocalcolato&$filter=_agc_magistratocontatto_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
                         ).then(function (unassignedResult) {
                             var fascicoli = unassignedResult.entities || [];
                             if (fascicoli.length === 0) {
@@ -123,14 +123,14 @@ AgicAspen.AssegnaFascicolo = (function () {
                             fascicoli.forEach(function (f) {
                                 chain = chain.then(function () {
                                     var migliore = magistrati.reduce(function (best, m) {
-                                        return pesoPer[m.agc_giudiceid] < pesoPer[best.agc_giudiceid] ? m : best;
+                                        return pesoPer[m.contactid] < pesoPer[best.contactid] ? m : best;
                                     });
                                     var peso = f.agc_pesocalcolato || 0;
 
                                     return Xrm.WebApi.updateRecord("agc_fascicolo2", f.agc_fascicolo2id, {
-                                        "agc_Magistratoassegnato@odata.bind": "/agc_giudices(" + migliore.agc_giudiceid + ")"
+                                        "agc_magistratocontatto@odata.bind": "/contacts(" + migliore.contactid + ")"
                                     }).then(function () {
-                                        pesoPer[migliore.agc_giudiceid] += peso;
+                                        pesoPer[migliore.contactid] += peso;
                                         assignedCount++;
                                     }).catch(function (e) {
                                         errorCount++;
@@ -227,7 +227,7 @@ AgicAspen.AssegnaFascicolo = (function () {
     /* ── Enable rule per la form: false se magistrato già assegnato ── */
     function isEnabledForm(formContext) {
         try {
-            var magistrato = formContext.getAttribute("agc_magistratoassegnato");
+            var magistrato = formContext.getAttribute("agc_magistratocontatto");
             console.log("[ASPEN] isEnabledForm - attr:", magistrato, "val:", magistrato ? magistrato.getValue() : "N/A");
             if (!magistrato) return true;
             var val = magistrato.getValue();
@@ -248,7 +248,7 @@ AgicAspen.AssegnaFascicolo = (function () {
             if (!rows || rows.getLength() !== 1) return false;
             var row = rows.getAll()[0];
 
-            var magistrato = row.data.entity.attributes.get("agc_magistratoassegnato");
+            var magistrato = row.data.entity.attributes.get("agc_magistratocontatto");
             console.log("[ASPEN] isEnabledGrid - attr:", magistrato, "val:", magistrato ? magistrato.getValue() : "N/A");
             if (magistrato) {
                 var val = magistrato.getValue();
@@ -261,7 +261,7 @@ AgicAspen.AssegnaFascicolo = (function () {
             var allAttrs = row.data.entity.attributes.getAll();
             for (var i = 0; i < allAttrs.length; i++) {
                 var name = allAttrs[i].getName();
-                if (name && name.toLowerCase().indexOf("magistratoassegnato") !== -1) {
+                if (name && name.toLowerCase().indexOf("magistratocontatto") !== -1) {
                     var v = allAttrs[i].getValue();
                     console.log("[ASPEN] isEnabledGrid fallback attr:", name, "=", v);
                     if (v !== null && v !== undefined && v !== "") return false;

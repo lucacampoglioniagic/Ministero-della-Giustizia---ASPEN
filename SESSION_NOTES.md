@@ -4,6 +4,50 @@
 
 ---
 
+## Session 2026-08-27 — Migrazione tabella Magistrati (`agc_giudice`) → Contatti (`contact`)
+
+### Contesto
+Richiesta cliente: i magistrati diventeranno gli utenti effettivi che accedono all'applicazione, quindi la tabella custom `agc_giudice` ("Magistrati") va sostituita ovunque dalla tabella standard `contact`, sfruttando l'autenticazione nativa di Dataverse per gli utenti Entra ID collegati ai contatti.
+
+### Analisi d'impatto
+Prodotta analisi approfondita (agente Opus) di tutti i punti toccati dalla migrazione: schema (colonne custom, lookup su `agc_fascicolo2`), dati (6 record giudice → 6 contact), viste e form, sitemap/dashboard, ribbon/comandi, PCF (`CaricoMagistratiChart`, `CaricoPerCanestro`, `StatoFascicoliChart`), plugin `SetOwnerTeamPlugin`, sicurezza (ruoli), webresource JS/HTML del flusso di assegnazione.
+
+### Modifiche eseguite
+1. **Schema**: aggiunta tabella `contact` alla solution ASPEN POC; create 4 colonne custom su `contact`; creata nuova lookup `agc_magistratocontatto` su `agc_fascicolo2` → `contact` (sostituisce `agc_magistratoassegnato` → `agc_giudice`).
+2. **Dati**: migrati tutti i 6 record giudice in altrettanti contact; ripuntate tutte le 31 assegnazioni `agc_fascicolo2` alla nuova lookup.
+3. **Viste/Form**: creata vista "Magistrati attivi" e form "Contatto - Magistrato" (con subgrid Fascicoli funzionante).
+4. **Codice**: aggiornati `agc_assignfascicolo.js`, `agc_assignfascicolodialog.html`, PCF `StatoFascicoliChart`, `CaricoPerCanestro`, commento manifest `CaricoMagistratiChart`, commento doc `SetOwnerTeamPlugin.cs`; relazioni `AgicAspenRibbon_unpacked` risincronizzate manualmente (export solution bloccato da un problema di metadati orfani non collegato).
+5. **Sitemap** (`agc_ASPEN`): voce "Magistrati" ripuntata da `agc_giudice` a `contact` con override titolo.
+6. **Dashboard "Cruscotto ASPEN"**: parametro `magistratoField` di `CaricoMagistratiChart` aggiornato da `agc_magistratoassegnato` a `agc_magistratocontatto` (tutti e 3 i formFactor).
+7. **Form principali `agc_fascicolo2`** (2 form "Informazioni"): controllo lookup "Magistrato assegnato" ripuntato alla nuova colonna.
+8. **Sicurezza**: individuato e corretto un gap critico — il ruolo "Operatore ASPEN" aveva privilegi su `agc_giudice` ma **zero privilegi su `contact`**, il che avrebbe bloccato l'accesso ai magistrati/utenti. Aggiunti privilegi Read/Append/AppendTo/Assign su `contact` al ruolo radice (propagati automaticamente ai ruoli ereditati nelle Business Unit figlie).
+9. **Comandi moderni**: verificato che la tabella Fascicolo non ha comandi Power Fx configurati — solo ribbon classico, già migrato.
+
+### Bug critico trovato e corretto in fase di test e2e
+Durante il test end-to-end del flusso "Assegna Fascicolo", il webresource **`agc_assignfascicolodialog.html` pubblicato su Dataverse era rimasto alla versione precedente la migrazione** (referenziava ancora `agc_magistratoassegnato`/`agc_giudice`), nonostante il file sorgente locale fosse già corretto — probabilmente perché l'ultimo aggiornamento non era stato ripubblicato dopo una modifica locale. Il sintomo era: dialog si apriva e mostrava correttamente i magistrati (da `contact`), ma il click su "Conferma Assegnazione" falliva silenziosamente (PATCH 400 su campo non più esistente) e il fascicolo restava non assegnato. Corretto ripubblicando il contenuto del file locale (base64 via `PATCH` su `webresourceset` + `PublishXml`). Verificato con nuovo test: assegnazione confermata correttamente e persistita.
+
+### Test end-to-end eseguiti (tutti superati)
+1. **Assegnazione singola**: dialog "Assegna Fascicolo" su un fascicolo non assegnato → conferma → fascicolo assegnato correttamente al magistrato con carico minore (verificato via API).
+2. **Assegnazione massiva**: pulsante griglia "Assegnazione massiva" con 0 righe selezionate → conferma → tutti i fascicoli rimasti senza magistrato assegnati correttamente (verificato: 0 fascicoli non assegnati residui).
+3. **Dashboard**: grafico "Carico per Magistrato" su "Cruscotto ASPEN" renderizza correttamente con nomi reali dei contatti.
+4. **Visibilità magistrato/non-magistrato**: creato un contatto di test con `agc_ismagistrato = false`, verificato che è correttamente escluso dai filtri/viste magistrato (`agc_ismagistrato eq true`), poi eliminato.
+
+### Differito (fuori scope in questa sessione)
+- Refresh completo `pac solution export`/unpack di `AgicAspenRibbon_unpacked` — bloccato da un problema di metadati orfani (relationship id `1e8be637-4f63-f111-ab0c-7ced8d4558ae`) non collegato alla migrazione.
+- Riposizionamento visivo del PCF `CaricoPerCanestro` sulla form Contatto (tab "Carico") — un precedente tentativo manuale sul FormXml ha causato un crash client transitorio; da riprovare con più cautela.
+- Tabella legacy `agc_fascicolo` (senza "2", non più usata/non in sitemap) ha ancora un riferimento a `agc_magistratoassegnato` sulla sua form principale — lasciata invariata poiché deprecata e fuori uso.
+
+### File modificati (repo)
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolodialog.html`
+- `05 - Power Platform/PCF-Pie/StatoFascicoliChart/index.ts` e `ControlManifest.Input.xml`
+- `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts`
+- `05 - Power Platform/PCF/CaricoMagistratiChart/ControlManifest.Input.xml` (commento)
+- `05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Other/Relationships.xml`, `Relationships/contact.xml`
+- `SESSION_NOTES.md`, `README.md`
+
+---
+
 ## Session 2026-07-17
 
 ### What was done

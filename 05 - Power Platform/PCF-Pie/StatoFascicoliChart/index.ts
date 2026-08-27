@@ -120,8 +120,8 @@ export class StatoFascicoliChart implements ComponentFramework.StandardControl<
       const row: FascicoloRow = {
         rg: (record.getValue("agc_numeroregistrogenerale") as string) || "—",
         magistrato:
-          record.getFormattedValue("agc_magistratoassegnato") ||
-          record.getFormattedValue("agc_magistratoassegnatoname") ||
+          record.getFormattedValue("agc_magistratocontatto") ||
+          record.getFormattedValue("agc_magistratocontattoname") ||
           "—",
         canestro:
           record.getFormattedValue("agc_canestrofascicolo") ||

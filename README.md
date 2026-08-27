@@ -92,13 +92,15 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | Tabella Dataverse | LogicalName | Descrizione |
 |---|---|---|
 | Canestro | `agc_canestrofascicolo` | Materie/competenze (es. Stupefacenti, Omicidio…) — ex `agc_canestro` |
-| Magistrato | `agc_giudice` | Giudici GIP/GUP con ruolo e stato attivo |
-| Fascicolo/Assegnazione | `agc_fascicolo2` | Fascicoli con peso calcolato e lookup a magistrato+canestro — ex `agc_fascicolo` |
+| Magistrato | `contact` (standard) | Contatti Dataverse con `agc_ismagistrato = true` — ex tabella custom `agc_giudice` |
+| Fascicolo/Assegnazione | `agc_fascicolo2` | Fascicoli con peso calcolato e lookup a magistrato (contact)+canestro — ex `agc_fascicolo` |
 | Configurazione | `agc_configurazione` | Parametri di sistema (`PesoLimite = 20`, `PesoLimiteCanestro = 30`) |
 
 > **Migrazione 06/07/2026:** le tabelle originali `agc_fascicolo` e `agc_canestro` sono state sostituite da `agc_fascicolo2` e `agc_canestrofascicolo`. La causa era una ghost relationship corrotta (`agc_CanestroName`) sulla tabella `agc_fascicolo` che impediva la creazione di nuovi fascicoli. Sono stati migrati 20 record. Commit: `7ca5685`.
 >
 > ⚠️ **`agc_fascicolo` e `agc_canestro` sono DISMESSE — NON USARE.** Restano in ambiente solo come backup storico dei dati originali (read-only), ma non sono più referenziate da alcun componente applicativo (PCF, ribbon, plugin, custom page). Tutto il codice e la documentazione devono fare riferimento esclusivamente a `agc_fascicolo2` e `agc_canestrofascicolo`. Qualsiasi nuovo sviluppo, form, view o automazione va creato solo sulle nuove tabelle.
+>
+> ⚠️ **Migrazione Magistrati → Contatti (27/08/2026):** la tabella custom `agc_giudice` è stata **sostituita dalla tabella standard `contact`**, poiché i magistrati diventeranno gli utenti effettivi autenticati dell'applicazione. Nuova lookup su `agc_fascicolo2`: **`agc_magistratocontatto`** → `contact` (sostituisce `agc_magistratoassegnato` → `agc_giudice`, ora dismessa). Tutti i riferimenti nel codice (webresource JS/HTML, PCF, dashboard, sitemap, ribbon) sono stati aggiornati; il ruolo di sicurezza "Operatore ASPEN" ha ricevuto i privilegi mancanti su `contact`. Le occorrenze di `agc_giudice`/`agc_magistratoassegnato` più sotto in questo documento sono **storiche** (riferite allo stato precedente al 27/08/2026) — vedi `SESSION_NOTES.md`, sessione 2026-08-27, per il dettaglio completo della migrazione.
 
 **Colonne chiave `agc_fascicolo2`:**
 

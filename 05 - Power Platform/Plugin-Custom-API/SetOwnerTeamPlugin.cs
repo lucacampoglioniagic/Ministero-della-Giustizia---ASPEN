@@ -5,9 +5,12 @@ using System;
 namespace AgicAspen.Plugins
 {
     /// <summary>
-    /// Pre-Operation Create plugin per agc_fascicolo, agc_magistrato (logical: agc_giudice), agc_canestro.
+    /// Pre-Operation Create plugin per agc_fascicolo, agc_canestro (e, storicamente, agc_giudice).
     /// Imposta il proprietario del record al default team della Business Unit dell'utente,
     /// garantendo la segregazione dei dati tra uffici giudiziari.
+    /// NOTA: dalla migrazione Magistrati -> Contatti, i magistrati sono record della tabella
+    /// standard "contact" (non più agc_giudice) e NON hanno questo plugin registrato: i contatti
+    /// mantengono la logica di ownership standard di Dataverse.
     /// </summary>
     public class SetOwnerTeamPlugin : PluginBase
     {

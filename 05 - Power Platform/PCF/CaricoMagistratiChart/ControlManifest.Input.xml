@@ -8,7 +8,7 @@
     <!--
       Tabella sorgente: agc_fascicolo2
       Mapping consigliato:
-        magistratoField  →  agc_magistratoassegnato  (Lookup → agc_giudice [display: Magistrato])
+        magistratoField  →  agc_magistratocontatto     (Lookup → contact [display: Magistrato])
         pesoField        →  agc_pesocalcolato         (Decimal, campo calcolato — sostituisce agc_peso dal 07/07/2026)
     -->
     <type-group name="pesoTypes">

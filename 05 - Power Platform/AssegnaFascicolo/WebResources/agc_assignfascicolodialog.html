@@ -375,7 +375,7 @@
 
       /* ── Load magistrati ── */
       fetch(
-        orgUrl + "/api/data/v9.2/agc_giudices?$select=agc_nomecompleto,agc_giudiceid&$orderby=agc_nomecompleto",
+        orgUrl + "/api/data/v9.2/contacts?$select=fullname,contactid&$filter=agc_ismagistrato eq true&$orderby=fullname",
         { headers: apiHeaders }
       )
         .then(function (r) { return r.json(); })
@@ -385,8 +385,8 @@
           document.getElementById("btn-conferma").disabled = false;
 
           (data.value || []).forEach(function (m) {
-            var id = m.agc_giudiceid;
-            var nome = m.agc_nomecompleto || "(senza nome)";
+            var id = m.contactid;
+            var nome = m.fullname || "(senza nome)";
 
             var item = document.createElement("div");
             item.className = "mag-item";
@@ -472,13 +472,13 @@
 
         // 1. Recupera tutti i magistrati con il loro peso totale (sum agc_pesocalcolato fascicoli assegnati)
         fetch(
-          orgUrl + "/api/data/v9.2/agc_giudices?$select=agc_giudiceid,agc_nomecompleto",
+          orgUrl + "/api/data/v9.2/contacts?$select=contactid,fullname&$filter=agc_ismagistrato eq true",
           { headers: apiHeaders }
         )
           .then(function (r) { return r.json(); })
           .then(function (magData) {
             var magistrati = (magData.value || []).filter(function (m) {
-              return !incompatibili[m.agc_giudiceid];
+              return !incompatibili[m.contactid];
             });
 
             if (magistrati.length === 0) {
@@ -488,21 +488,21 @@
 
             // 2. Per ogni magistrato compatibile, calcola il peso totale dei fascicoli assegnati
             var pesoPer = {};
-            magistrati.forEach(function (m) { pesoPer[m.agc_giudiceid] = 0; });
+            magistrati.forEach(function (m) { pesoPer[m.contactid] = 0; });
 
             var filter = magistrati.map(function (m) {
-              return "_agc_magistratoassegnato_value eq " + m.agc_giudiceid;
+              return "_agc_magistratocontatto_value eq " + m.contactid;
             }).join(" or ");
 
             return fetch(
-              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratoassegnato_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
+              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratocontatto_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
               { headers: apiHeaders }
             )
               .then(function (r) { return r.json(); })
               .then(function (fascData) {
                 (fascData.value || []).forEach(function (f) {
                   if (f.agc_statocaso === 2) return;
-                  var mid = f["_agc_magistratoassegnato_value"];
+                  var mid = f["_agc_magistratocontatto_value"];
                   if (mid && pesoPer.hasOwnProperty(mid)) {
                     pesoPer[mid] += (f.agc_pesocalcolato || 0);
                   }
@@ -510,12 +510,12 @@
 
                 // 3. Trova il magistrato col peso minore
                 var migliore = magistrati.reduce(function (best, m) {
-                  return pesoPer[m.agc_giudiceid] < pesoPer[best.agc_giudiceid] ? m : best;
+                  return pesoPer[m.contactid] < pesoPer[best.contactid] ? m : best;
                 });
 
                 // 4. Aggiorna il fascicolo con il magistrato scelto
                 var patchBody = JSON.stringify({
-                  "agc_Magistratoassegnato@odata.bind": "/agc_giudices(" + migliore.agc_giudiceid + ")"
+                  "agc_magistratocontatto@odata.bind": "/contacts(" + migliore.contactid + ")"
                 });
 
                 return fetch(
@@ -534,8 +534,8 @@
 
                     document.getElementById("spinner-overlay").classList.remove("show");
 
-                    var sub = "Assegnato a: " + (migliore.agc_nomecompleto || migliore.agc_giudiceid) +
-                      " (carico: " + pesoPer[migliore.agc_giudiceid].toFixed(1) + ")";
+                    var sub = "Assegnato a: " + (migliore.fullname || migliore.contactid) +
+                      " (carico: " + pesoPer[migliore.contactid].toFixed(1) + ")";
                     if (Object.keys(incompatibili).length > 0) {
                       sub += " | Esclusi: " + Object.values(incompatibili).join(", ");
                     }

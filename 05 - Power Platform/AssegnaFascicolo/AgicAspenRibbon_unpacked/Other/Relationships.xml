@@ -10,4 +10,5 @@
   <EntityRelationship Name="user_agc_fascicolo" />
   <EntityRelationship Name="agc_fascicolo2_Canestrofascicolo_agc_canestrofascicolo" />
   <EntityRelationship Name="agc_fascicolo2_Magistratoassegnato_agc_giudice" />
+  <EntityRelationship Name="agc_fascicolo2_magistratocontatto_contact" />
 </EntityRelationships>
