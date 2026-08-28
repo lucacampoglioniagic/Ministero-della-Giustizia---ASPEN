@@ -4,6 +4,27 @@
 
 ---
 
+## Session 2026-08-28 (cont.) — Implementazione punto 3.1 "Esoneri e sospensioni"
+
+### Tabella `agc_esonero` (nuova, ambiente `LCC-MINISTEROGIUSTIZIA-DEMO`, solution `ASPENPOC`)
+Campi: `agc_name` (primaria), `agc_magistrato` (lookup → contact, required), `agc_tipoesonero` (picklist: 1=Totale, 2=Parziale), `agc_percentualeesonero` (decimal, per esoneri parziali), `agc_datainizio`/`agc_datafine` (DateOnly), `agc_statoesonero` (picklist: 1=Attivo, 2=Chiuso, 3=Annullato), `agc_note` (memo), `agc_punteggioalmomentoesonero` (decimal, riservato a logica futura di riallineamento). Relazione `agc_contact_agc_esonero_Magistrato`.
+
+Form principale (`80d6c6f2-b3d6-42aa-92c0-d7287d0f9753`) ricostruita a mano via PATCH `systemforms` per includere tutti i campi custom (il form di default auto-generato da Dataverse conteneva solo nome + proprietario). Aggiunta una tab "Esoneri" con subgrid (vista "Visualizzazione associata Esonero") sul form "Contatto - Magistrato" (`ff4a3cde-18a2-f111-aaac-7c1e52764872`) per visibilità diretta degli esoneri di ogni magistrato.
+
+### Logica motore di assegnazione (esclusione/coefficiente esonero)
+Modificati sia `agc_assignfascicolodialog.html` (assegnazione singola, riscritta con `async/await` per maggiore leggibilità) sia `agc_assignfascicolo.js` (`openBulkAssignFromGrid`, assegnazione massiva):
+- Prima del calcolo del candidato migliore, si interrogano gli esoneri con `agc_statoesonero = Attivo` e la data odierna compresa tra `agc_datainizio` e `agc_datafine` (quest'ultima opzionale = esonero senza termine).
+- I magistrati con esonero **Totale** attivo vengono esclusi del tutto dalla candidatura.
+- I magistrati con esonero **Parziale** attivo vedono il proprio carico calcolato moltiplicato per il coefficiente `1 + percentuale/100` (es. 30% di esonero ⇒ carico equivalente ×1.3) prima del confronto con gli altri candidati — il carico "reale" resta comunque accumulato normalmente per le assegnazioni successive.
+- Il "riallineamento del punteggio al rientro dall'esonero" (campo `agc_punteggioalmomentoesonero` già predisposto) è **deferito**: richiede una decisione di design (flow schedulato vs plugin on-update) non ancora presa.
+
+Web resource aggiornati e pubblicati via Web API (`webresourceset` PATCH content + `PublishXml`). Verificata la sintassi JS di entrambi i file (`node --check`) prima del deploy.
+
+### Esito
+Todo `impl-esoneri` completato. Prossimi: `impl-rgnr-model`, `impl-ruolo-assegnazione`, `impl-carico-monotono`, poi `impl-continuita-fascicolo`.
+
+---
+
 ## Session 2026-08-28 — Analisi punto-per-punto `aspen_resoconto_modifiche.pdf` (gap analysis 3.1–3.12)
 
 ### Metodo

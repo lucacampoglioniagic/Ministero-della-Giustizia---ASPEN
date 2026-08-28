@@ -459,8 +459,34 @@
         window.close();
       });
 
+      /* ── Recupera esoneri attivi oggi per un elenco di magistrati ──
+         Ritorna una mappa contactid -> { tipo, percentuale } (solo esoneri con
+         agc_statoesonero = 1/Attivo e la data odierna compresa tra
+         agc_datainizio e agc_datafine, quest'ultima opzionale) */
+      function getEsoneriAttivi(contactIds) {
+        if (contactIds.length === 0) return Promise.resolve({});
+        var oggiIso = new Date().toISOString();
+        var filterEsoneri = contactIds.map(function (id) {
+          return "_agc_magistrato_value eq " + id;
+        }).join(" or ");
+
+        return fetch(
+          orgUrl + "/api/data/v9.2/agc_esoneros?$select=agc_tipoesonero,agc_percentualeesonero,_agc_magistrato_value&$filter=(" + filterEsoneri + ") and agc_statoesonero eq 1 and agc_datainizio le " + oggiIso + " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)",
+          { headers: apiHeaders }
+        )
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var esoneroPer = {};
+            (data.value || []).forEach(function (e) {
+              var mid = e["_agc_magistrato_value"];
+              if (mid) esoneroPer[mid] = { tipo: e.agc_tipoesonero, percentuale: e.agc_percentualeesonero || 0 };
+            });
+            return esoneroPer;
+          });
+      }
+
       /* ── Conferma: logica assegnazione reale ── */
-      document.getElementById("btn-conferma").addEventListener("click", function () {
+      document.getElementById("btn-conferma").addEventListener("click", async function () {
         document.getElementById("btn-conferma").disabled = true;
         document.getElementById("btn-annulla").disabled = true;
         document.getElementById("spinner-overlay").classList.add("show");
@@ -470,85 +496,103 @@
           return;
         }
 
-        // 1. Recupera tutti i magistrati con il loro peso totale (sum agc_pesocalcolato fascicoli assegnati)
-        fetch(
-          orgUrl + "/api/data/v9.2/contacts?$select=contactid,fullname&$filter=agc_ismagistrato eq true",
-          { headers: apiHeaders }
-        )
-          .then(function (r) { return r.json(); })
-          .then(function (magData) {
-            var magistrati = (magData.value || []).filter(function (m) {
-              return !incompatibili[m.contactid];
-            });
-
-            if (magistrati.length === 0) {
-              showError("Tutti i magistrati sono stati marcati come incompatibili. Rimuovi almeno un'incompatibilità.");
-              return;
-            }
-
-            // 2. Per ogni magistrato compatibile, calcola il peso totale dei fascicoli assegnati
-            var pesoPer = {};
-            magistrati.forEach(function (m) { pesoPer[m.contactid] = 0; });
-
-            var filter = magistrati.map(function (m) {
-              return "_agc_magistratocontatto_value eq " + m.contactid;
-            }).join(" or ");
-
-            return fetch(
-              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratocontatto_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
-              { headers: apiHeaders }
-            )
-              .then(function (r) { return r.json(); })
-              .then(function (fascData) {
-                (fascData.value || []).forEach(function (f) {
-                  if (f.agc_statocaso === 2) return;
-                  var mid = f["_agc_magistratocontatto_value"];
-                  if (mid && pesoPer.hasOwnProperty(mid)) {
-                    pesoPer[mid] += (f.agc_pesocalcolato || 0);
-                  }
-                });
-
-                // 3. Trova il magistrato col peso minore
-                var migliore = magistrati.reduce(function (best, m) {
-                  return pesoPer[m.contactid] < pesoPer[best.contactid] ? m : best;
-                });
-
-                // 4. Aggiorna il fascicolo con il magistrato scelto
-                var patchBody = JSON.stringify({
-                  "agc_magistratocontatto@odata.bind": "/contacts(" + migliore.contactid + ")"
-                });
-
-                return fetch(
-                  orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")",
-                  {
-                    method: "PATCH",
-                    headers: Object.assign({}, apiHeaders, {
-                      "Content-Type": "application/json; charset=utf-8",
-                      "If-Match": "*"
-                    }),
-                    body: patchBody
-                  }
-                )
-                  .then(function (r) {
-                    if (!r.ok) throw new Error("HTTP " + r.status);
-
-                    document.getElementById("spinner-overlay").classList.remove("show");
-
-                    var sub = "Assegnato a: " + (migliore.fullname || migliore.contactid) +
-                      " (carico: " + pesoPer[migliore.contactid].toFixed(1) + ")";
-                    if (Object.keys(incompatibili).length > 0) {
-                      sub += " | Esclusi: " + Object.values(incompatibili).join(", ");
-                    }
-                    document.getElementById("success-sub").textContent = sub;
-                    document.getElementById("success-screen").classList.add("show");
-
-                    setTimeout(function () { window.close(); }, 3000);
-                  });
-              });
-          })
-          .catch(function (err) {
-            showError("Errore durante l'assegnazione: " + (err.message || err));
+        try {
+          // 1. Recupera tutti i magistrati compatibili
+          var magResp = await fetch(
+            orgUrl + "/api/data/v9.2/contacts?$select=contactid,fullname&$filter=agc_ismagistrato eq true",
+            { headers: apiHeaders }
+          );
+          var magData = await magResp.json();
+          var magistrati = (magData.value || []).filter(function (m) {
+            return !incompatibili[m.contactid];
           });
+
+          if (magistrati.length === 0) {
+            showError("Tutti i magistrati sono stati marcati come incompatibili. Rimuovi almeno un'incompatibilità.");
+            return;
+          }
+
+          // 2. Esclude i magistrati con esonero Totale (tipo 1) attivo oggi
+          var esoneroPer = await getEsoneriAttivi(magistrati.map(function (m) { return m.contactid; }));
+          magistrati = magistrati.filter(function (m) {
+            var es = esoneroPer[m.contactid];
+            return !(es && es.tipo === 1);
+          });
+
+          if (magistrati.length === 0) {
+            showError("Tutti i magistrati compatibili sono in esonero totale. Impossibile assegnare automaticamente.");
+            return;
+          }
+
+          // 3. Calcola il peso totale (carico) dei fascicoli assegnati a ciascun candidato
+          var pesoPer = {};
+          magistrati.forEach(function (m) { pesoPer[m.contactid] = 0; });
+
+          var filter = magistrati.map(function (m) {
+            return "_agc_magistratocontatto_value eq " + m.contactid;
+          }).join(" or ");
+
+          var fascResp = await fetch(
+            orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratocontatto_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
+            { headers: apiHeaders }
+          );
+          var fascData = await fascResp.json();
+          (fascData.value || []).forEach(function (f) {
+            if (f.agc_statocaso === 2) return;
+            var mid = f["_agc_magistratocontatto_value"];
+            if (mid && pesoPer.hasOwnProperty(mid)) {
+              pesoPer[mid] += (f.agc_pesocalcolato || 0);
+            }
+          });
+
+          // 4. Applica il coefficiente di esonero parziale (tipo 2) al carico calcolato:
+          // un magistrato con esonero parziale ha una capacità ridotta, quindi il suo
+          // carico "equivalente" ai fini del confronto viene aumentato proporzionalmente
+          // (es. 30% di esonero => carico equivalente = carico reale * (1 + 0.30))
+          magistrati.forEach(function (m) {
+            var es = esoneroPer[m.contactid];
+            if (es && es.tipo === 2 && es.percentuale > 0) {
+              pesoPer[m.contactid] = pesoPer[m.contactid] * (1 + es.percentuale / 100);
+            }
+          });
+
+          // 5. Trova il magistrato col peso (equivalente) minore
+          var migliore = magistrati.reduce(function (best, m) {
+            return pesoPer[m.contactid] < pesoPer[best.contactid] ? m : best;
+          });
+
+          // 6. Aggiorna il fascicolo con il magistrato scelto
+          var patchBody = JSON.stringify({
+            "agc_magistratocontatto@odata.bind": "/contacts(" + migliore.contactid + ")"
+          });
+
+          var patchResp = await fetch(
+            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")",
+            {
+              method: "PATCH",
+              headers: Object.assign({}, apiHeaders, {
+                "Content-Type": "application/json; charset=utf-8",
+                "If-Match": "*"
+              }),
+              body: patchBody
+            }
+          );
+          if (!patchResp.ok) throw new Error("HTTP " + patchResp.status);
+
+          document.getElementById("spinner-overlay").classList.remove("show");
+
+          var sub = "Assegnato a: " + (migliore.fullname || migliore.contactid) +
+            " (carico: " + pesoPer[migliore.contactid].toFixed(1) + ")";
+          if (Object.keys(incompatibili).length > 0) {
+            sub += " | Esclusi: " + Object.values(incompatibili).join(", ");
+          }
+          document.getElementById("success-sub").textContent = sub;
+          document.getElementById("success-screen").classList.add("show");
+
+          setTimeout(function () { window.close(); }, 3000);
+        } catch (err) {
+          showError("Errore durante l'assegnazione: " + (err.message || err));
+        }
       });
 
       /* ── Chiudi (success) ── */
