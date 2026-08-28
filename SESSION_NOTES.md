@@ -25,7 +25,9 @@ La `HideCustomAction` per `agc_fascicolo2` era già presente nel sorgente locale
 ### Esito
 - Nessuna modifica netta ai file sorgente tracciati in git (il codice `StatoFascicoliChart` e i `RibbonDiff.xml` erano già corretti; i problemi erano tutti lato ambiente/deploy).
 - Modifiche live: `savedqueries(3c5b46e1-...)` (layoutxml + publish), `webresourceset(8ecdd1f4-...)` bundle.js (rebuild + publish), solution `AgicAspenRibbon` reimportata e pubblicata.
-- ⚠️ Da confermare con l'utente in browser (con hard refresh) che entrambi i problemi sono ora risolti.
+
+### Aggiornamento — "Chiudi Caso" ancora visibile dopo il primo redeploy (HideCustomAction inefficace)
+L'utente ha confermato il grafico corretto (e di aver corretto autonomamente, lato form principale `agc_fascicolo2`, una lookup "Magistrato" ancora puntata alla vecchia tabella `agc_giudice` invece di `contact`), ma il pulsante "Chiudi Caso" restava visibile anche dopo il reimport della solution `AgicAspenRibbon` con la `HideCustomAction`. **Causa**: `HideCustomAction` non ha rimosso il bottone dal merge live (confermato ripetendo `RetrieveEntityRibbon` post-import: il `<Button>` "Chiudi Caso" risultava ancora presente, senza alcuna traccia dell'hide) — evidentemente inefficace per un bottone custom creato nello stesso file di diff. **Fix definitivo**: rimossi del tutto da `RibbonDiff.xml` (`AgicAspenRibbon_unpacked/Entities/agc_Fascicolo2/`) la `CustomAction`/`Button` "Chiudi Caso", la `CommandDefinition` e la `EnableRule` associate (oltre alla `HideCustomAction`, ormai inutile) — il bottone non viene proprio più generato, invece di essere nascosto. Ripetuto pack (con lo stesso workaround di esclusione temporanea della cartella `agc_Fascicolo`) + import + publish. **Verificato**: `RetrieveEntityRibbon` post-deploy non contiene più alcun riferimento a "Chiudi" nell'XML della ribbon di `agc_fascicolo2` — rimozione confermata lato server (più affidabile della verifica precedente basata su Hide). Il webresource JS (`agc_assignfascicolo.js`, funzioni `openCloseDialog`/`isCloseEnabledForm`) non è stato toccato: resta come codice morto innocuo, non più referenziato da alcun comando.
 
 ---
 

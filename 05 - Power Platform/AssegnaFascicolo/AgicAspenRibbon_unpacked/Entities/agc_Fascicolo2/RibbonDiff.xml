@@ -11,11 +11,6 @@
     <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.ShowThisView"
       Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.QuickPowerBI.Button"
       HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.ShowThisView.Hide" />
-    <!-- Il tasto "Chiudi Caso" nella form non serve piu' al cliente: nascosto (non solo
-         disabilitato) tramite HideCustomAction diretta sul controllo esistente. -->
-    <HideCustomAction Id="agc.Hide.Form.agc_fascicolo2.MainTab.Save.Chiudi"
-      Location="agc.Form.agc_fascicolo2.MainTab.Save.Chiudi.Button"
-      HideActionId="agc.Hide.Form.agc_fascicolo2.MainTab.Save.Chiudi.Hide" />
     <HideCustomAction Id="agc.Hide.HomepageGrid.agc_fascicolo2.SendLinkByEmail"
       Location="Mscrm.HomepageGrid.agc_fascicolo2.Send"
       HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.SendLinkByEmail.Hide" />
@@ -57,23 +52,6 @@
       </CommandUIDefinition>
     </CustomAction>
 
-    <!-- Tasto chiusura caso nella FORM del fascicolo -->
-    <CustomAction Id="agc.Form.agc_fascicolo2.MainTab.Save.Chiudi.CustomAction"
-      Location="Mscrm.Form.agc_fascicolo2.MainTab.Save.Controls._children"
-      Sequence="22">
-      <CommandUIDefinition>
-        <Button Id="agc.Form.agc_fascicolo2.MainTab.Save.Chiudi.Button"
-          Command="agc.Form.agc_fascicolo2.Chiudi.Command"
-          LabelText="Chiudi Caso"
-          Alt="Chiudi Caso"
-          ToolTipTitle="Chiudi Caso"
-          ToolTipDescription="Chiude il fascicolo dopo conferma"
-          TemplateAlias="o1"
-          Sequence="22"
-          ModernImage="$webresource:agc_closefascicolo_icon.svg" />
-      </CommandUIDefinition>
-    </CustomAction>
-
     <!-- Tasto nella VISTA (grid) del fascicolo -->
     <CustomAction Id="agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.CustomAction"
       Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.Actions.Controls._children"
@@ -112,21 +90,6 @@
       </Actions>
     </CommandDefinition>
 
-    <!-- Command FORM chiusura -->
-    <CommandDefinition Id="agc.Form.agc_fascicolo2.Chiudi.Command">
-      <EnableRules>
-        <EnableRule Id="Mscrm.FormStateExistingOrReadOnly" />
-        <EnableRule Id="agc.Chiudi.NotClosed.Form.EnableRule" />
-      </EnableRules>
-      <DisplayRules />
-      <Actions>
-        <JavaScriptFunction FunctionName="AgicAspen.AssegnaFascicolo.openCloseDialog"
-          Library="$webresource:agc_assignfascicolo.js">
-          <CrmParameter Value="PrimaryControl" />
-        </JavaScriptFunction>
-      </Actions>
-    </CommandDefinition>
-
     <!-- Command GRID -->
     <CommandDefinition Id="agc.HomepageGrid.agc_fascicolo2.Assegna.Command">
       <EnableRules>
@@ -156,15 +119,6 @@
       <!-- Form: disabilita se agc_magistratoassegnato già valorizzato -->
       <EnableRule Id="agc.Assegna.NotAssigned.Form.EnableRule">
         <CustomRule FunctionName="AgicAspen.AssegnaFascicolo.isEnabledForm"
-          Library="$webresource:agc_assignfascicolo.js"
-          Default="false">
-          <CrmParameter Value="PrimaryControl" />
-        </CustomRule>
-      </EnableRule>
-
-      <!-- Form: disabilita chiusura se già chiuso -->
-      <EnableRule Id="agc.Chiudi.NotClosed.Form.EnableRule">
-        <CustomRule FunctionName="AgicAspen.AssegnaFascicolo.isCloseEnabledForm"
           Library="$webresource:agc_assignfascicolo.js"
           Default="false">
           <CrmParameter Value="PrimaryControl" />
