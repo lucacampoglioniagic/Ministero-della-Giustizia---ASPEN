@@ -782,4 +782,54 @@ Durante la verifica visiva post-migrazione, la form "Fascicoli" del magistrato m
 
 ---
 
+## Sessione — Fix bug continuità RGNR (dialog singolo)
+
+### Contesto
+Segnalato dall'utente: RGNR `12321321` con due fascicoli, RG-2026/0113 (senza magistrato) e
+RG-2026/7475 (assegnato a Laura Verdi). Eseguendo "Assegna Fascicolo" su RG-2026/0113 ci si
+aspettava l'ereditarietà del magistrato per continuità RGNR (regola 3.3), ma è stato assegnato
+Alessia Gialli tramite l'algoritmo normale a minor carico.
+
+### Root cause
+In `agc_assignfascicolodialog.html` (blocco "0b. Continuità fascicolo"), la query di ricerca del
+fascicolo "fratello" con lo stesso RGNR usava:
+```
+$select=_agc_magistratocontatto_value,agc_magistratocontattoname&...
+```
+`agc_magistratocontattoname` **non è un campo reale** nel Web API di Dataverse (i lookup non
+espongono un campo "name" selezionabile: il valore visualizzato va richiesto tramite
+l'annotazione `@OData.Community.Display.V1.FormattedValue` con header `Prefer:
+odata.include-annotations="*"`). La richiesta falliva quindi con **HTTP 400 Bad Request**
+("Could not find a property named 'agc_magistratocontattoname'..."), ma il codice non
+controllava `siblingResp.ok` prima di leggere `.json()`: il body d'errore non ha una proprietà
+`value`, quindi `sibling` risultava `undefined` e la continuità veniva **silenziosamente
+saltata**, senza errori visibili, ricadendo sull'algoritmo di assegnazione normale.
+
+Verificato riproducendo esattamente la query via REST API (stesso 400) e confermando che la
+logica bulk in `agc_assignfascicolo.js` (usata da "Assegnazione massiva") **non ha lo stesso
+bug**: seleziona solo `_agc_rgnr_value,_agc_magistratocontatto_value`, campi reali.
+
+### Fix
+- Rimosso `agc_magistratocontattoname` dal `$select`.
+- Aggiunto header `Prefer: odata.include-annotations="*"` alla fetch della query sibling, per
+  poter leggere il nome visualizzato tramite
+  `sibling["_agc_magistratocontatto_value@OData.Community.Display.V1.FormattedValue"]`.
+- Aggiunto controllo esplicito `if (!siblingResp.ok) throw new Error(...)` per evitare che futuri
+  errori di questa chiamata vengano ignorati silenziosamente.
+- File: `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolodialog.html`.
+- Ridistribuito il webresource (`webresourceid bac3c3e4-7b63-f111-ab0c-7ced8d4558ae`) via PATCH +
+  PublishXml e verificato che il contenuto live combacia col sorgente locale.
+- Verificato via REST che la query corretta ora trova il sibling RG-2026/7475 con
+  `_agc_magistratocontatto_value@OData.Community.Display.V1.FormattedValue = "Laura Verdi"`.
+
+### Lezione
+Stesso pattern di bug già visto in questa sessione (campo/bundle non allineato), ma qui la causa
+è diversa: un **nome di campo Web API inventato** (retaggio di sintassi FetchXML/SOAP dove i
+lookup avevano un attributo "name" leggibile direttamente) che causa un 400 silenziosamente
+ignorato per mancanza di controllo `response.ok`. Da tenere a mente: nel Web API v9+ i lookup
+espongono solo `_xxx_value`; il nome va richiesto con l'header `Prefer:
+odata.include-annotations="*"` e letto dall'annotazione `@OData.Community.Display.V1.FormattedValue`.
+
+---
+
 

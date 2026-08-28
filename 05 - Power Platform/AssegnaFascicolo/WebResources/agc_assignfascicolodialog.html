@@ -537,9 +537,10 @@
           // (a meno che non sia stato marcato come incompatibile in questo dialog).
           if (rgnrId) {
             var siblingResp = await fetch(
-              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=_agc_magistratocontatto_value,agc_magistratocontattoname&$filter=_agc_rgnr_value eq " + rgnrId + " and agc_fascicolo2id ne " + fascicoloId + " and _agc_magistratocontatto_value ne null&$top=1",
-              { headers: apiHeaders }
+              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=_agc_magistratocontatto_value&$filter=_agc_rgnr_value eq " + rgnrId + " and agc_fascicolo2id ne " + fascicoloId + " and _agc_magistratocontatto_value ne null&$top=1",
+              { headers: Object.assign({}, apiHeaders, { "Prefer": 'odata.include-annotations="*"' }) }
             );
+            if (!siblingResp.ok) throw new Error("HTTP " + siblingResp.status + " (verifica continuità RGNR)");
             var siblingData = await siblingResp.json();
             var sibling = (siblingData.value || [])[0];
 
@@ -564,7 +565,7 @@
 
               document.getElementById("spinner-overlay").classList.remove("show");
               document.getElementById("success-sub").textContent =
-                "Assegnato per continuità RGNR a: " + (sibling.agc_magistratocontattoname || contId);
+                "Assegnato per continuità RGNR a: " + (sibling["_agc_magistratocontatto_value@OData.Community.Display.V1.FormattedValue"] || contId);
               document.getElementById("success-screen").classList.add("show");
               setTimeout(function () { window.close(); }, 3000);
               return;
