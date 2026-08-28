@@ -832,4 +832,46 @@ odata.include-annotations="*"` e letto dall'annotazione `@OData.Community.Displa
 
 ---
 
+## Session 2026-08-28 (sera, cont.) — Risposta ticket Microsoft Support, chiarimento esoneri e RGNR concettuale
 
+### Risposta al ticket Microsoft Support (corruzione EntityMap `agc_fascicolo`)
+Seguito alla richiesta di informazioni aggiuntive del supporto Microsoft (Iwayemi) sul ticket
+aperto in sessione precedente per la relazione orfana `1e8be637-4f63-f111-ab0c-7ced8d4558ae` e
+l'errore `Entity Relationship ... not found in MetadataCache` durante `pac solution export`.
+L'utente ha fornito al supporto:
+- **Errore esatto** e comportamento: sempre riproducibile, ad ogni tentativo di export/pack.
+- **Decorrenza**: da metà luglio 2026, in coincidenza con una modifica alla tabella
+  `agc_fascicolo` (poi sostituita dal workaround `agc_fascicolo2`, si veda il modello RGNR
+  padre/figlio documentato in sessioni precedenti).
+- **Impatto**: limitato alle operazioni maker/admin di export/pack della solution; nessun impatto
+  sugli utenti finali dell'app in produzione/dev.
+- **Ambiente**: riprodotto solo su dev/sandbox `lccministerogiustiziademo.crm4.dynamics.com`, non
+  testato su altri ambienti.
+- **Disponibilità per call di supporto**: da martedì in poi, 15:00–16:00 CET.
+
+Il ticket resta **aperto**, in attesa di riscontro/intervento backend da parte di Microsoft. Nessuna
+azione ulteriore possibile lato codice/API fino alla risposta.
+
+### Chiarimento comportamento esoneri (non un bug)
+Segnalazione iniziale dell'utente: creato un esonero **Totale** per la magistrata Anna Greco con
+**Data Inizio = 29/08/2026** (giorno successivo) e **Stato Esonero = Attivo**; lanciata
+un'assegnazione massiva lo stesso giorno (28/08/2026) e alcuni fascicoli sono stati comunque
+assegnati ad Anna Greco.
+
+Verificato **non è un bug**: la logica di esclusione per esonero attivo (in
+`agc_assignfascicolodialog.html` e `agc_assignfascicolo.js`) filtra correttamente sulla congiunzione
+`agc_statoesonero = Attivo` **AND** `agc_datainizio <= oggi` **AND** (`agc_datafine >= oggi` OR
+null). Poiché la Data Inizio era impostata al giorno successivo rispetto al giorno
+dell'assegnazione, l'esonero non era ancora efficace: comportamento corretto per design.
+Confermato dall'utente dopo aver rifatto la prova con Data Inizio odierna ("Hai ragione, con la
+data di oggi funziona"). **Nessuna modifica al codice necessaria.**
+
+### Chiarimento concettuale RGNR (nessuna modifica al codice)
+Fornita spiegazione a scopo di comprensione sul modello RGNR già implementato in sessioni
+precedenti: l'RGNR (Registro Generale delle Notizie di Reato) è il "registro padre" del
+procedimento penale, sotto cui possono essere raggruppati più fascicoli GIP/GUP "figli" (ciascuno
+con il proprio numero di RG specifico, campo `agc_numeroregistrogenerale` su `agc_fascicolo2`).
+Da qui la regola di continuità di assegnazione: fascicoli figli con lo stesso RGNR devono, quando
+possibile, essere assegnati allo stesso magistrato. Nessun impatto sul codice in questa sessione.
+
+---
