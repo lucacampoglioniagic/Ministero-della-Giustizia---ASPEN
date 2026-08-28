@@ -76,7 +76,7 @@ AgicAspen.AssegnaFascicolo = (function () {
 
             Xrm.Utility.showProgressIndicator("Assegnazione massiva in corso...");
 
-            Xrm.WebApi.retrieveMultipleRecords("contact", "?$select=contactid,fullname&$filter=agc_ismagistrato eq true&$orderby=fullname")
+            Xrm.WebApi.retrieveMultipleRecords("contact", "?$select=contactid,fullname,agc_caricoattuale&$filter=agc_ismagistrato eq true&$orderby=fullname")
                 .then(function (magResult) {
                     var magistrati = magResult.entities || [];
                     if (magistrati.length === 0) {
@@ -121,101 +121,94 @@ AgicAspen.AssegnaFascicolo = (function () {
                             coeffPer[m.contactid] = (es && es.tipo === 2 && es.percentuale > 0) ? (1 + es.percentuale / 100) : 1;
                         });
 
+                        /* 1. Carico cumulativo attuale (agc_caricoattuale, regola 3.11 "carico
+                           monotono": cresce con ogni assegnazione, non diminuisce mai per
+                           chiusura fascicolo). pesoPer tiene il carico REALE (senza coefficiente),
+                           usato sia per il confronto (moltiplicato per coeffPer) sia per il
+                           salvataggio persistente su contact al termine di ogni assegnazione. */
                         var pesoPer = {};
-                        magistrati.forEach(function (m) { pesoPer[m.contactid] = 0; });
+                        magistrati.forEach(function (m) { pesoPer[m.contactid] = m.agc_caricoattuale || 0; });
 
-                        var filter = magistrati.map(function (m) {
-                            return "_agc_magistratocontatto_value eq " + m.contactid;
-                        }).join(" or ");
-
-                        /* 1. Carico attuale di ogni magistrato (fascicoli non chiusi già assegnati) */
+                        /* 1b. Continuità fascicolo (3.3): mappa RGNR -> magistrato già assegnato,
+                           per assegnare automaticamente allo stesso magistrato i fascicoli dello
+                           stesso RGNR ancora da assegnare. */
                         return Xrm.WebApi.retrieveMultipleRecords(
                             "agc_fascicolo2",
-                            "?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratocontatto_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)"
-                        ).then(function (caricoResult) {
-                            (caricoResult.entities || []).forEach(function (f) {
-                                var mid = f["_agc_magistratocontatto_value"];
-                                if (mid && pesoPer.hasOwnProperty(mid)) {
-                                    pesoPer[mid] += (f.agc_pesocalcolato || 0);
-                                }
+                            "?$select=_agc_rgnr_value,_agc_magistratocontatto_value&$filter=_agc_rgnr_value ne null and _agc_magistratocontatto_value ne null"
+                        ).then(function (rgnrResult) {
+                            var rgnrToMagistrato = {};
+                            (rgnrResult.entities || []).forEach(function (f) {
+                                var rgnrId = f["_agc_rgnr_value"];
+                                var magId = f["_agc_magistratocontatto_value"];
+                                if (rgnrId && magId && !rgnrToMagistrato[rgnrId]) rgnrToMagistrato[rgnrId] = magId;
                             });
 
-                            /* 1b. Continuità fascicolo (3.3): mappa RGNR -> magistrato già assegnato,
-                               per assegnare automaticamente allo stesso magistrato i fascicoli dello
-                               stesso RGNR ancora da assegnare. */
+                            /* 2. Fascicoli attualmente non assegnati e non chiusi */
                             return Xrm.WebApi.retrieveMultipleRecords(
                                 "agc_fascicolo2",
-                                "?$select=_agc_rgnr_value,_agc_magistratocontatto_value&$filter=_agc_rgnr_value ne null and _agc_magistratocontatto_value ne null"
-                            ).then(function (rgnrResult) {
-                                var rgnrToMagistrato = {};
-                                (rgnrResult.entities || []).forEach(function (f) {
-                                    var rgnrId = f["_agc_rgnr_value"];
-                                    var magId = f["_agc_magistratocontatto_value"];
-                                    if (rgnrId && magId && !rgnrToMagistrato[rgnrId]) rgnrToMagistrato[rgnrId] = magId;
-                                });
+                                "?$select=agc_pesocalcolato,_agc_rgnr_value&$filter=_agc_magistratocontatto_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
+                            ).then(function (unassignedResult) {
+                                var fascicoli = unassignedResult.entities || [];
+                                if (fascicoli.length === 0) {
+                                    Xrm.Utility.closeProgressIndicator();
+                                    return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva", text: "Non ci sono fascicoli da assegnare." });
+                                }
 
-                                /* 2. Fascicoli attualmente non assegnati e non chiusi */
-                                return Xrm.WebApi.retrieveMultipleRecords(
-                                    "agc_fascicolo2",
-                                    "?$select=agc_pesocalcolato,_agc_rgnr_value&$filter=_agc_magistratocontatto_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
-                                ).then(function (unassignedResult) {
-                                    var fascicoli = unassignedResult.entities || [];
-                                    if (fascicoli.length === 0) {
-                                        Xrm.Utility.closeProgressIndicator();
-                                        return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva", text: "Non ci sono fascicoli da assegnare." });
-                                    }
+                                /* 3. Assegnazione sequenziale: ogni assegnazione aggiorna il carico
+                                   cumulativo (reale, non l'equivalente) sia in memoria che sul
+                                   record contact, prima di calcolare il magistrato migliore per il
+                                   fascicolo successivo (confrontando sempre il carico equivalente
+                                   = carico reale * coefficiente esonero). Se il fascicolo appartiene
+                                   a un RGNR già assegnato ad un magistrato compatibile, si applica la
+                                   continuità invece del calcolo per carico. Il carico non viene mai
+                                   decrementato in questo flusso (nessuna chiusura qui). */
+                                var assignedCount = 0;
+                                var errorCount = 0;
+                                var chain = Promise.resolve();
 
-                                    /* 3. Assegnazione sequenziale: ogni assegnazione aggiorna il carico
-                                       (reale, non l'equivalente) prima di calcolare il magistrato migliore
-                                       per il fascicolo successivo, confrontando sempre il carico equivalente
-                                       (carico reale * coefficiente esonero). Se il fascicolo appartiene a un
-                                       RGNR già assegnato ad un magistrato compatibile, si applica la
-                                       continuità invece del calcolo per carico. */
-                                    var assignedCount = 0;
-                                    var errorCount = 0;
-                                    var chain = Promise.resolve();
+                                fascicoli.forEach(function (f) {
+                                    chain = chain.then(function () {
+                                        var rgnrId = f["_agc_rgnr_value"];
+                                        var continuitaMagId = rgnrId ? rgnrToMagistrato[rgnrId] : null;
+                                        var continuitaOk = continuitaMagId && pesoPer.hasOwnProperty(continuitaMagId);
 
-                                    fascicoli.forEach(function (f) {
-                                        chain = chain.then(function () {
-                                            var rgnrId = f["_agc_rgnr_value"];
-                                            var continuitaMagId = rgnrId ? rgnrToMagistrato[rgnrId] : null;
-                                            var continuitaOk = continuitaMagId && pesoPer.hasOwnProperty(continuitaMagId);
+                                        var scelto;
+                                        if (continuitaOk) {
+                                            scelto = continuitaMagId;
+                                        } else {
+                                            var migliore = magistrati.reduce(function (best, m) {
+                                                var pesoM = pesoPer[m.contactid] * coeffPer[m.contactid];
+                                                var pesoBest = pesoPer[best.contactid] * coeffPer[best.contactid];
+                                                return pesoM < pesoBest ? m : best;
+                                            });
+                                            scelto = migliore.contactid;
+                                        }
+                                        var peso = f.agc_pesocalcolato || 0;
 
-                                            var scelto;
-                                            if (continuitaOk) {
-                                                scelto = continuitaMagId;
-                                            } else {
-                                                var migliore = magistrati.reduce(function (best, m) {
-                                                    var pesoM = pesoPer[m.contactid] * coeffPer[m.contactid];
-                                                    var pesoBest = pesoPer[best.contactid] * coeffPer[best.contactid];
-                                                    return pesoM < pesoBest ? m : best;
-                                                });
-                                                scelto = migliore.contactid;
-                                            }
-                                            var peso = f.agc_pesocalcolato || 0;
-
-                                            return Xrm.WebApi.updateRecord("agc_fascicolo2", f.agc_fascicolo2id, {
-                                                "agc_magistratocontatto@odata.bind": "/contacts(" + scelto + ")"
-                                            }).then(function () {
-                                                pesoPer[scelto] += peso;
+                                        return Xrm.WebApi.updateRecord("agc_fascicolo2", f.agc_fascicolo2id, {
+                                            "agc_magistratocontatto@odata.bind": "/contacts(" + scelto + ")"
+                                        }).then(function () {
+                                            var nuovoCarico = pesoPer[scelto] + peso;
+                                            return Xrm.WebApi.updateRecord("contact", scelto, { agc_caricoattuale: nuovoCarico }).then(function () {
+                                                pesoPer[scelto] = nuovoCarico;
                                                 if (rgnrId) rgnrToMagistrato[rgnrId] = scelto;
                                                 assignedCount++;
-                                            }).catch(function (e) {
-                                                errorCount++;
-                                                console.error("[ASPEN] Errore assegnazione massiva fascicolo " + f.agc_fascicolo2id, e);
                                             });
+                                        }).catch(function (e) {
+                                            errorCount++;
+                                            console.error("[ASPEN] Errore assegnazione massiva fascicolo " + f.agc_fascicolo2id, e);
                                         });
                                     });
+                                });
 
-                                    return chain.then(function () {
-                                        Xrm.Utility.closeProgressIndicator();
-                                        try { selectedControl.refresh(); } catch (e) { /* ignore */ }
+                                return chain.then(function () {
+                                    Xrm.Utility.closeProgressIndicator();
+                                    try { selectedControl.refresh(); } catch (e) { /* ignore */ }
 
-                                        var text = "Assegnati " + assignedCount + " fascicoli su " + fascicoli.length + ".";
-                                        if (errorCount > 0) text += " " + errorCount + " assegnazioni non riuscite (vedi console).";
+                                    var text = "Assegnati " + assignedCount + " fascicoli su " + fascicoli.length + ".";
+                                    if (errorCount > 0) text += " " + errorCount + " assegnazioni non riuscite (vedi console).";
 
-                                        return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva completata", text: text });
-                                    });
+                                    return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva completata", text: text });
                                 });
                             });
                         });
@@ -292,6 +285,50 @@ AgicAspen.AssegnaFascicolo = (function () {
         setTimeout(function () {
             try { formContext.ui.refreshRibbon(true); } catch (e) { /* ignore */ }
         }, 1000);
+
+        /* ── Regola 3.11 "carico monotono": la riassegnazione di un fascicolo da un
+           magistrato A ad un magistrato B deve decrementare il carico di A (oltre
+           ad incrementare quello di B). Si cattura il magistrato originale al
+           caricamento della form e lo si confronta al salvataggio. ── */
+        try {
+            var origMagAttr = formContext.getAttribute("agc_magistratocontatto");
+            var origMagValue = origMagAttr ? origMagAttr.getValue() : null;
+            var origMagId = (origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
+
+            formContext.data.entity.addOnSave(function (saveEventArgs) {
+                try {
+                    var magAttr = formContext.getAttribute("agc_magistratocontatto");
+                    var magValue = magAttr ? magAttr.getValue() : null;
+                    var newMagId = (magValue && magValue.length > 0) ? magValue[0].id.replace(/[{}]/g, "") : null;
+
+                    if (!newMagId || !origMagId || newMagId === origMagId) return;
+
+                    var pesoAttr = formContext.getAttribute("agc_pesocalcolato");
+                    var peso = pesoAttr ? (pesoAttr.getValue() || 0) : 0;
+                    var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
+
+                    // Decremento carico del vecchio magistrato (mai sotto zero) e incremento del nuovo
+                    Xrm.WebApi.retrieveRecord("contact", origMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
+                        var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
+                        return Xrm.WebApi.updateRecord("contact", origMagId, { agc_caricoattuale: nuovoCaricoOld });
+                    }).then(function () {
+                        return Xrm.WebApi.retrieveRecord("contact", newMagId, "?$select=agc_caricoattuale");
+                    }).then(function (newContact) {
+                        var nuovoCaricoNew = (newContact.agc_caricoattuale || 0) + peso;
+                        return Xrm.WebApi.updateRecord("contact", newMagId, { agc_caricoattuale: nuovoCaricoNew });
+                    }).then(function () {
+                        origMagId = newMagId; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
+                        console.log("[ASPEN] Riassegnazione fascicolo " + fascicoloId + ": carico spostato da " + origMagId + " a " + newMagId);
+                    }).catch(function (e) {
+                        console.error("[ASPEN] Errore aggiornamento carico su riassegnazione:", e);
+                    });
+                } catch (e) {
+                    console.error("[ASPEN] Errore onSave riassegnazione:", e);
+                }
+            });
+        } catch (e) {
+            console.error("[ASPEN] Errore registrazione onSave riassegnazione:", e);
+        }
     }
 
     /* ── Enable rule per la form: false se magistrato già assegnato ── */

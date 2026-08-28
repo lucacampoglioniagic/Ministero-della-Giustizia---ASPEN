@@ -485,6 +485,32 @@
           });
       }
 
+      /* ── Incrementa il carico cumulativo (agc_caricoattuale) di un magistrato ──
+         Il carico non deve mai diminuire per chiusura fascicolo (regola 3.11
+         "carico monotono"): viene sempre e solo sommato ad ogni nuova
+         assegnazione. Ritorna il nuovo valore. */
+      function incrementaCaricoMagistrato(contactId, delta) {
+        return fetch(
+          orgUrl + "/api/data/v9.2/contacts(" + contactId + ")?$select=agc_caricoattuale",
+          { headers: apiHeaders }
+        )
+          .then(function (r) { return r.json(); })
+          .then(function (c) {
+            var nuovo = (c.agc_caricoattuale || 0) + delta;
+            return fetch(
+              orgUrl + "/api/data/v9.2/contacts(" + contactId + ")",
+              {
+                method: "PATCH",
+                headers: Object.assign({}, apiHeaders, {
+                  "Content-Type": "application/json; charset=utf-8",
+                  "If-Match": "*"
+                }),
+                body: JSON.stringify({ agc_caricoattuale: nuovo })
+              }
+            ).then(function () { return nuovo; });
+          });
+      }
+
       /* ── Conferma: logica assegnazione reale ── */
       document.getElementById("btn-conferma").addEventListener("click", async function () {
         document.getElementById("btn-conferma").disabled = true;
@@ -497,16 +523,18 @@
         }
 
         try {
-          // 0. Continuità fascicolo (3.3): se il fascicolo appartiene a un RGNR e altri
-          // fascicoli dello stesso RGNR sono già assegnati, assegna allo stesso magistrato
-          // (a meno che non sia stato marcato come incompatibile in questo dialog).
+          // 0. Recupera RGNR e peso del fascicolo corrente
           var fascResp0 = await fetch(
-            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value",
+            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value,agc_pesocalcolato",
             { headers: apiHeaders }
           );
           var fascicoloCorrente = await fascResp0.json();
           var rgnrId = fascicoloCorrente["_agc_rgnr_value"];
+          var pesoFascicolo = fascicoloCorrente.agc_pesocalcolato || 0;
 
+          // 0b. Continuità fascicolo (3.3): se il fascicolo appartiene a un RGNR e altri
+          // fascicoli dello stesso RGNR sono già assegnati, assegna allo stesso magistrato
+          // (a meno che non sia stato marcato come incompatibile in questo dialog).
           if (rgnrId) {
             var siblingResp = await fetch(
               orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=_agc_magistratocontatto_value,agc_magistratocontattoname&$filter=_agc_rgnr_value eq " + rgnrId + " and agc_fascicolo2id ne " + fascicoloId + " and _agc_magistratocontatto_value ne null&$top=1",
@@ -532,6 +560,7 @@
                 }
               );
               if (!patchRespCont.ok) throw new Error("HTTP " + patchRespCont.status);
+              await incrementaCaricoMagistrato(contId, pesoFascicolo);
 
               document.getElementById("spinner-overlay").classList.remove("show");
               document.getElementById("success-sub").textContent =
@@ -542,9 +571,9 @@
             }
           }
 
-          // 1. Recupera tutti i magistrati compatibili
+          // 1. Recupera tutti i magistrati compatibili con il loro carico cumulativo attuale
           var magResp = await fetch(
-            orgUrl + "/api/data/v9.2/contacts?$select=contactid,fullname&$filter=agc_ismagistrato eq true",
+            orgUrl + "/api/data/v9.2/contacts?$select=contactid,fullname,agc_caricoattuale&$filter=agc_ismagistrato eq true",
             { headers: apiHeaders }
           );
           var magData = await magResp.json();
@@ -569,28 +598,12 @@
             return;
           }
 
-          // 3. Calcola il peso totale (carico) dei fascicoli assegnati a ciascun candidato
+          // 3. Carico cumulativo attuale (agc_caricoattuale, regola 3.11 "carico monotono":
+          // cresce con ogni assegnazione, non diminuisce mai per chiusura fascicolo)
           var pesoPer = {};
-          magistrati.forEach(function (m) { pesoPer[m.contactid] = 0; });
+          magistrati.forEach(function (m) { pesoPer[m.contactid] = m.agc_caricoattuale || 0; });
 
-          var filter = magistrati.map(function (m) {
-            return "_agc_magistratocontatto_value eq " + m.contactid;
-          }).join(" or ");
-
-          var fascResp = await fetch(
-            orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_pesocalcolato,agc_statocaso,_agc_magistratocontatto_value&$filter=(" + filter + ") and agc_pesocalcolato ne null and (agc_statocaso ne 2 or agc_statocaso eq null)",
-            { headers: apiHeaders }
-          );
-          var fascData = await fascResp.json();
-          (fascData.value || []).forEach(function (f) {
-            if (f.agc_statocaso === 2) return;
-            var mid = f["_agc_magistratocontatto_value"];
-            if (mid && pesoPer.hasOwnProperty(mid)) {
-              pesoPer[mid] += (f.agc_pesocalcolato || 0);
-            }
-          });
-
-          // 4. Applica il coefficiente di esonero parziale (tipo 2) al carico calcolato:
+          // 4. Applica il coefficiente di esonero parziale (tipo 2) al carico:
           // un magistrato con esonero parziale ha una capacità ridotta, quindi il suo
           // carico "equivalente" ai fini del confronto viene aumentato proporzionalmente
           // (es. 30% di esonero => carico equivalente = carico reale * (1 + 0.30))
@@ -623,6 +636,9 @@
             }
           );
           if (!patchResp.ok) throw new Error("HTTP " + patchResp.status);
+
+          // 7. Incrementa il carico cumulativo del magistrato scelto (mai decrementato per chiusura)
+          await incrementaCaricoMagistrato(migliore.contactid, pesoFascicolo);
 
           document.getElementById("spinner-overlay").classList.remove("show");
 

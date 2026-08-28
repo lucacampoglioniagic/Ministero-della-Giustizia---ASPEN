@@ -4,6 +4,24 @@
 
 ---
 
+## Session 2026-08-28 (cont.) — Implementazione punto 3.11 "Carico monotono"
+
+### Regola cliente
+La chiusura di un fascicolo non deve mai far diminuire il carico del magistrato; solo una riassegnazione esplicita (fascicolo spostato da un magistrato A a un magistrato B) deve decrementare il carico di A (e incrementare quello di B). Il vecchio motore calcolava il carico dinamicamente come `SUM(agc_pesocalcolato)` sui fascicoli non chiusi assegnati, quindi la chiusura di un fascicolo faceva scendere il carico — violando la regola.
+
+### Modifica dati
+Aggiunto un nuovo campo persistito `agc_caricoattuale` (Decimal, minimo 0) su `contact`. Effettuato un backfill una tantum per i 6 magistrati esistenti, usando il valore di carico calcolato dinamicamente fino a quel momento come baseline: Laura Verdi=51, Anna Greco=51, Marco Bianchi=41, Paolo Russo=36, Alessia Gialli=43, Chiara Marini=49.
+
+### Modifica motore di assegnazione
+- **Assegnazione singola** (`agc_assignfascicolodialog.html`): il carico dei magistrati viene ora letto direttamente da `agc_caricoattuale` (non più ricalcolato sommando i fascicoli). Al momento dell'assegnazione (sia per continuità RGNR che per algoritmo a minor carico), un nuovo helper `incrementaCaricoMagistrato(contactId, delta)` legge il valore corrente e lo aggiorna sommando il peso del fascicolo appena assegnato.
+- **Assegnazione massiva** (`agc_assignfascicolo.js`, `openBulkAssignFromGrid`): stessa logica — la query iniziale sui magistrati include `agc_caricoattuale`, rimossa la query di aggregazione sui fascicoli non chiusi. Il carico reale (`pesoPer`, separato dal coefficiente di esonero usato solo per il confronto) viene incrementato e persistito su `contact` dopo ogni assegnazione nella catena sequenziale, così le assegnazioni successive nello stesso lotto vedono il carico aggiornato.
+- **Riassegnazione (decremento)**: poiché il pulsante "Assegna Fascicolo" si disabilita quando il fascicolo ha già un magistrato, la riassegnazione avviene modificando direttamente il campo lookup `agc_magistratocontatto` sulla form. Aggiunto un handler `addOnSave` in `onFormLoad` (`agc_assignfascicolo.js`) che cattura il magistrato originale al caricamento della form e, se al salvataggio il valore è cambiato verso un magistrato diverso e non nullo, decrementa (mai sotto zero) il carico del vecchio magistrato del peso del fascicolo e incrementa quello del nuovo.
+
+### Esito
+Todo `impl-carico-monotono` completato. Non ancora definito dal Ministero il carico di partenza per un nuovo magistrato assunto in futuro — non blocca l'implementazione attuale, da chiarire quando si presenterà il caso.
+
+---
+
 ## Session 2026-08-28 (cont.) — Implementazione punto 3.3 "Continuità fascicolo stesso magistrato"
 
 ### Logica implementata
