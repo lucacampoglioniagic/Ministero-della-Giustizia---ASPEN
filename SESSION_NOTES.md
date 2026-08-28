@@ -4,6 +4,21 @@
 
 ---
 
+## Session 2026-08-28 (cont.) — Implementazione punto 3.4 "Ruolo GIP/GUP e riserva GUP" (parziale)
+
+### Modifica dati
+Il Ministero ha chiarito che il ruolo GIP/GUP non è un attributo stabile del magistrato, ma un attributo dell'assegnazione del fascicolo (lo stesso magistrato può fare da GIP su un fascicolo e da GUP su un altro). Creato nuovo campo picklist `agc_ruoloassegnazione` (0=GIP, 1=GUP) su `agc_fascicolo2`, aggiunto al form principale subito dopo "Magistrato assegnato". Migrati i 31 fascicoli già assegnati, copiando il valore corrente di `agc_ruolomagistrato` dal magistrato collegato.
+
+Il vecchio campo `agc_ruolomagistrato` su `contact` è stato **lasciato invariato** (nessuna rimozione/deprecazione formale) perché il motore di assegnazione non lo utilizzava già in alcuna logica (verificato: nessun riferimento in `agc_assignfascicolo.js`/`agc_assignfascicolodialog.html`), quindi non c'è stato impatto sul comportamento esistente. Valutare con il cliente se e quando ritirare il campo su `contact`.
+
+### Cosa NON è stato implementato: regola di riserva GUP
+Il resoconto (`aspen_resoconto_modifiche.pdf`) elenca esplicitamente "Definire regola esatta della riserva GUP e casi in cui deve bloccare una proposta di assegnazione" tra le **"Decisioni da prendere"** (non tra le risoluzioni già chiarite) — la regola non è ancora definita dal Ministero, quindi non è stata implementata alcuna logica di blocco/candidabilità per la riserva. Il conteggio del carico resta cumulato (non separato per ruolo), come da indicazione esplicita del resoconto stesso.
+
+### Esito
+Todo `impl-ruolo-assegnazione` completato per la parte modellabile senza input aggiuntivo del cliente (spostamento campo + migrazione). La regola di riserva GUP resta backlog aperto, da chiarire nella demo tecnica con il Ministero come indicato nel resoconto.
+
+---
+
 ## Session 2026-08-28 (cont.) — Implementazione punto 3.11 "Carico monotono"
 
 ### Regola cliente
