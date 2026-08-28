@@ -4,6 +4,62 @@
 
 ---
 
+## Session 2026-08-28 — Analisi punto-per-punto `aspen_resoconto_modifiche.pdf` (gap analysis 3.1–3.12)
+
+### Metodo
+Confrontati i 10 punti del resoconto (sezione 3, pagg. 2-3) + i 2 punti aggiunti nelle sessioni precedenti (3.11 carico monotono, 3.12 user-vs-contact) con lo schema Dataverse effettivo dell'ambiente `LCC-MINISTEROGIUSTIZIA-DEMO`, interrogato via Web API (`EntityDefinitions`, `businessunits`). Tabelle custom esistenti: `agc_canestro`, `agc_canestrofascicolo`, `agc_configurazione`, `agc_fascicolo` (deprecata), `agc_fascicolo2`, `agc_giudice` (deprecata, sostituita da `contact`).
+
+### Esito per punto
+
+| # | Tema | Stato attuale | Gap rispetto al resoconto |
+|---|------|---------------|----------------------------|
+| 3.1 | Esoneri e sospensioni | **Non implementato** | Nessuna tabella Esoneri; nessuna logica di sospensione/riallineamento punteggio nel motore di assegnazione. |
+| 3.2 | RGNR e RG GIP/GUP | **Parziale/non conforme** | `agc_fascicolo2` ha un solo campo `agc_numeroregistrogenerale` (stringa singola); manca il modello padre (RGNR)/figlio (fascicoli GIP-GUP) richiesto. |
+| 3.3 | Stesso fascicolo → stesso magistrato | **Non implementato** | Nessun controllo di continuità per RGNR nel motore di assegnazione, nessun campo "motivo" per l'eccezione. |
+| 3.4 | Ruolo GIP/GUP come attributo dell'assegnazione | **Modellato in modo non conforme** | `agc_ruolomagistrato` è oggi un campo su `contact` (attributo stabile del magistrato), mentre il Ministero ha chiarito che deve essere un attributo dell'**assegnazione/fascicolo**, non del magistrato. Nessuna regola di riserva GUP. |
+| 3.5 | Canestri, pesi, soglie (matrice 2D) | **Parziale** | Esistono `agc_canestro`, `agc_canestrofascicolo`, `agc_configurazione` (usata per soglie peso). Manca la matrice a due dimensioni (tipo procedimento × natura reato) e una tabella "Matrice pesi" dedicata configurabile da UI. |
+| 3.6 | Rettifica carico per motivi esogeni | **Non implementato** | Nessuna entità/maschera "Rettifica carico"; nessun campo per valore/segno/motivazione/validità temporale. |
+| 3.7 | Incompatibilità e riassegnazioni manuali | **Non implementato** | Nessuna tabella incompatibilità; la riassegnazione manuale esiste solo come azione UI generica (ribbon "Assegna Fascicolo"), senza workflow motivato/audit strutturato. |
+| 3.8 | Ambiente unico + segregazione per business unit | **Implementato** | Confermate business unit per tribunale (Roma, Messina, Milano) sotto un unico ambiente — coerente con la decisione architetturale richiesta. |
+| 3.9 | Reportistica e stampe | **Parziale** | Dashboard "Cruscotto ASPEN" esiste (carico per magistrato, stato fascicoli) — base coperta. Manca tabella "Template stampa" per versione/tribunale/stato approvazione. |
+| 3.10 | Integrazioni Regiweb/SICP | **Non iniziato** | Nessun componente di integrazione nel repo — coerente con la roadmap (Fase 4, non bloccante per il prototipo). |
+| 3.11 | Carico monotono | **Non implementato** | Regola chiarita col cliente (il carico non deve scendere per chiusura, solo per riassegnazione) ma non ancora tradotta in logica nel motore di calcolo peso/carico. |
+| 3.12 | User vs Contact (Opzione C) | **Chiuso in questa sessione** | Verificato che la lookup `contact → systemuser` esiste già (`agc_utenteassociato`) — vedi sessione successiva in ordine cronologico. |
+
+### Osservazione principale
+Il punto **3.4** rivela un disallineamento di modello non banale: `agc_ruolomagistrato` è oggi definito su `contact`, ma la specifica del Ministero richiede che il ruolo GIP/GUP sia un attributo dell'**assegnazione** (quindi su `agc_fascicolo2`, non su `contact`), perché uno stesso magistrato può ricoprire ruoli diversi su fascicoli diversi. Questo va segnalato esplicitamente al cliente prima di passare a implementazione, perché richiede un cambio di modello dati (nuovo campo su `agc_fascicolo2` + eventuale migrazione) non un semplice aggiustamento.
+
+### Priorità consigliata per il prossimo lavoro implementativo (da roadmap Fase 1 — Prototipo settembre)
+1. Tabella Esoneri (3.1) + moltiplicatore parziale nel motore pesi
+2. Modello RGNR padre / RG GIP-GUP figlio (3.2) — impatta modello dati, da fare prima di 3.3
+3. Continuità fascicolo → stesso magistrato (3.3), dipende da 3.2
+4. Spostare Ruolo GIP/GUP da `contact` a `agc_fascicolo2` come attributo di assegnazione + regola riserva GUP (3.4)
+5. Carico monotono (3.11) — regola già chiarita col cliente, solo da implementare
+
+Nessuna implementazione di questi punti eseguita in questa sessione (task era la sola analisi/gap-analysis). Todo `analisi-resoconto-modifiche` chiuso come "analisi completata"; le implementazioni dei singoli punti restano backlog separato da pianificare con il cliente.
+
+---
+
+## Session 2026-08-28 — Verifica todo `fix-lookup-contact-usersu` (Opzione C)
+
+### Esito
+Verificato via Web API di Dataverse (`az account get-access-token` + `Invoke-RestMethod`, ambiente `LCC-MINISTEROGIUSTIZIA-DEMO`) che la lookup `contact → systemuser` prevista dall'Opzione C **esiste già** in produzione: campo `agc_utenteassociato` ("Utente associato"), già presente sulla form "Contatto - Magistrato". Il nome differisce da quello ipotizzato nella sessione precedente (`agc_utenteapplicativo`), ma lo scopo e il target (`systemuser`) coincidono — la voce di note precedente era quindi imprecisa/obsoleta.
+
+Per errore, prima di scoprire il campo esistente, è stata creata una lookup duplicata (`agc_utenteapplicativo`, relationship `agc_contact_systemuser_UtenteApplicativo`, solution `ASPENPOC`); individuato l'errore, la relationship e l'attributo duplicati sono stati eliminati nella stessa sessione (nessuna traccia residua in Dataverse).
+
+**Todo `fix-lookup-contact-usersu` chiuso: nessuna implementazione necessaria.** Prossimo passo: verificare se `agc_utenteassociato` è già valorizzato/collegato correttamente ai record `systemuser` dei magistrati esistenti (da affrontare nell'ambito di `fix-dashboard-magistrati-contact`, dato che il cruscotto dipende dal collegamento contact/magistrato).
+
+### Metodo di lavoro (per riuso futuro)
+`pac auth token` fornisce token solo per il resource `api.powerplatform.com`, non utilizzabile per la Web API dell'organizzazione Dataverse. Per operazioni dirette su metadati (creazione/eliminazione attributi, relationship, ecc.) via REST, usare invece `az account get-access-token --resource <org-url>` (stesso utente già autenticato su Azure CLI) e chiamare `https://<org>.crm4.dynamics.com/api/data/v9.2/...` con header `MSCRM.SolutionUniqueName` per assegnare il componente alla solution desiderata (solution principale del progetto: `ASPENPOC`).
+
+### Todo `fix-dashboard-magistrati-contact` — risolto
+Causa del "canestro vuoto nei drill-down" nel Cruscotto ASPEN: la view di sistema **"Fascicoli 2 aperti (Cruscotto)"** (savedqueryid `9CDB22DB-DB79-F111-AB0E-70A8A581677C`, usata dal dataset del PCF `CaricoMagistratiChart` sulla dashboard) aveva l'attributo `agc_canestrofascicolo` nel `fetchxml` ma **non** come colonna (`<cell>`) nel `layoutxml`. Il framework dataset dei PCF espone solo le colonne presenti nel layout della view, non tutti gli attributi del fetchxml — per questo `record.getFormattedValue("agc_canestrofascicolo")` tornava sempre vuoto nel modal di drill-down. Fix: aggiunta la cella mancante al `layoutxml` via Web API (`PATCH savedqueries(...)`) e pubblicato. Il binding `magistratoField → agc_magistratocontatto` (lookup a `contact`) sulla dashboard era già corretto, nessuna regressione lì.
+
+### Todo `fix-caricopercanestro-form-contact` — risolto
+Il PCF `agc_AgicAspen.CaricoPerCanestro` (mostra il carico per canestro del magistrato corrente, legge `context.page.entityId`) non era più presente su nessuna form dopo la migrazione. Riaggiunto sulla form **"Contatto - Magistrato"** (formid `ff4a3cde-18a2-f111-aaac-7c1e52764872`) tramite editing diretto del `formxml` via Web API: nuova cella con `<control>` bound al campo "dummy" `fullname` (come previsto dal manifest, che richiede un campo bound qualsiasi il cui valore non viene usato) + blocco `<controlDescriptions>` (sibling di `<tabs>`, non annidato dentro `<control>` — pattern verificato sul Cruscotto ASPEN) che referenzia `agc_AgicAspen.CaricoPerCanestro` per i 3 formFactor. Pubblicato e verificato.
+
+---
+
 ## Session 2026-08-27 (pomeriggio/sera) — Fix regressioni post-migrazione Contatti + revisione modello Contact/User
 
 ### Contesto
