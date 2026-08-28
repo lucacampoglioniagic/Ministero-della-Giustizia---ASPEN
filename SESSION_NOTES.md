@@ -4,6 +4,35 @@
 
 ---
 
+## Session 2026-08-28 (cont.) — Rimozione dipendenze `agc_giudice` (Magistrato legacy) e apertura ticket Microsoft Support per corruzione EntityMap
+
+### Contesto
+Proseguimento del tentativo di eliminare la tabella legacy `agc_giudice` ("Magistrato"), sostituita dal nuovo modello di assegnazione su `agc_fascicolo2`/`contact`. Il tentativo di `DELETE EntityDefinitions(LogicalName='agc_giudice')` falliva citando fino a 13 componenti referenzianti; obiettivo della sessione è stato ridurre progressivamente questo numero risolvendo ogni dipendenza reale.
+
+### Dipendenze risolte con successo
+1. **Canvas App "ASPEN_DefaultCommandLibrary"** (`ca8c900c-4851-4c1a-8bdd-0badbb28c2ed`): rimossa la formula rotta `IsBlank(Self.Selected.Item.agc_Magistratoassegnato)` sul componente "Assegna Fascicolo_1" e, soprattutto, rimossa la **data source "Magistrati"** registrata nell'app (la vera causa della dipendenza — una data source può essere tracciata anche se non più referenziata in alcuna formula visibile). Salvato e pubblicato.
+2. **App Module "ASPEN"** (`390ef80f-5163-f111-ab0c-7ced8d72f54e`): rimosse dall'App Designer (tab Pagine) le pagine "Visualizzazione Magistrati", "Modulo Magistrati" (sezione Anagrafiche) e "Visualizzazioni di Magistrato"/"Moduli Magistrato" (sezione Tutte le altre pagine). Dopo la rimozione, la tabella "Magistrato" è scomparsa automaticamente dalla lista "Nell'app" (tab Dati) senza necessità di rimozione manuale. Salvato e pubblicato con "Salva e pubblica".
+   - Nota: l'azione Web API `RemoveAppComponents` (tentata in una sessione precedente) **non elimina realmente** la riga `appmodulecomponents` — tocca solo `modifiedon`/`versionnumber`. L'unico modo efficace per rimuovere la registrazione di una tabella da un'app model-driven è tramite il flusso UI dell'App Designer (rimuovere prima tutte le pagine/dashboard che la referenziano).
+   - Verificato via `RetrieveDependenciesForDelete(ComponentType=1,ObjectId=<guid>)`: il conteggio blocchi è sceso da 3 a 2 (Canvas App risolta) e poi da 2 a 1 (AppModule risolto). Il conteggio grezzo dell'errore `DELETE EntityDefinitions` è sceso in parallelo da 13 → 12 → 11 → 4.
+
+### Dipendenza NON risolvibile: relazione `agc_fascicolo_Magistratoassegnato_agc_giudice`
+Rimane l'ultima dipendenza reale: la relazione legacy `agc_fascicolo_Magistratoassegnato_agc_giudice` (MetadataId `48621705-4f63-f111-ab0d-e4fb1ef62741`), confermata dal Ministero come "vecchia assegnazione" e quindi eliminabile senza impatto funzionale. Il tentativo di `DELETE RelationshipDefinitions(SchemaName='agc_fascicolo_Magistratoassegnato_agc_giudice')` fallisce però con:
+
+```
+0x80072343 — SqlException: Invalid column name 'agc_CanestroName'.
+```
+
+Questo è **lo stesso identico errore** già diagnosticato da un'analisi approfondita (agente in background, ~45 tentativi documentati) su una corruzione preesistente e indipendente: la tabella `agc_canestro` ("Canestro fascicolo") è un'entità "zombie" residua di un flusso di table-recycle-bin interrotto (metadati presenti, tabella SQL fisica assente), e il lookup `agc_canestro` su `agc_fascicolo` punta a un ID di relazione fantasma (`cb984bf8-e237-43fe-bf30-1f8a3daae1ad`) non più esistente. Questo corrompe il generatore automatico della vista SQL filtrata `Filteredagc_Fascicolo`, che referenzia una colonna fisica (`agc_CanestroName`) non più presente nel database — bloccando **qualsiasi** modifica di schema su `agc_fascicolo`, non solo quelle relative a `agc_giudice`.
+
+Sono stati esclusi tutti i percorsi di risoluzione disponibili via API pubbliche (OData e SOAP): eliminazione diretta di attributi/attributemap/entitymap, ricreazione della relazione fantasma, creazione manuale della colonna fisica mancante (fallita con "nome già esistente" — disallineamento metadati↔storage fisico non risolvibile lato client), patch di flag di sistema, ecc. Tutti i tentativi e gli errori esatti sono documentati nella bozza del ticket.
+
+### Esito
+**Ticket di supporto Microsoft aperto** (dal cliente, sessione 2026-08-28) usando la bozza tecnica preparata in questa sessione — vedi `Ticket-Supporto-Microsoft-EntityMap-Corruption.md` (salvato nel workspace di sessione, non nel repository) per il contenuto completo: ID esatti di tutti i componenti coinvolti, errore SQL riprodotto, tabella di tutti i tentativi falliti, e le 4 richieste esplicite di intervento backend a Microsoft.
+
+**Stato residuo**: `agc_giudice` non ancora eliminabile (bloccato solo dalla relazione legacy, a sua volta bloccata dal bug della vista su `agc_fascicolo`). `agc_canestro` e `agc_fascicolo` restano nello stato corrotto in attesa della risposta del supporto Microsoft. Nessun'altra azione è possibile lato codice/API fino all'intervento Microsoft; da riprendere quando il ticket verrà evaso.
+
+---
+
 ## Session 2026-08-28 (cont.) — Implementazione punto 3.4 "Ruolo GIP/GUP e riserva GUP" (parziale)
 
 ### Modifica dati
