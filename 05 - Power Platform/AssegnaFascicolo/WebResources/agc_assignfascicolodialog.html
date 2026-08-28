@@ -497,6 +497,51 @@
         }
 
         try {
+          // 0. Continuità fascicolo (3.3): se il fascicolo appartiene a un RGNR e altri
+          // fascicoli dello stesso RGNR sono già assegnati, assegna allo stesso magistrato
+          // (a meno che non sia stato marcato come incompatibile in questo dialog).
+          var fascResp0 = await fetch(
+            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value",
+            { headers: apiHeaders }
+          );
+          var fascicoloCorrente = await fascResp0.json();
+          var rgnrId = fascicoloCorrente["_agc_rgnr_value"];
+
+          if (rgnrId) {
+            var siblingResp = await fetch(
+              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=_agc_magistratocontatto_value,agc_magistratocontattoname&$filter=_agc_rgnr_value eq " + rgnrId + " and agc_fascicolo2id ne " + fascicoloId + " and _agc_magistratocontatto_value ne null&$top=1",
+              { headers: apiHeaders }
+            );
+            var siblingData = await siblingResp.json();
+            var sibling = (siblingData.value || [])[0];
+
+            if (sibling && !incompatibili[sibling["_agc_magistratocontatto_value"]]) {
+              var contId = sibling["_agc_magistratocontatto_value"];
+              var patchContinuita = JSON.stringify({
+                "agc_magistratocontatto@odata.bind": "/contacts(" + contId + ")"
+              });
+              var patchRespCont = await fetch(
+                orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")",
+                {
+                  method: "PATCH",
+                  headers: Object.assign({}, apiHeaders, {
+                    "Content-Type": "application/json; charset=utf-8",
+                    "If-Match": "*"
+                  }),
+                  body: patchContinuita
+                }
+              );
+              if (!patchRespCont.ok) throw new Error("HTTP " + patchRespCont.status);
+
+              document.getElementById("spinner-overlay").classList.remove("show");
+              document.getElementById("success-sub").textContent =
+                "Assegnato per continuità RGNR a: " + (sibling.agc_magistratocontattoname || contId);
+              document.getElementById("success-screen").classList.add("show");
+              setTimeout(function () { window.close(); }, 3000);
+              return;
+            }
+          }
+
           // 1. Recupera tutti i magistrati compatibili
           var magResp = await fetch(
             orgUrl + "/api/data/v9.2/contacts?$select=contactid,fullname&$filter=agc_ismagistrato eq true",

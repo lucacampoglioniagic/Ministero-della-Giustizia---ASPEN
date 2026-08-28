@@ -4,6 +4,19 @@
 
 ---
 
+## Session 2026-08-28 (cont.) — Implementazione punto 3.3 "Continuità fascicolo stesso magistrato"
+
+### Logica implementata
+In entrambi i motori di assegnazione (`agc_assignfascicolodialog.html` per la singola assegnazione, `agc_assignfascicolo.js` per la massiva):
+- **Assegnazione singola**: prima di calcolare il candidato per carico, si verifica se il fascicolo ha un `agc_RGNR` valorizzato; in tal caso si cerca un fascicolo "fratello" (stesso RGNR) già assegnato. Se trovato e il magistrato non è stato marcato come incompatibile in questo dialog, si assegna direttamente a quel magistrato (bypassando il calcolo del carico) e si comunica "Assegnato per continuità RGNR".
+- **Assegnazione massiva**: si costruisce prima una mappa RGNR→magistrato dai fascicoli già assegnati, poi durante l'assegnazione sequenziale ogni fascicolo con RGNR noto in mappa viene assegnato allo stesso magistrato (se ancora tra i candidati compatibili/non in esonero totale); la mappa viene aggiornata man mano che si procede, così più fascicoli dello stesso RGNR nello stesso lotto restano coerenti tra loro.
+- Se il magistrato di continuità non è più un candidato valido (incompatibile nel dialog singolo, o escluso per esonero totale nel bulk), si ricade sul normale algoritmo a minor carico.
+
+### Esito
+Todo `impl-continuita-fascicolo` completato. Nessun campo "motivo eccezione" è stato aggiunto (non richiesto esplicitamente nel resoconto oltre alla regola stessa) — da valutare se il Ministero richiede tracciabilità del perché si è derogato alla continuità.
+
+---
+
 ## Session 2026-08-28 (cont.) — Implementazione punto 3.2 "Modello RGNR padre / RG GIP-GUP figlio"
 
 ### Modello dati
