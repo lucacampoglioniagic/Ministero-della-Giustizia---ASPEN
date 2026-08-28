@@ -4,6 +4,31 @@
 
 ---
 
+## Session 2026-08-28 (sera) — Fix grafico "Fascicoli per Stato" (Magistrato/Canestro vuoti) e ripristino Hide "Chiudi Caso"
+
+### Segnalazione utente
+1. Nel modal di drill-down del grafico a torta "Fascicoli per Stato" (dashboard "Cruscotto ASPEN"), le colonne **Magistrato** e **Canestro** risultavano sempre vuote (`—`).
+2. Il pulsante **"Chiudi Caso"** era ancora visibile nella form del fascicolo, nonostante fosse stato nascosto e verificato nella sessione del 2026-08-27.
+
+### ⚠️ Falsa pista iniziale (corretta nella stessa sessione)
+Prima analisi basata su `AgicAspenRibbon_unpacked/Entities/agc_Fascicolo2/Entity.xml` (locale) aveva erroneamente suggerito che il campo corretto fosse `agc_magistratoassegnato` invece di `agc_magistratocontatto`. **Quell'Entity.xml è stale**: non è mai stato rigenerato dopo la migrazione Magistrati→Contatti del 2026-08-27 (l'export completo della solution resta bloccato dal problema di metadati orfani). Il codice sorgente (`StatoFascicoliChart/index.ts`) era già corretto con `agc_magistratocontatto`; la modifica errata è stata individuata e ripristinata prima del deploy, controllando `SESSION_NOTES.md` stessa (righe sessione 2026-08-27).
+
+### Causa reale — Magistrato/Canestro vuoti
+Due problemi concorrenti, entrambi diagnosticati via Web API (`az account get-access-token` + Invoke-RestMethod su `lccministerogiustiziademo.crm4.dynamics.com`):
+1. **View "Fascicoli 2 (tutti) (Cruscotto)"** (`savedqueryid 3c5b46e1-db79-f111-ab0e-70a8a581677c`, bindata a `StatoFascicoliChart` sul dashboard) aveva l'attributo `agc_canestrofascicolo` nel `fetchxml` ma **non** come `<cell>` nel `layoutxml` — stesso identico bug già risolto in precedenza per l'altra view del cruscotto (`9cdb22db...`, usata da `CaricoMagistratiChart`), ma il fix non era mai stato applicato a questa seconda view. Fix: `PATCH savedqueries(...)` con `layoutxml` aggiornato (cella `agc_canestrofascicolo` aggiunta, stesso ordine/pattern dell'altra view) + `PublishXml`.
+2. **Bundle JS deployato per il PCF `StatoFascicoliChart` (`cc_AgicAspen.StatoFascicoliChart/bundle.js`, webresourceid `8ecdd1f4-f6f2-483a-80a6-b6ec38b6330c`) era stale**: `modifiedon` risultava 07/07/2026, cioè **precedente** alla migrazione Contatti del 27/08. Verificato via ispezione del contenuto (`content` base64 decodificato): il bundle live conteneva ancora il vecchio nome campo `agc_magistratoassegnato` e **non** `agc_magistratocontatto`, nonostante il sorgente locale fosse già corretto da settimane — non era mai stato ricompilato/ripubblicato dopo quella modifica. Fix: rebuild (`npm run build` nella cartella multi-progetto `PCF-Pie`, non nella sottocartella del singolo controllo) + `PATCH webresourceset(...)` con il nuovo `bundle.js` in base64 + `PublishXml`. Verificato dati Dataverse: tutti i 31 record `agc_fascicolo2` hanno effettivamente magistrato e canestro valorizzati (query REST con header `Prefer: odata.include-annotations="*"` per leggere i valori formattati dei lookup).
+
+### Causa reale — "Chiudi Caso" ancora visibile
+La `HideCustomAction` per `agc_fascicolo2` era già presente nel sorgente locale (`AgicAspenRibbon_unpacked/Entities/agc_Fascicolo2/RibbonDiff.xml`, aggiunta il 27/08) ma **non risultava effettivamente applicata in ambiente** — verificato con l'azione `RetrieveEntityRibbon` (risposta zip con `RibbonXml.xml`, non gzip: va estratta con `Expand-Archive`, non `GZipStream`), che mostrava il bottone "Chiudi Caso" senza alcuna entry di hide associata. Probabile causa: una reimportazione successiva della solution `AgicAspenRibbon` (o di altre solution che toccano la stessa customizzazione) ha sovrascritto la modifica. Fix: rieseguito il workaround già documentato — `pac solution pack` direttamente dalla cartella `AgicAspenRibbon_unpacked` (spostando temporaneamente fuori la cartella `Entities/agc_Fascicolo`, non referenziata come RootComponent in `Solution.xml` e che altrimenti fa fallire la validazione "RootComponent validation failed" del packer) seguito da `pac solution import --publish-changes --async false`. Import verificato riuscito (`importjobs`, `entityRibbon` con `result="success"` per `agc_Fascicolo2`).
+**Nota per il futuro**: `RetrieveEntityRibbon` mostra sempre il nodo `<Button>` originale anche quando una `HideCustomAction` valida lo nasconde — l'occultamento è applicato lato client in fase di rendering, non rimuove il nodo dalla risposta dell'azione. Non è quindi un metodo valido per verificare se l'hide funziona; l'unica verifica affidabile resta il test in browser (con eventuale pulizia service worker/cache, causa già nota di falsi negativi in sessioni precedenti).
+
+### Esito
+- Nessuna modifica netta ai file sorgente tracciati in git (il codice `StatoFascicoliChart` e i `RibbonDiff.xml` erano già corretti; i problemi erano tutti lato ambiente/deploy).
+- Modifiche live: `savedqueries(3c5b46e1-...)` (layoutxml + publish), `webresourceset(8ecdd1f4-...)` bundle.js (rebuild + publish), solution `AgicAspenRibbon` reimportata e pubblicata.
+- ⚠️ Da confermare con l'utente in browser (con hard refresh) che entrambi i problemi sono ora risolti.
+
+---
+
 ## Session 2026-08-28 (cont.) — Rimozione dipendenze `agc_giudice` (Magistrato legacy) e apertura ticket Microsoft Support per corruzione EntityMap
 
 ### Contesto
