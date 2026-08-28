@@ -4,6 +4,21 @@
 
 ---
 
+## Session 2026-08-28 (cont.) — Implementazione punto 3.2 "Modello RGNR padre / RG GIP-GUP figlio"
+
+### Modello dati
+Creata tabella `agc_rgnr` (Registro Generale Notizie di Reato): `agc_name` (numero RGNR, primaria), `agc_annoregistro` (integer), `agc_note` (memo). Aggiunta relazione 1:N `agc_rgnr_agc_fascicolo2_RGNR` con lookup `agc_RGNR` su `agc_fascicolo2` — **non obbligatorio**, per retrocompatibilità con i fascicoli esistenti privi di RGNR. Il campo esistente `agc_numeroregistrogenerale` (stringa) resta sul fascicolo per il numero di RG specifico GIP/GUP; `agc_rgnr` rappresenta il procedimento padre a cui più fascicoli GIP/GUP possono fare riferimento.
+
+Form `agc_rgnr` costruita con sezione anagrafica + tab "Fascicoli GIP/GUP collegati" con subgrid (vista "Visualizzazione associata Fascicolo 2", relazione `agc_rgnr_agc_fascicolo2_RGNR`). Aggiunto il campo lookup RGNR alla form principale di `agc_fascicolo2`, subito dopo il numero RG.
+
+### Nota di design
+Questa modellazione è la base abilitante per **impl-continuita-fascicolo** (3.3): la regola "stesso fascicolo → stesso magistrato" può ora essere implementata interrogando i fascicoli con lo stesso `agc_RGNR` e verificando/forzando lo stesso `agc_magistratocontatto`, con un campo "motivo" per l'eccezione ancora da aggiungere quando si implementerà quella regola.
+
+### Esito
+Todo `impl-rgnr-model` completato. Non ancora popolato retroattivamente il campo RGNR sui fascicoli esistenti (nessun dato storico di raggruppamento disponibile per farlo in modo automatico) — valutare migrazione dati separata se necessario.
+
+---
+
 ## Session 2026-08-28 (cont.) — Implementazione punto 3.1 "Esoneri e sospensioni"
 
 ### Tabella `agc_esonero` (nuova, ambiente `LCC-MINISTEROGIUSTIZIA-DEMO`, solution `ASPENPOC`)
