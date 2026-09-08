@@ -485,6 +485,72 @@
           });
       }
 
+      /* ── Verifica riserva GUP (3.4) ──
+         Regola: per un RGNR i cui fascicoli collegati sono tutti di ruolo GIP,
+         deve sempre restare disponibile almeno un magistrato del tribunale non
+         ancora impegnato come GIP su quello stesso RGNR, così da poter essere
+         eventualmente assegnato come GUP in futuro. Il controllo si applica solo
+         all'assegnazione di un fascicolo di ruolo GIP collegato a un RGNR, e solo
+         se per quel RGNR non esiste già un fascicolo di ruolo GUP assegnato
+         (in tal caso la riserva è già stata utilizzata/non più rilevante).
+         Non blocca l'assegnazione: restituisce solo un avviso da confermare. */
+      function verificaRiservaGup(opts) {
+        if (!opts.rgnrId || opts.ruolo !== 0) return Promise.resolve({ warn: false });
+
+        var filtroGup = "_agc_rgnr_value eq " + opts.rgnrId +
+          " and agc_ruoloassegnazione eq 1 and _agc_magistratocontatto_value ne null" +
+          (opts.fascicoloId ? " and agc_fascicolo2id ne " + opts.fascicoloId : "");
+
+        return fetch(
+          orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_fascicolo2id&$filter=" + filtroGup + "&$top=1",
+          { headers: apiHeaders }
+        )
+          .then(function (r) { return r.json(); })
+          .then(function (gupData) {
+            if ((gupData.value || []).length > 0) return { warn: false };
+
+            var filtroGip = "_agc_rgnr_value eq " + opts.rgnrId +
+              " and agc_ruoloassegnazione eq 0 and _agc_magistratocontatto_value ne null" +
+              (opts.fascicoloId ? " and agc_fascicolo2id ne " + opts.fascicoloId : "");
+
+            return fetch(
+              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=_agc_magistratocontatto_value&$filter=" + filtroGip,
+              { headers: apiHeaders }
+            )
+              .then(function (r) { return r.json(); })
+              .then(function (gipData) {
+                var assegnati = {};
+                (gipData.value || []).forEach(function (f) {
+                  var mid = f["_agc_magistratocontatto_value"];
+                  if (mid) assegnati[mid] = true;
+                });
+                assegnati[opts.candidatoContactId] = true; // simula l'assegnazione corrente
+
+                var distinti = Object.keys(assegnati).length;
+                var filtroMag = "agc_ismagistrato eq true" +
+                  (opts.businessUnitId ? " and _owningbusinessunit_value eq " + opts.businessUnitId : "");
+
+                return fetch(
+                  orgUrl + "/api/data/v9.2/contacts?$select=contactid&$filter=" + filtroMag,
+                  { headers: apiHeaders }
+                )
+                  .then(function (r) { return r.json(); })
+                  .then(function (magData) {
+                    var totale = (magData.value || []).length;
+                    if (totale > 0 && distinti >= totale) {
+                      return {
+                        warn: true,
+                        messaggio: "Assegnando questo fascicolo a " + (opts.candidatoNome || "questo magistrato") +
+                          ", tutti i " + totale + " magistrati disponibili per questo tribunale risulteranno impegnati come GIP sullo stesso procedimento (RGNR). " +
+                          (opts.candidatoNome || "Il magistrato") + " rappresenta l'ultima riserva disponibile per un eventuale futuro fascicolo GUP collegato allo stesso RGNR.\n\nProcedere comunque con l'assegnazione?"
+                      };
+                    }
+                    return { warn: false };
+                  });
+              });
+          });
+      }
+
       /* ── Incrementa il carico cumulativo (agc_caricoattuale) di un magistrato ──
          Il carico non deve mai diminuire per chiusura fascicolo (regola 3.11
          "carico monotono"): viene sempre e solo sommato ad ogni nuova
@@ -523,14 +589,16 @@
         }
 
         try {
-          // 0. Recupera RGNR e peso del fascicolo corrente
+          // 0. Recupera RGNR, ruolo, business unit e peso del fascicolo corrente
           var fascResp0 = await fetch(
-            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value,agc_pesocalcolato",
+            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value,agc_pesocalcolato,agc_ruoloassegnazione,_owningbusinessunit_value",
             { headers: apiHeaders }
           );
           var fascicoloCorrente = await fascResp0.json();
           var rgnrId = fascicoloCorrente["_agc_rgnr_value"];
           var pesoFascicolo = fascicoloCorrente.agc_pesocalcolato || 0;
+          var ruoloFascicolo = fascicoloCorrente.agc_ruoloassegnazione;
+          var businessUnitFascicolo = fascicoloCorrente["_owningbusinessunit_value"];
 
           // 0b. Continuità fascicolo (3.3): se il fascicolo appartiene a un RGNR e altri
           // fascicoli dello stesso RGNR sono già assegnati, assegna allo stesso magistrato
@@ -619,6 +687,25 @@
           var migliore = magistrati.reduce(function (best, m) {
             return pesoPer[m.contactid] < pesoPer[best.contactid] ? m : best;
           });
+
+          // 5b. Verifica riserva GUP (3.4): avviso non bloccante se questa assegnazione
+          // esaurisce l'ultimo magistrato disponibile del tribunale come GIP sull'RGNR
+          var esitoRiserva = await verificaRiservaGup({
+            rgnrId: rgnrId,
+            ruolo: ruoloFascicolo,
+            fascicoloId: fascicoloId,
+            businessUnitId: businessUnitFascicolo,
+            candidatoContactId: migliore.contactid,
+            candidatoNome: migliore.fullname
+          });
+
+          if (esitoRiserva.warn && !window.confirm(esitoRiserva.messaggio)) {
+            document.getElementById("spinner-overlay").classList.remove("show");
+            document.getElementById("btn-conferma").disabled = false;
+            document.getElementById("btn-annulla").disabled = false;
+            showError("Assegnazione annullata: riserva GUP non confermata.");
+            return;
+          }
 
           // 6. Aggiorna il fascicolo con il magistrato scelto
           var patchBody = JSON.stringify({

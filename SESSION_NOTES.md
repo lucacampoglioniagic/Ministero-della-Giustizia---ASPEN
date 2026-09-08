@@ -4,6 +4,69 @@
 
 ---
 
+## Session 2026-09-08 — Implementazione regola "Riserva GUP" (3.4, avviso non bloccante)
+
+### Requisito cliente
+Per un RGNR i cui fascicoli collegati sono tutti di ruolo GIP, deve sempre restare disponibile
+almeno un magistrato del tribunale non ancora impegnato come GIP su quello stesso RGNR, per poter
+eventualmente coprire un futuro fascicolo GUP collegato allo stesso procedimento. Ad ogni
+assegnazione (automatica o manuale) deve partire una verifica: se l'assegnazione in corso
+esaurirebbe l'ultimo magistrato disponibile del tribunale (tutti risulterebbero impegnati come GIP
+sullo stesso RGNR), va mostrato un avviso non bloccante — l'utente può comunque procedere
+confermando.
+
+### Logica implementata (`verificaRiservaGup`, replicata in `agc_assignfascicolo.js` e
+`agc_assignfascicolodialog.html`)
+1. Si applica solo se il fascicolo in assegnazione ha un `agc_RGNR` valorizzato ed è di ruolo
+   **GIP** (`agc_ruoloassegnazione = 0`); se è di ruolo GUP il controllo non si applica.
+2. Se per lo stesso RGNR esiste già almeno un fascicolo di ruolo **GUP** con magistrato assegnato,
+   la riserva è considerata già utilizzata/non più rilevante: nessun avviso.
+3. Altrimenti si contano i magistrati **distinti** già assegnati come GIP sullo stesso RGNR e si
+   aggiunge il candidato corrente (simulando l'assegnazione); si confronta con il totale dei
+   magistrati (`agc_ismagistrato = true`) del tribunale (business unit proprietaria del
+   fascicolo, `owningbusinessunit`). Se il conteggio simulato raggiunge il totale, l'assegnazione
+   userebbe l'ultimo magistrato disponibile: si mostra l'avviso.
+4. Non si applica alle assegnazioni per **continuità RGNR** (stesso magistrato già usato per
+   fratelli dello stesso RGNR): riutilizzare lo stesso magistrato non consuma nuova riserva.
+
+### Punti di integrazione
+- **Assegnazione singola** (`agc_assignfascicolodialog.html`): dopo aver calcolato il candidato a
+  minor carico, verifica la riserva; se scatta l'avviso usa `window.confirm` (pagina standalone),
+  annullando l'assegnazione se l'utente rifiuta.
+- **Assegnazione massiva** (`agc_assignfascicolo.js`, `openBulkAssignFromGrid`): verifica per ogni
+  fascicolo non di continuità nella catena sequenziale; se scatta l'avviso usa
+  `Xrm.Navigation.openConfirmDialog` — se l'utente rifiuta, il fascicolo viene saltato (conteggio
+  `skippedCount` nel riepilogo finale) e si passa al successivo.
+- **Riassegnazione manuale da form** (`onFormLoad`, handler `addOnSave`): intercetta il
+  salvataggio con `eventArgs.preventDefault()` quando il magistrato lookup cambia verso un
+  fascicolo GIP con RGNR; se la verifica scatta l'avviso, mostra `openConfirmDialog` e, solo se
+  confermato, ri-esegue `formContext.data.save()` (con flag di bypass per evitare loop/doppio
+  controllo) per completare salvataggio + aggiornamento carico monotono già esistente. Se
+  l'utente annulla, il salvataggio resta sospeso (form ancora dirty).
+
+### Verifica schema live (`lccministerogiustiziademo.crm4.dynamics.com`, solution `ASPENPOC`)
+Confermato via Web API: `agc_fascicolo2.agc_rgnr` (lookup), `agc_ruoloassegnazione` (picklist,
+0=GIP/1=GUP), `owningbusinessunit`; `contact.agc_ismagistrato` (bool), `owningbusinessunit`. Le
+business unit esistenti (Tribunale di Roma/Messina/Milano) sono il modello di "tribunale" già
+usato per la segregazione (3.8); nei dati di test attuali tutti i magistrati/fascicoli sono ancora
+sotto la BU radice "Ministero della Giustizia" (nessun dato demo segregato per tribunale), ma la
+logica usa comunque il campo `owningbusinessunit` del fascicolo per restare corretta quando i dati
+verranno distribuiti sulle BU dei tribunali.
+
+### Verifica e deploy
+Sintassi verificata con `node --check` su entrambi i file. Web resource aggiornati via Web API
+(`webresourceset` PATCH `content` + `PublishXml`) sui due file (`agc_assignfascicolo.js`,
+`agc_assignfascicolodialog.html`). Query OData della nuova logica testate in sola lettura contro
+l'ambiente live (nessun dato modificato) per verificarne la correttezza sintattica.
+
+### Esito
+Regola di riserva GUP implementata come avviso non bloccante su tutti e tre i canali di
+assegnazione (singola, massiva, manuale da form). Non implementato: un blocco reale/obbligatorio
+(esplicitamente escluso dal requisito, che chiede solo l'avviso) e la segregazione effettiva dei
+dati demo per tribunale (dato di test, non blocca la funzionalità).
+
+---
+
 ## Session 2026-08-28 (sera) — Fix grafico "Fascicoli per Stato" (Magistrato/Canestro vuoti) e ripristino Hide "Chiudi Caso"
 
 ### Segnalazione utente

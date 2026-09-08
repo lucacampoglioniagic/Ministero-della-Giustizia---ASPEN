@@ -4,6 +4,70 @@ var AgicAspen = window.AgicAspen || {};
 
 AgicAspen.AssegnaFascicolo = (function () {
     var STATO_CHIUSO = 2;
+    var RUOLO_GIP = 0;
+    var RUOLO_GUP = 1;
+
+    /* ── Verifica riserva GUP (3.4) ──
+       Regola: per un RGNR i cui fascicoli collegati sono tutti di ruolo GIP,
+       deve sempre restare disponibile almeno un magistrato del tribunale non
+       ancora impegnato come GIP su quello stesso RGNR, così da poter essere
+       eventualmente assegnato come GUP in futuro. Il controllo si applica solo
+       all'assegnazione di un fascicolo di ruolo GIP collegato a un RGNR, e solo
+       se per quel RGNR non esiste già un fascicolo di ruolo GUP assegnato (in
+       tal caso la riserva è già stata utilizzata/non più rilevante). Non blocca
+       l'assegnazione: restituisce solo un avviso (l'utente può procedere
+       comunque confermando il dialog di conferma mostrato dal chiamante). */
+    function verificaRiservaGup(opts) {
+        if (!opts.rgnrId || opts.ruolo !== RUOLO_GIP) return Promise.resolve({ warn: false });
+
+        var filtroGup = "_agc_rgnr_value eq " + opts.rgnrId +
+            " and agc_ruoloassegnazione eq " + RUOLO_GUP + " and _agc_magistratocontatto_value ne null" +
+            (opts.fascicoloId ? " and agc_fascicolo2id ne " + opts.fascicoloId : "");
+
+        return Xrm.WebApi.retrieveMultipleRecords("agc_fascicolo2", "?$select=agc_fascicolo2id&$filter=" + filtroGup + "&$top=1")
+            .then(function (gup) {
+                if ((gup.entities || []).length > 0) return { warn: false };
+
+                var filtroGip = "_agc_rgnr_value eq " + opts.rgnrId +
+                    " and agc_ruoloassegnazione eq " + RUOLO_GIP + " and _agc_magistratocontatto_value ne null" +
+                    (opts.fascicoloId ? " and agc_fascicolo2id ne " + opts.fascicoloId : "");
+
+                return Xrm.WebApi.retrieveMultipleRecords("agc_fascicolo2", "?$select=_agc_magistratocontatto_value&$filter=" + filtroGip)
+                    .then(function (gip) {
+                        var assegnati = {};
+                        (gip.entities || []).forEach(function (f) {
+                            var mid = f["_agc_magistratocontatto_value"];
+                            if (mid) assegnati[mid] = true;
+                        });
+                        assegnati[opts.candidatoContactId] = true; // simula l'assegnazione corrente
+                        var distinti = Object.keys(assegnati).length;
+
+                        var buPromise = opts.businessUnitId
+                            ? Promise.resolve(opts.businessUnitId)
+                            : Xrm.WebApi.retrieveRecord("agc_fascicolo2", opts.fascicoloId, "?$select=_owningbusinessunit_value")
+                                .then(function (f) { return f["_owningbusinessunit_value"]; });
+
+                        return buPromise.then(function (buId) {
+                            var filtroMag = "agc_ismagistrato eq true" +
+                                (buId ? " and _owningbusinessunit_value eq " + buId : "");
+
+                            return Xrm.WebApi.retrieveMultipleRecords("contact", "?$select=contactid&$filter=" + filtroMag)
+                                .then(function (mag) {
+                                    var totale = (mag.entities || []).length;
+                                    if (totale > 0 && distinti >= totale) {
+                                        return {
+                                            warn: true,
+                                            messaggio: "Assegnando questo fascicolo a " + (opts.candidatoNome || "questo magistrato") +
+                                                ", tutti i " + totale + " magistrati disponibili per questo tribunale risulteranno impegnati come GIP sullo stesso procedimento (RGNR). " +
+                                                (opts.candidatoNome || "Il magistrato") + " rappresenta l'ultima riserva disponibile per un eventuale futuro fascicolo GUP collegato allo stesso RGNR.\n\nProcedere comunque con l'assegnazione?"
+                                        };
+                                    }
+                                    return { warn: false };
+                                });
+                        });
+                    });
+            });
+    }
 
     /* ── Apre il dialog dalla form del fascicolo ── */
     function openDialog(formContext) {
@@ -146,7 +210,7 @@ AgicAspen.AssegnaFascicolo = (function () {
                             /* 2. Fascicoli attualmente non assegnati e non chiusi */
                             return Xrm.WebApi.retrieveMultipleRecords(
                                 "agc_fascicolo2",
-                                "?$select=agc_pesocalcolato,_agc_rgnr_value&$filter=_agc_magistratocontatto_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
+                                "?$select=agc_pesocalcolato,_agc_rgnr_value,agc_ruoloassegnazione,_owningbusinessunit_value&$filter=_agc_magistratocontatto_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
                             ).then(function (unassignedResult) {
                                 var fascicoli = unassignedResult.entities || [];
                                 if (fascicoli.length === 0) {
@@ -161,9 +225,13 @@ AgicAspen.AssegnaFascicolo = (function () {
                                    = carico reale * coefficiente esonero). Se il fascicolo appartiene
                                    a un RGNR già assegnato ad un magistrato compatibile, si applica la
                                    continuità invece del calcolo per carico. Il carico non viene mai
-                                   decrementato in questo flusso (nessuna chiusura qui). */
+                                   decrementato in questo flusso (nessuna chiusura qui). Per le
+                                   assegnazioni non di continuità si applica anche la verifica di
+                                   riserva GUP (3.4): se l'utente non conferma l'avviso, il fascicolo
+                                   viene saltato (resta non assegnato) e si passa al successivo. */
                                 var assignedCount = 0;
                                 var errorCount = 0;
+                                var skippedCount = 0;
                                 var chain = Promise.resolve();
 
                                 fascicoli.forEach(function (f) {
@@ -185,14 +253,47 @@ AgicAspen.AssegnaFascicolo = (function () {
                                         }
                                         var peso = f.agc_pesocalcolato || 0;
 
-                                        return Xrm.WebApi.updateRecord("agc_fascicolo2", f.agc_fascicolo2id, {
-                                            "agc_magistratocontatto@odata.bind": "/contacts(" + scelto + ")"
-                                        }).then(function () {
-                                            var nuovoCarico = pesoPer[scelto] + peso;
-                                            return Xrm.WebApi.updateRecord("contact", scelto, { agc_caricoattuale: nuovoCarico }).then(function () {
-                                                pesoPer[scelto] = nuovoCarico;
-                                                if (rgnrId) rgnrToMagistrato[rgnrId] = scelto;
-                                                assignedCount++;
+                                        // Riserva GUP (3.4): verifica solo per assegnazioni "nuove" (non
+                                        // di continuità) di fascicoli di ruolo GIP collegati a un RGNR.
+                                        var checkPromise = continuitaOk
+                                            ? Promise.resolve({ warn: false })
+                                            : verificaRiservaGup({
+                                                rgnrId: rgnrId,
+                                                ruolo: f.agc_ruoloassegnazione,
+                                                fascicoloId: f.agc_fascicolo2id,
+                                                businessUnitId: f["_owningbusinessunit_value"],
+                                                candidatoContactId: scelto,
+                                                candidatoNome: (magistrati.filter(function (m) { return m.contactid === scelto; })[0] || {}).fullname
+                                            });
+
+                                        return checkPromise.then(function (esito) {
+                                            var proceedPromise = esito.warn
+                                                ? Xrm.Navigation.openConfirmDialog(
+                                                    {
+                                                        title: "Riserva GUP",
+                                                        text: esito.messaggio,
+                                                        confirmButtonLabel: "Assegna comunque",
+                                                        cancelButtonLabel: "Salta questo fascicolo"
+                                                    },
+                                                    { height: 260, width: 540 }
+                                                ).then(function (result) { return result.confirmed; })
+                                                : Promise.resolve(true);
+
+                                            return proceedPromise.then(function (proceed) {
+                                                if (!proceed) {
+                                                    skippedCount++;
+                                                    return;
+                                                }
+                                                return Xrm.WebApi.updateRecord("agc_fascicolo2", f.agc_fascicolo2id, {
+                                                    "agc_magistratocontatto@odata.bind": "/contacts(" + scelto + ")"
+                                                }).then(function () {
+                                                    var nuovoCarico = pesoPer[scelto] + peso;
+                                                    return Xrm.WebApi.updateRecord("contact", scelto, { agc_caricoattuale: nuovoCarico }).then(function () {
+                                                        pesoPer[scelto] = nuovoCarico;
+                                                        if (rgnrId) rgnrToMagistrato[rgnrId] = scelto;
+                                                        assignedCount++;
+                                                    });
+                                                });
                                             });
                                         }).catch(function (e) {
                                             errorCount++;
@@ -206,6 +307,7 @@ AgicAspen.AssegnaFascicolo = (function () {
                                     try { selectedControl.refresh(); } catch (e) { /* ignore */ }
 
                                     var text = "Assegnati " + assignedCount + " fascicoli su " + fascicoli.length + ".";
+                                    if (skippedCount > 0) text += " " + skippedCount + " saltati per riserva GUP non confermata.";
                                     if (errorCount > 0) text += " " + errorCount + " assegnazioni non riuscite (vedi console).";
 
                                     return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva completata", text: text });
@@ -294,6 +396,29 @@ AgicAspen.AssegnaFascicolo = (function () {
             var origMagAttr = formContext.getAttribute("agc_magistratocontatto");
             var origMagValue = origMagAttr ? origMagAttr.getValue() : null;
             var origMagId = (origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
+            var riservaGupBypass = false; // evita di ri-verificare la riserva sul resave programmatico
+
+            function aggiornaCaricoRiassegnazione(newMagId) {
+                var pesoAttr = formContext.getAttribute("agc_pesocalcolato");
+                var peso = pesoAttr ? (pesoAttr.getValue() || 0) : 0;
+                var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
+
+                // Decremento carico del vecchio magistrato (mai sotto zero) e incremento del nuovo
+                Xrm.WebApi.retrieveRecord("contact", origMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
+                    var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
+                    return Xrm.WebApi.updateRecord("contact", origMagId, { agc_caricoattuale: nuovoCaricoOld });
+                }).then(function () {
+                    return Xrm.WebApi.retrieveRecord("contact", newMagId, "?$select=agc_caricoattuale");
+                }).then(function (newContact) {
+                    var nuovoCaricoNew = (newContact.agc_caricoattuale || 0) + peso;
+                    return Xrm.WebApi.updateRecord("contact", newMagId, { agc_caricoattuale: nuovoCaricoNew });
+                }).then(function () {
+                    origMagId = newMagId; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
+                    console.log("[ASPEN] Riassegnazione fascicolo " + fascicoloId + ": carico spostato da " + origMagId + " a " + newMagId);
+                }).catch(function (e) {
+                    console.error("[ASPEN] Errore aggiornamento carico su riassegnazione:", e);
+                });
+            }
 
             formContext.data.entity.addOnSave(function (saveEventArgs) {
                 try {
@@ -303,24 +428,60 @@ AgicAspen.AssegnaFascicolo = (function () {
 
                     if (!newMagId || !origMagId || newMagId === origMagId) return;
 
-                    var pesoAttr = formContext.getAttribute("agc_pesocalcolato");
-                    var peso = pesoAttr ? (pesoAttr.getValue() || 0) : 0;
-                    var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
+                    if (riservaGupBypass) {
+                        riservaGupBypass = false;
+                        aggiornaCaricoRiassegnazione(newMagId);
+                        return;
+                    }
 
-                    // Decremento carico del vecchio magistrato (mai sotto zero) e incremento del nuovo
-                    Xrm.WebApi.retrieveRecord("contact", origMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
-                        var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
-                        return Xrm.WebApi.updateRecord("contact", origMagId, { agc_caricoattuale: nuovoCaricoOld });
-                    }).then(function () {
-                        return Xrm.WebApi.retrieveRecord("contact", newMagId, "?$select=agc_caricoattuale");
-                    }).then(function (newContact) {
-                        var nuovoCaricoNew = (newContact.agc_caricoattuale || 0) + peso;
-                        return Xrm.WebApi.updateRecord("contact", newMagId, { agc_caricoattuale: nuovoCaricoNew });
-                    }).then(function () {
-                        origMagId = newMagId; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
-                        console.log("[ASPEN] Riassegnazione fascicolo " + fascicoloId + ": carico spostato da " + origMagId + " a " + newMagId);
+                    // Riserva GUP (3.4): verifica prima di lasciar procedere il salvataggio.
+                    // Se applicabile, si interrompe il salvataggio (preventDefault), si mostra
+                    // l'avviso e, solo se l'utente conferma, si ri-esegue il salvataggio.
+                    var rgnrAttr = formContext.getAttribute("agc_rgnr");
+                    var ruoloAttr = formContext.getAttribute("agc_ruoloassegnazione");
+                    var rgnrVal = rgnrAttr ? rgnrAttr.getValue() : null;
+                    var rgnrId = (rgnrVal && rgnrVal.length > 0) ? rgnrVal[0].id.replace(/[{}]/g, "") : null;
+                    var ruolo = ruoloAttr ? ruoloAttr.getValue() : null;
+
+                    if (!rgnrId || ruolo !== RUOLO_GIP) {
+                        aggiornaCaricoRiassegnazione(newMagId);
+                        return;
+                    }
+
+                    var eventArgs = saveEventArgs.getEventArgs();
+                    eventArgs.preventDefault();
+
+                    var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
+                    var candidatoNome = magValue[0].name;
+
+                    verificaRiservaGup({
+                        rgnrId: rgnrId,
+                        ruolo: ruolo,
+                        fascicoloId: fascicoloId,
+                        candidatoContactId: newMagId,
+                        candidatoNome: candidatoNome
+                    }).then(function (esito) {
+                        var proceedPromise = esito.warn
+                            ? Xrm.Navigation.openConfirmDialog(
+                                {
+                                    title: "Riserva GUP",
+                                    text: esito.messaggio,
+                                    confirmButtonLabel: "Assegna comunque",
+                                    cancelButtonLabel: "Annulla"
+                                },
+                                { height: 260, width: 540 }
+                            ).then(function (result) { return result.confirmed; })
+                            : Promise.resolve(true);
+
+                        return proceedPromise.then(function (proceed) {
+                            if (!proceed) return; // salvataggio resta annullato, form ancora dirty
+                            riservaGupBypass = true;
+                            formContext.data.save();
+                        });
                     }).catch(function (e) {
-                        console.error("[ASPEN] Errore aggiornamento carico su riassegnazione:", e);
+                        console.error("[ASPEN] Errore verifica riserva GUP, salvataggio consentito senza controllo:", e);
+                        riservaGupBypass = true;
+                        formContext.data.save();
                     });
                 } catch (e) {
                     console.error("[ASPEN] Errore onSave riassegnazione:", e);
