@@ -4,6 +4,84 @@
 
 ---
 
+## Session 2026-09-08 (cont. 2) — Ricostruzione custom page "Home" dell'app ASPEN
+
+### Contesto
+Ambiente: `lccministerogiustiziademo.crm4.dynamics.com` (id `b420c516-4df1-ef0b-ba98-06dc0d1b6450`).
+Solution **ASPEN POC** (id `0ddb9b10-3c63-f111-ab0d-e4fb1ef62741`). App model-driven **ASPEN**
+(id `390ef80f-5163-f111-ab0c-7ced8d72f54e`, nome logico `agc_ASPEN`).
+
+La custom page "Home" era stata eliminata in una sessione precedente durante un tentativo di
+workaround per il **bug Microsoft** relativo a metadata orfani della tabella `agc_canestro` che
+impediscono l'eliminazione di `agc_giudice` e modifiche di schema su `agc_fascicolo`.
+**Il bug è tuttora aperto**, in attesa di verifica da parte del supporto Microsoft/Dynamics
+(riferimento: email di Iwayemi Akinmoju, vedi anche `Risposta_MS_Support_EntityMap_Corruption.md`
+in repo). In questa sessione si è quindi ricostruita la pagina Home da zero.
+
+### Cosa è stato fatto
+- Usato come blueprint di riferimento (sola lettura, non modificato) il file repo
+  `05 - Power Platform\Model-Driven-App\AspenHomeCustomPage\Source\agc_aspenhome.pa.yaml`
+  (429 righe) per estrarre con precisione controlli, proprietà, colori, posizioni e formule
+  Power Fx originali.
+- Ricostruzione pilotata via **Playwright** (browser Chrome reale via CDP, con login manuale
+  dell'utente) su Power Apps Studio. **Scoperta chiave**: Studio accetta l'incolla (Ctrl+V) di
+  definizioni di controlli in formato YAML Power Fx direttamente dalla clipboard di sistema —
+  ha permesso di ricreare tutti i 31 controlli di Screen1 in un'unica operazione invece che uno
+  per uno manualmente.
+- Controlli ricreati: `lblHeroTitle`, `lblHeroSubtitle`; 3 card di navigazione (rettangoli
+  `recCardDashboard` / `recCardList` / `recCardCreate` con icone, titoli, corpo testo e bottoni
+  `btnCruscotto` / `btnAssegnaFascicolo` / `btnCreaFascicolo` con formule `OnSelect` → `Launch()`
+  verso dashboard / vista lista entità / nuovo record); pannello KPI (`recStatsPanel` + 3
+  divisori + 4 coppie titolo/valore con formule Power Fx `CountIf` / `CountRows(Filter(...))` /
+  `Average` / `Sum`).
+- Aggiunta la tabella dati **Fascicoli** (nome logico `agc_fascicolo2`) come data source di
+  app/pagina.
+- **Verifica di fedeltà**: i 4 KPI mostrano valori live (Fascicoli attivi: 31, Creati ultima
+  settimana: 0, Peso medio: 12.9, Imputati totali: 216) quasi identici allo screenshot originale
+  fornito dall'utente (`Homepage.png`: 31 / 0 / 12.2 / 216) → conferma alta fedeltà della
+  ricostruzione.
+- **Pubblicazione**: pagina custom pubblicata in Studio ("Pubblica" → "Pubblica questa
+  versione"). App Designer salvato. Eseguito poi **"Pubblica tutte le personalizzazioni"** a
+  livello di solution ASPEN POC, completato con successo → modifiche live per gli utenti finali.
+
+### Gap noti / non risolti
+1. **Colore di sfondo** dello schermo Home rimasto bianco puro `RGBA(255,255,255,1)` invece del
+   valore di spec `RGBA(249,247,245,1)`: i tentativi di editare la formula bar in Studio non
+   hanno avuto effetto visibile. Gap cosmetico minore, non bloccante.
+2. **Posizione della voce "Home" nel menu di navigazione** dell'app: la pagina è stata
+   auto-aggiunta al sitemap sotto il gruppo "Impostazioni" (fondo menu) invece che in posizione
+   prominente come presumibilmente era l'originale (es. cima del gruppo "Operatività"). Il menu
+   contestuale non offre lo spostamento cross-gruppo; servirebbe drag&drop manuale. Nessuna
+   azione eseguita: da chiedere esplicitamente il parere dell'utente su dove riposizionarla.
+3. I pulsanti di navigazione della pagina Home (Cruscotto, Fascicoli, Nuovo Fascicolo) sono
+   stati creati con formule `Launch()` corrette ma **non ancora testati end-to-end** con click
+   reali in ambiente pubblicato.
+
+### Stato attuale
+- Pagina Home ricostruita, pubblicata e live in produzione demo, con fedeltà dati confermata
+  rispetto allo screenshot originale.
+- Bug Microsoft su metadata orfani `agc_canestro` **ancora aperto**, in attesa Microsoft/Dynamics
+  support.
+- Da tenere presente: i vecchi "canestri" erano stati cancellati ma non del tutto proprio a causa
+  di questo bug; l'utente ha ricreato nuovi canestri e sono stati riassegnati casualmente ai
+  fascicoli esistenti.
+
+### Prossimi passi
+- Decidere con l'utente il riposizionamento della voce "Home" nel sitemap (gap #2).
+- Tentare nuovamente la correzione del colore di sfondo (gap #1), eventualmente editando
+  direttamente il file `.pa.yaml` sorgente e reimportando, se l'editor Studio continua a non
+  applicare la formula.
+- Testare end-to-end i 3 pulsanti di navigazione della Home page in ambiente pubblicato (gap #3).
+- Seguire l'evolversi del ticket Microsoft sul bug `agc_canestro` / `agc_giudice` /
+  `agc_fascicolo` e riprovare le operazioni di schema bloccate una volta risolto.
+
+### File toccati
+- Nessun file di repository modificato direttamente in questa sessione: il lavoro è stato
+  eseguito interamente lato Power Apps Studio (online) tramite automazione Playwright, usando
+  `agc_aspenhome.pa.yaml` solo come riferimento di lettura.
+
+---
+
 ## Session 2026-09-08 (cont.) — Riallineamento punteggio al rientro dall'esonero (3.1, parte finale)
 
 ### Decisioni di design (confermate dall'utente)
