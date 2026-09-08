@@ -57,10 +57,25 @@ non ottenibile via Web API). Creare quindi manualmente un flow schedulato:
 4. Salvare e attivare: la chiusura triggera automaticamente `EsoneroRientroPlugin` che fotografa
    `agc_punteggioalrientro`, senza ulteriore codice.
 
+### Chiusura automatica — flow creato e testato
+L'utente ha creato manualmente il flow cloud classico (Power Automate, non Copilot Studio Agent
+Flow — valutata e scartata quest'ultima opzione per minore maturità ALM/solution-aware rispetto ai
+cloud flow classici) e lo ha aggiunto alla solution ASPENPOC. Configurazione: ricorrenza
+giornaliera → Elenca righe `agc_esonero` con filtro
+`agc_statoesonero eq 1 and agc_datafine le '<oggi>'` → Applica a ciascuno → Aggiorna riga
+(`agc_statoesonero = 2`).
+
+**Test end-to-end eseguito** (record `TEST flow chiusura automatica`, creato con Data Fine = ieri
+e Stato = Attivo, magistrata Laura Verdi): eseguito il flow manualmente → record chiuso
+correttamente (`agc_statoesonero = 2`) → `EsoneroRientroPlugin` scattato sull'Update e popolato
+`agc_punteggioalrientro = 81` (carico reale del magistrato). `agc_punteggioalmomentoesonero`
+rimasto vuoto perché il record di test era stato creato già in stato Attivo via Create (il plugin
+fotografa quel valore solo su una vera transizione via Update, come da design) — comportamento
+atteso, non un difetto. Record di test eliminato dopo la verifica.
+
 ### Esito
-Todo `3.1-riallineamento-punteggio` completato per la parte plugin/log (chiusura manuale già
-pienamente funzionante); resta da creare il flow schedulato (5 minuti in Maker Portal, istruzioni
-sopra) per la chiusura automatica su scadenza.
+Todo `3.1-riallineamento-punteggio` **completato end-to-end**: plugin di log su attivazione/rientro
++ flow schedulato di chiusura automatica, entrambi verificati in ambiente live.
 
 ---
 
