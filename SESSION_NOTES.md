@@ -4,6 +4,49 @@
 
 ---
 
+## Session 2026-09-08 (cont.) — Allineamento commento `SetOwnerTeamPlugin` + estensione a `agc_rgnr`
+
+### Verifica registrazione reale (live, `lccministerogiustiziademo.crm4.dynamics.com`)
+Confermato via Web API (`sdkmessageprocessingsteps`) che `SetOwnerTeamPlugin` era registrato **solo**
+su Create di `agc_fascicolo2` (Pre-Operation, sincrono) — il commento nel sorgente citava ancora
+`agc_fascicolo` (deprecata) e `agc_canestro`, mai registrato per quest'ultima. Commento allineato al
+comportamento reale.
+
+### Estensione a `agc_rgnr`
+Su richiesta cliente, stessa regola di ownership (assegnazione al default team della BU
+dell'utente creatore) applicata anche alla creazione di `agc_rgnr` (entità `UserOwned`, supporta
+ownership a team):
+- Creato un nuovo `sdkmessageprocessingstep` (Create, Pre-Operation, sincrono, stage 20, rank 1)
+  che punta allo stesso `plugintypeid` di `SetOwnerTeamPlugin`, filtrato su `agc_rgnr` (nessuna
+  modifica al codice C# necessaria: la logica è già generica, agisce sul `Target` a runtime
+  indipendentemente dall'entità).
+- **Gap di sicurezza scoperto e risolto**: il primo test di creazione ha fallito con
+  `Read Privilege Check For Owner failed ... missing prvReadagc_RGNR privilege` — il ruolo
+  "Operatore ASPEN" (assegnato ai default team "Ministero della Giustizia" e "Tribunale di
+  Messina") non aveva **nessun** privilegio su `agc_rgnr`. Aggiunti i 6 privilegi
+  Create/Read/Write/Delete/Append/AppendTo a profondità **Local** (Business Unit), stessa
+  profondità già in uso per `agc_Fascicolo2` sullo stesso ruolo (verificata via
+  `RetrieveRolePrivilegesRole`).
+- Ritest: creazione di un `agc_rgnr` di prova → assegnato correttamente al team "Ministero della
+  Giustizia", nessun errore di privilegio; record di test eliminato subito dopo.
+
+### Osservazione da approfondire (non risolta in questa sessione)
+I default team di **Tribunale di Roma** e **Tribunale di Milano** non hanno **nessun ruolo di
+sicurezza assegnato** (a differenza di "Ministero della Giustizia" e "Tribunale di Messina", che
+hanno "Operatore ASPEN"). Se in futuro fascicoli/RGNR verranno effettivamente segregati su quelle
+BU (oggi i dati demo sono tutti sotto la BU radice), gli utenti di quei tribunali dovranno avere
+un ruolo di sicurezza equivalente assegnato (via team o direttamente) per poter leggere/scrivere i
+record di cui il team risulta proprietario. Da verificare con il cliente prima del rollout multi-
+tribunale.
+
+### Esito
+Todo completato: commento plugin allineato, regola di ownership per team estesa a `agc_rgnr`,
+gap di privilegi sul ruolo "Operatore ASPEN" risolto. Nessuna modifica al codice C# del plugin
+(solo alla registrazione in Dataverse e al ruolo di sicurezza); l'assembly non richiede
+ricompilazione/redeploy.
+
+---
+
 ## Session 2026-09-08 — Implementazione regola "Riserva GUP" (3.4, avviso non bloccante)
 
 ### Requisito cliente

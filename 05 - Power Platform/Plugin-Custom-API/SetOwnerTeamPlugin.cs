@@ -5,7 +5,10 @@ using System;
 namespace AgicAspen.Plugins
 {
     /// <summary>
-    /// Pre-Operation Create plugin per agc_fascicolo, agc_canestro (e, storicamente, agc_giudice).
+    /// Pre-Operation Create plugin registrato su agc_fascicolo2 e agc_rgnr (verificato in
+    /// produzione via sdkmessageprocessingstep; NON registrato su agc_canestro né sulla tabella
+    /// deprecata agc_fascicolo, nonostante quanto indicato in versioni precedenti di questo
+    /// commento).
     /// Imposta il proprietario del record al default team della Business Unit dell'utente,
     /// garantendo la segregazione dei dati tra uffici giudiziari.
     /// NOTA: dalla migrazione Magistrati -> Contatti, i magistrati sono record della tabella
