@@ -4,6 +4,66 @@
 
 ---
 
+## Session 2026-09-08 (cont.) — Riallineamento punteggio al rientro dall'esonero (3.1, parte finale)
+
+### Decisioni di design (confermate dall'utente)
+- **Trigger**: sia chiusura manuale dello Stato Esonero (Attivo → Chiuso) sia chiusura
+  automatica su scadenza Data Fine (flow schedulato).
+- **Formula**: nessuna modifica algoritmica al carico al rientro — solo log/fotografia per
+  audit/reportistica. Il riequilibrio tra colleghi avviene naturalmente tramite l'algoritmo a
+  minor carico nelle assegnazioni successive (i magistrati con esonero totale non hanno ricevuto
+  nuovi fascicoli, quindi il loro carico reale è già più basso; quelli con esonero parziale hanno
+  comunque accumulato carico reale, solo confrontato a soglia maggiorata).
+- **Implementazione**: plugin C# (per il "log" puntuale) + flow schedulato (per la chiusura
+  automatica su scadenza).
+
+### Nuovo campo `agc_punteggioalrientro` (Decimal) su `agc_esonero`
+Aggiunto in simmetria al campo già esistente `agc_punteggioalmomentoesonero` (che finora non era
+mai popolato da nessuna logica). Nessun impatto sul motore di assegnazione: solo dati di log.
+
+### Nuovo plugin `EsoneroRientroPlugin.cs` (Plugin-Custom-API)
+Registrato su **Update** di `agc_esonero`, Post-Operation (stage 40), filtrato sull'attributo
+`agc_statoesonero`, con **PreImage** (`agc_statoesonero`, `agc_magistrato`) per confrontare stato
+precedente/nuovo:
+- Transizione verso **Attivo** (1): fotografa il carico attuale del magistrato
+  (`contact.agc_caricoattuale`) in `agc_punteggioalmomentoesonero`.
+- Transizione **Attivo → Chiuso** (rientro): fotografa il carico attuale in
+  `agc_punteggioalrientro`. **Non modifica mai** `agc_caricoattuale`: il rientro è puramente
+  informativo/di log, come da decisione utente.
+- Altre transizioni (es. verso Annullato) ignorate.
+
+Deploy: assembly `Plugin-Custom-API` (id `5cd6cdfb-e163-f111-ab0c-7ced8d72f54e`) ricompilato
+(`dotnet build`, net462) e aggiornato via Web API (PATCH `content` in base64); creato nuovo
+`plugintype` (`AgicAspen.Plugins.EsoneroRientroPlugin`, id `095b040c-60ab-f111-aaab-7ced8d71a68d`)
+e nuovo `sdkmessageprocessingstep` (id `b06eaf18-60ab-f111-aaab-7ced8d71a68d`) con relativa
+`sdkmessageprocessingstepimage` di tipo PreImage.
+
+**Test end-to-end eseguito** su un esonero di prova (magistrata Laura Verdi, carico reale 81):
+attivazione → `agc_punteggioalmomentoesonero = 81` ✅; carico modificato manualmente a 95
+(simulando assegnazioni durante l'esonero parziale) → chiusura → `agc_punteggioalrientro = 95` ✅,
+carico del magistrato rimasto invariato a 95 (nessuna modifica algoritmica) ✅. Record di test
+eliminato, carico magistrato ripristinato a 81.
+
+### Chiusura automatica su scadenza Data Fine — **richiede azione manuale nel Maker Portal**
+La connessione Dataverse per Power Automate in questo ambiente non è ancora stabilita
+(`connectionreferences` presente ma senza `connectionid`: richiede consenso OAuth interattivo,
+non ottenibile via Web API). Creare quindi manualmente un flow schedulato:
+1. Power Automate → Nuovo flow → **Flow schedulato**, ricorrenza giornaliera.
+2. Azione **Elenca righe** (Dataverse) su tabella "Esonero", filtro:
+   `agc_statoesonero eq 1 and agc_datafine lt '@{utcNow()}'` (o `Microsoft.Dynamics.CRM.On`/formato
+   data compatibile OData).
+3. **Applica a ciascuno** sul risultato → azione **Aggiorna riga** (Dataverse), tabella "Esonero",
+   Id = riga corrente, campo "Stato Esonero" = Chiuso.
+4. Salvare e attivare: la chiusura triggera automaticamente `EsoneroRientroPlugin` che fotografa
+   `agc_punteggioalrientro`, senza ulteriore codice.
+
+### Esito
+Todo `3.1-riallineamento-punteggio` completato per la parte plugin/log (chiusura manuale già
+pienamente funzionante); resta da creare il flow schedulato (5 minuti in Maker Portal, istruzioni
+sopra) per la chiusura automatica su scadenza.
+
+---
+
 ## Session 2026-09-08 (cont.) — Allineamento commento `SetOwnerTeamPlugin` + estensione a `agc_rgnr`
 
 ### Verifica registrazione reale (live, `lccministerogiustiziademo.crm4.dynamics.com`)
