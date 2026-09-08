@@ -4,6 +4,108 @@
 
 ---
 
+## Session 2026-09-08 (cont. 3) — Blocco assegnazione manuale con esonero Totale + fix carico prima assegnazione + coefficiente esonero Parziale
+
+### Requisito cliente
+Impedire l'assegnazione manuale (dal form Fascicolo) di un fascicolo ad un magistrato con
+esonero **Totale** attivo, con messaggio di avviso bloccante (a differenza della riserva GUP,
+qui non esiste "assegna comunque").
+
+### Implementazione (`agc_assignfascicolo.js`)
+- Nuova funzione `verificaEsoneroTotale(candidatoContactId)`: interroga `agc_esonero` per un
+  esonero Totale (tipo 1) attivo (stato 1) alla data odierna per il magistrato candidato.
+- Hook in `formContext.data.entity.addOnSave` (dentro `onFormLoad`): se il magistrato selezionato
+  cambia rispetto a quello già in salvataggio (sia prima assegnazione sia riassegnazione) e ha
+  esonero Totale attivo, il salvataggio viene annullato (`preventDefault`) e si apre
+  `Xrm.Navigation.openAlertDialog` con titolo "Assegnazione non consentita". Il messaggio include
+  ora anche la **data di fine esonero** (formattata gg/mm/aaaa) o "a tempo indeterminato" se
+  `agc_datafine` è vuoto.
+- Flag `esoneroTotaleBypass` per evitare di ri-eseguire il controllo sul resave programmatico
+  dopo un controllo riuscito.
+
+### Individuazione form corretto (problema di deploy, non di codice)
+La form "Informazioni" di `agc_fascicolo2` esiste **duplicata** in questo ambiente
+(`a1b2c3d4-e5f6-7890-abcd-ef1234567890` e `b41ca47e-38b5-4fcf-85a2-afb9efe1fac8`): solo la
+seconda è quella effettivamente renderizzata (verificato con
+`Xrm.Page.ui.formSelector.getCurrentItem().getId()`). L'handler OnLoad che carica
+`agc_assignfascicolo.js` è stato aggiunto a questa form corretta. Lezione: quando un event
+handler sembra "non funzionare" nonostante il webresource sia deployato correttamente, verificare
+sempre quale form è realmente in uso prima di sospettare problemi di cache/pubblicazione — in
+questo ambiente esistono anche scritture Web API su `webresource`/`systemform` che vengono
+silenziosamente **ripristinate** (200/204 ma valore invariato al successivo GET): l'unico modo
+affidabile per persistere modifiche a componenti di solution è l'editor UI di make.powerapps.com
+(clipboard paste per il contenuto file, editor Form Designer per gli event handler).
+
+### Bug scoperto e corretto: carico non aggiornato alla prima assegnazione
+`aggiornaCaricoRiassegnazione` veniva invocata solo se `origMagId` (magistrato già presente al
+caricamento della form) non era nullo — quindi funzionava per le **riassegnazioni** (A → B) ma
+**mai per la prima assegnazione** di un fascicolo senza magistrato. Corretto: il decremento del
+vecchio magistrato ora è condizionale (`Promise.resolve()` se non c'era un magistrato precedente),
+mentre l'incremento del nuovo magistrato avviene sempre.
+
+### Nuova logica: coefficiente di carico per esonero Parziale
+Chiarito con l'utente il funzionamento corretto (in precedenza il coefficiente era usato solo per
+il confronto "chi ha meno carico", non per il valore persistito): un magistrato con esonero
+**Parziale** attivo al momento dell'assegnazione vede il **peso del fascicolo assegnato
+aumentato** proporzionalmente alla percentuale di esonero (es. esonero 30% → un fascicolo di peso
+10 pesa 13 sul carico reale). Nessun esonero → carico invariato (+peso pieno). Esonero Totale →
+bloccato (vedi sopra).
+- Nuova funzione `ottieniCoefficienteCarico(candidatoContactId)`: restituisce `1 + percentuale/100`
+  se il magistrato ha un esonero Parziale attivo oggi, altrimenti `1`.
+- `aggiornaCaricoRiassegnazione` (assegnazione manuale dal form): il peso viene moltiplicato per
+  il coefficiente prima di sommarlo al carico del nuovo magistrato. Il decremento dal vecchio
+  magistrato (in caso di riassegnazione) resta a peso pieno (non si tiene uno storico di quale
+  coefficiente fu applicato all'assegnazione originale).
+- `openBulkAssignFromGrid` (assegnazione massiva/automatica): rimossa la doppia moltiplicazione a
+  tempo di confronto (`pesoPer` ora è già il carico reale effettivo, aggiornato ad ogni
+  assegnazione con `peso * coeffPer[scelto]`); il confronto per scegliere il magistrato con meno
+  carico usa direttamente `pesoPer`.
+
+### Verifica end-to-end (ambiente live `lccministerogiustiziademo.crm4.dynamics.com`)
+- Creato esonero Totale di prova per Marco Bianchi → riassegnazione fascicolo RG-2026/0111 a
+  Marco Bianchi → dialog "Assegnazione non consentita" mostrato correttamente, salvataggio
+  bloccato, form rimasta "non salvata". Fascicolo e dati di test ripristinati/eliminati dopo il
+  test.
+- Utente ha verificato autonomamente sia il messaggio con data di fine esonero sia la correzione
+  del carico (bugfix prima assegnazione + coefficiente esonero parziale): confermato funzionante.
+
+### Deploy
+Come nelle sessioni precedenti, il deploy del webresource è avvenuto tramite copia del contenuto
+esatto del file locale negli appunti Windows (`Get-Content -Raw ... | Set-Clipboard`) e incolla
+manuale nell'editor di codice del webresource su make.powerapps.com (l'utente collegato non ha
+permessi di scrittura API diretta su `webresource`/`systemform` in questo ambiente).
+
+### Esito
+Blocco assegnazione manuale con esonero Totale, messaggio con data di fine esonero, bugfix carico
+prima assegnazione e coefficiente esonero parziale: **tutti completati e verificati in
+produzione**.
+
+### Prossimi passi (nuovi requisiti raccolti in questa sessione, non ancora implementati)
+1. **Tasto "Modifica carico" visibile solo agli amministratori** (ruolo di sicurezza esatto da
+   definire con l'utente) sul form Contatto/Magistrato, che permetta di correggere manualmente
+   `agc_caricoattuale` inserendo una **nota obbligatoria** a giustificazione. Valutare la
+   creazione di una nuova tabella (es. `agc_modificacarico` o simile) per tracciare ogni modifica
+   manuale (magistrato, valore precedente, nuovo valore, nota, utente, data) a fini di audit.
+2. **Riallineamento punteggio al rientro da esonero Totale** (nuovo requisito, da specifica email
+   ricevuta dal cliente — supera la decisione presa in una sessione precedente di "nessuna
+   modifica algoritmica al rientro", che restava valida per gli esoneri **Parziali** ma va rivista
+   per il Totale): alla chiusura di un esonero **Totale** (sospensione totale da data `dd1` a
+   `dd2`), il punteggio/carico del magistrato rientrante M1 in data `dd2` va impostato uguale al
+   punteggio che aveva in data `dd1` (`P(M1,dd1)`, già fotografato in `agc_punteggioalmomentoesonero`
+   dal plugin `EsoneroRientroPlugin`) **rivalutato al carico attuale del "collega più simile"**:
+   individuare M2 come il magistrato che, al momento dell'inizio dell'esonero (`dd1`), aveva il
+   punteggio più vicino a `P(M1,dd1)`, e impostare `P(M1,dd2) = P(M2,dd2)` (il carico attuale di
+   M2 alla data del rientro). Da progettare: dove/come fotografare il carico di **tutti** i
+   magistrati a `dd1` (non solo M1) per poter individuare M2 in un secondo momento; probabile
+   estensione del plugin `EsoneroRientroPlugin` o nuova logica scheduler-side. Questo si applica
+   solo a esonero **Totale**, non Parziale (per il quale resta valida la decisione precedente di
+   nessuna modifica algoritmica).
+
+### File toccati
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js`
+
+---
+
 ## Session 2026-09-08 (cont. 2) — Ricostruzione custom page "Home" dell'app ASPEN
 
 ### Contesto
@@ -386,6 +488,9 @@ Todo `impl-rgnr-model` completato. Non ancora popolato retroattivamente il campo
 Campi: `agc_name` (primaria), `agc_magistrato` (lookup → contact, required), `agc_tipoesonero` (picklist: 1=Totale, 2=Parziale), `agc_percentualeesonero` (decimal, per esoneri parziali), `agc_datainizio`/`agc_datafine` (DateOnly), `agc_statoesonero` (picklist: 1=Attivo, 2=Chiuso, 3=Annullato), `agc_note` (memo), `agc_punteggioalmomentoesonero` (decimal, riservato a logica futura di riallineamento). Relazione `agc_contact_agc_esonero_Magistrato`.
 
 Form principale (`80d6c6f2-b3d6-42aa-92c0-d7287d0f9753`) ricostruita a mano via PATCH `systemforms` per includere tutti i campi custom (il form di default auto-generato da Dataverse conteneva solo nome + proprietario). Aggiunta una tab "Esoneri" con subgrid (vista "Visualizzazione associata Esonero") sul form "Contatto - Magistrato" (`ff4a3cde-18a2-f111-aaac-7c1e52764872`) per visibilità diretta degli esoneri di ogni magistrato.
+
+### Business rule "Nascondi Percentuale Esonero se Totale" (form principale `agc_esonero`)
+Creata e attivata via Business Rule Designer classico sul form principale: `SE Tipo Esonero uguale a "Totale" ALLORA Nascondi campo Percentuale Esonero ALTRIMENTI Mostra campo Percentuale Esonero`. Il campo Percentuale Esonero ha senso solo per esoneri Parziali, quindi va nascosto quando Tipo Esonero = Totale. Verificato su record reale: cambiando Tipo Esonero in Totale il campo scompare correttamente.
 
 ### Logica motore di assegnazione (esclusione/coefficiente esonero)
 Modificati sia `agc_assignfascicolodialog.html` (assegnazione singola, riscritta con `async/await` per maggiore leggibilità) sia `agc_assignfascicolo.js` (`openBulkAssignFromGrid`, assegnazione massiva):

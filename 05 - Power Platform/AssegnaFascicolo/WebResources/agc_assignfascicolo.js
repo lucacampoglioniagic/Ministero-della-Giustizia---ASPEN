@@ -69,6 +69,56 @@ AgicAspen.AssegnaFascicolo = (function () {
             });
     }
 
+    /* ── Verifica esonero Totale (blocco assegnazione manuale) ──
+       Un magistrato con esonero di tipo Totale (1) attivo alla data odierna non
+       può ricevere assegnazioni manuali dirette (modifica del campo Magistrato
+       sul form del fascicolo, che bypassa i controlli già presenti nel dialog
+       di assegnazione assistita/massiva). A differenza della riserva GUP, qui
+       il salvataggio viene sempre bloccato: non esiste un "assegna comunque". */
+    function verificaEsoneroTotale(candidatoContactId) {
+        var oggiIso = new Date().toISOString();
+        var filtro = "_agc_magistrato_value eq " + candidatoContactId +
+            " and agc_statoesonero eq 1 and agc_tipoesonero eq 1" +
+            " and agc_datainizio le " + oggiIso +
+            " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)";
+
+        return Xrm.WebApi.retrieveMultipleRecords("agc_esonero", "?$select=agc_esoneroid,agc_datafine&$filter=" + filtro + "&$top=1")
+            .then(function (result) {
+                var entities = result.entities || [];
+                var datafine = entities.length > 0 ? entities[0].agc_datafine : null;
+                return { bloccato: entities.length > 0, datafine: datafine };
+            });
+    }
+
+    /* Formatta una data ISO in gg/mm/aaaa per i messaggi utente */
+    function formattaDataIt(dataIso) {
+        if (!dataIso) return null;
+        var d = new Date(dataIso);
+        var gg = ("0" + d.getDate()).slice(-2);
+        var mm = ("0" + (d.getMonth() + 1)).slice(-2);
+        return gg + "/" + mm + "/" + d.getFullYear();
+    }
+
+    /* ── Coefficiente di carico per esonero parziale (assegnazione manuale) ──
+       Un magistrato con esonero Parziale (2) attivo ha capacità ridotta: ogni
+       fascicolo assegnatogli pesa di più sul suo carico reale, proporzionalmente
+       alla percentuale di esonero (es. 30% => il peso del fascicolo va
+       moltiplicato per 1.3). Nessun esonero attivo => coefficiente 1 (peso invariato). */
+    function ottieniCoefficienteCarico(candidatoContactId) {
+        var oggiIso = new Date().toISOString();
+        var filtro = "_agc_magistrato_value eq " + candidatoContactId +
+            " and agc_statoesonero eq 1 and agc_tipoesonero eq 2" +
+            " and agc_datainizio le " + oggiIso +
+            " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)";
+
+        return Xrm.WebApi.retrieveMultipleRecords("agc_esonero", "?$select=agc_percentualeesonero&$filter=" + filtro + "&$top=1")
+            .then(function (result) {
+                var entities = result.entities || [];
+                var percentuale = entities.length > 0 ? (entities[0].agc_percentualeesonero || 0) : 0;
+                return percentuale > 0 ? (1 + percentuale / 100) : 1;
+            });
+    }
+
     /* ── Apre il dialog dalla form del fascicolo ── */
     function openDialog(formContext) {
         var rawId = formContext.data.entity.getId();
@@ -176,9 +226,10 @@ AgicAspen.AssegnaFascicolo = (function () {
                             return Xrm.Navigation.openAlertDialog({ title: "Assegnazione massiva", text: "Tutti i magistrati sono in esonero totale. Impossibile assegnare automaticamente." });
                         }
 
-                        // Coefficiente moltiplicativo per esonero parziale (tipo 2): un magistrato con
-                        // esonero parziale ha capacità ridotta, quindi il suo carico "equivalente" ai
-                        // fini del confronto viene aumentato proporzionalmente (es. 30% => x1.3)
+                        // Coefficiente moltiplicativo per esonero parziale (tipo 2): il peso di
+                        // ogni fascicolo assegnato ad un magistrato con esonero parziale viene
+                        // aumentato proporzionalmente (es. 30% => x1.3) prima di sommarlo al
+                        // carico reale del magistrato, sia ai fini del confronto sia del salvataggio.
                         var coeffPer = {};
                         magistrati.forEach(function (m) {
                             var es = esoneroPer[m.contactid];
@@ -187,9 +238,10 @@ AgicAspen.AssegnaFascicolo = (function () {
 
                         /* 1. Carico cumulativo attuale (agc_caricoattuale, regola 3.11 "carico
                            monotono": cresce con ogni assegnazione, non diminuisce mai per
-                           chiusura fascicolo). pesoPer tiene il carico REALE (senza coefficiente),
-                           usato sia per il confronto (moltiplicato per coeffPer) sia per il
-                           salvataggio persistente su contact al termine di ogni assegnazione. */
+                           chiusura fascicolo). pesoPer tiene il carico REALE già effettivo
+                           (ogni fascicolo sommato include il coefficiente di esonero parziale
+                           del magistrato a cui è stato assegnato), quindi il confronto tra
+                           magistrati si fa direttamente su pesoPer, senza ri-moltiplicare. */
                         var pesoPer = {};
                         magistrati.forEach(function (m) { pesoPer[m.contactid] = m.agc_caricoattuale || 0; });
 
@@ -221,12 +273,12 @@ AgicAspen.AssegnaFascicolo = (function () {
                                 /* 3. Assegnazione sequenziale: ogni assegnazione aggiorna il carico
                                    cumulativo (reale, non l'equivalente) sia in memoria che sul
                                    record contact, prima di calcolare il magistrato migliore per il
-                                   fascicolo successivo (confrontando sempre il carico equivalente
-                                   = carico reale * coefficiente esonero). Se il fascicolo appartiene
-                                   a un RGNR già assegnato ad un magistrato compatibile, si applica la
-                                   continuità invece del calcolo per carico. Il carico non viene mai
-                                   decrementato in questo flusso (nessuna chiusura qui). Per le
-                                   assegnazioni non di continuità si applica anche la verifica di
+                                   fascicolo successivo (confrontando il carico reale già effettivo,
+                                   che include il coefficiente di esonero parziale). Se il fascicolo
+                                   appartiene a un RGNR già assegnato ad un magistrato compatibile, si
+                                   applica la continuità invece del calcolo per carico. Il carico non
+                                   viene mai decrementato in questo flusso (nessuna chiusura qui). Per
+                                   le assegnazioni non di continuità si applica anche la verifica di
                                    riserva GUP (3.4): se l'utente non conferma l'avviso, il fascicolo
                                    viene saltato (resta non assegnato) e si passa al successivo. */
                                 var assignedCount = 0;
@@ -245,9 +297,7 @@ AgicAspen.AssegnaFascicolo = (function () {
                                             scelto = continuitaMagId;
                                         } else {
                                             var migliore = magistrati.reduce(function (best, m) {
-                                                var pesoM = pesoPer[m.contactid] * coeffPer[m.contactid];
-                                                var pesoBest = pesoPer[best.contactid] * coeffPer[best.contactid];
-                                                return pesoM < pesoBest ? m : best;
+                                                return pesoPer[m.contactid] < pesoPer[best.contactid] ? m : best;
                                             });
                                             scelto = migliore.contactid;
                                         }
@@ -287,7 +337,8 @@ AgicAspen.AssegnaFascicolo = (function () {
                                                 return Xrm.WebApi.updateRecord("agc_fascicolo2", f.agc_fascicolo2id, {
                                                     "agc_magistratocontatto@odata.bind": "/contacts(" + scelto + ")"
                                                 }).then(function () {
-                                                    var nuovoCarico = pesoPer[scelto] + peso;
+                                                    var pesoEffettivo = peso * coeffPer[scelto];
+                                                    var nuovoCarico = pesoPer[scelto] + pesoEffettivo;
                                                     return Xrm.WebApi.updateRecord("contact", scelto, { agc_caricoattuale: nuovoCarico }).then(function () {
                                                         pesoPer[scelto] = nuovoCarico;
                                                         if (rgnrId) rgnrToMagistrato[rgnrId] = scelto;
@@ -397,24 +448,38 @@ AgicAspen.AssegnaFascicolo = (function () {
             var origMagValue = origMagAttr ? origMagAttr.getValue() : null;
             var origMagId = (origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
             var riservaGupBypass = false; // evita di ri-verificare la riserva sul resave programmatico
+            var esoneroTotaleBypass = false; // evita di ri-verificare l'esonero sul resave programmatico
 
             function aggiornaCaricoRiassegnazione(newMagId) {
                 var pesoAttr = formContext.getAttribute("agc_pesocalcolato");
                 var peso = pesoAttr ? (pesoAttr.getValue() || 0) : 0;
                 var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
+                var vecchioMagId = origMagId; // può essere null (prima assegnazione, nessun decremento)
 
-                // Decremento carico del vecchio magistrato (mai sotto zero) e incremento del nuovo
-                Xrm.WebApi.retrieveRecord("contact", origMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
-                    var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
-                    return Xrm.WebApi.updateRecord("contact", origMagId, { agc_caricoattuale: nuovoCaricoOld });
-                }).then(function () {
-                    return Xrm.WebApi.retrieveRecord("contact", newMagId, "?$select=agc_caricoattuale");
-                }).then(function (newContact) {
-                    var nuovoCaricoNew = (newContact.agc_caricoattuale || 0) + peso;
+                // Decremento carico del vecchio magistrato (mai sotto zero), solo se già assegnato
+                var decrementoPromise = vecchioMagId
+                    ? Xrm.WebApi.retrieveRecord("contact", vecchioMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
+                        var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
+                        return Xrm.WebApi.updateRecord("contact", vecchioMagId, { agc_caricoattuale: nuovoCaricoOld });
+                    })
+                    : Promise.resolve();
+
+                decrementoPromise.then(function () {
+                    // Incremento del nuovo magistrato: se ha un esonero Parziale attivo, il peso
+                    // del fascicolo viene aumentato proporzionalmente (es. 30% => x1.3)
+                    return Promise.all([
+                        Xrm.WebApi.retrieveRecord("contact", newMagId, "?$select=agc_caricoattuale"),
+                        ottieniCoefficienteCarico(newMagId)
+                    ]);
+                }).then(function (results) {
+                    var newContact = results[0];
+                    var coeff = results[1];
+                    var pesoEffettivo = peso * coeff;
+                    var nuovoCaricoNew = (newContact.agc_caricoattuale || 0) + pesoEffettivo;
                     return Xrm.WebApi.updateRecord("contact", newMagId, { agc_caricoattuale: nuovoCaricoNew });
                 }).then(function () {
                     origMagId = newMagId; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
-                    console.log("[ASPEN] Riassegnazione fascicolo " + fascicoloId + ": carico spostato da " + origMagId + " a " + newMagId);
+                    console.log("[ASPEN] Assegnazione fascicolo " + fascicoloId + ": carico spostato da " + (vecchioMagId || "(nessuno)") + " a " + newMagId);
                 }).catch(function (e) {
                     console.error("[ASPEN] Errore aggiornamento carico su riassegnazione:", e);
                 });
@@ -426,7 +491,41 @@ AgicAspen.AssegnaFascicolo = (function () {
                     var magValue = magAttr ? magAttr.getValue() : null;
                     var newMagId = (magValue && magValue.length > 0) ? magValue[0].id.replace(/[{}]/g, "") : null;
 
-                    if (!newMagId || !origMagId || newMagId === origMagId) return;
+                    // Esonero Totale (blocco assegnazione manuale): si applica sia alla prima
+                    // assegnazione (origMagId nullo) sia alla riassegnazione, ogni volta che il
+                    // magistrato selezionato cambia rispetto a quello già in salvataggio.
+                    if (newMagId && newMagId !== origMagId && !esoneroTotaleBypass) {
+                        var eventArgsEsonero = saveEventArgs.getEventArgs();
+                        eventArgsEsonero.preventDefault();
+
+                        var candidatoNomeEsonero = magValue[0].name;
+
+                        verificaEsoneroTotale(newMagId).then(function (esito) {
+                            if (esito.bloccato) {
+                                var dataFineTxt = formattaDataIt(esito.datafine);
+                                var dettaglioFine = dataFineTxt
+                                    ? " fino al " + dataFineTxt
+                                    : " a tempo indeterminato";
+                                Xrm.Navigation.openAlertDialog({
+                                    title: "Assegnazione non consentita",
+                                    text: "Impossibile assegnare il fascicolo a " + candidatoNomeEsonero +
+                                        ": il magistrato è attualmente in esonero Totale" + dettaglioFine +
+                                        ". Selezionare un altro magistrato o attendere il rientro dall'esonero."
+                                });
+                                return; // salvataggio resta annullato, form ancora dirty
+                            }
+                            esoneroTotaleBypass = true;
+                            formContext.data.save();
+                        }).catch(function (e) {
+                            console.error("[ASPEN] Errore verifica esonero totale, salvataggio consentito senza controllo:", e);
+                            esoneroTotaleBypass = true;
+                            formContext.data.save();
+                        });
+                        return;
+                    }
+                    esoneroTotaleBypass = false;
+
+                    if (!newMagId || newMagId === origMagId) return;
 
                     if (riservaGupBypass) {
                         riservaGupBypass = false;
