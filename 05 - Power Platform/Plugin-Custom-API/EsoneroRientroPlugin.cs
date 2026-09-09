@@ -7,13 +7,16 @@ using System.Linq;
 namespace AgicAspen.Plugins
 {
     /// <summary>
-    /// Post-Operation Update plugin registrato su agc_esonero, filtrato sull'attributo
-    /// agc_statoesonero, con pre-image contenente lo stato/carico precedenti.
-    /// Gestisce il ciclo di vita "punteggio" dell'esonero:
-    /// - Quando lo Stato Esonero passa a "Attivo" (1): fotografa il carico attuale del magistrato
-    ///   in agc_punteggioalmomentoesonero. Se il tipo esonero e' "Totale" (1), fotografa anche il
-    ///   carico attuale di tutti i colleghi magistrati "eleggibili" (nessun esonero Attivo in corso)
-    ///   in record agc_fotocaricoesonero, da usare al rientro per individuare il collega piu' simile.
+    /// Post-Operation Create/Update plugin registrato su agc_esonero (con pre-image su Update
+    /// contenente lo stato/carico precedenti). Gestisce il ciclo di vita "punteggio" dell'esonero:
+    /// - Alla **creazione**, se il record nasce gia' in stato "Attivo" (caso comune: l'utente
+    ///   seleziona direttamente "Attivo" nel form), la fotografia di attivazione viene eseguita
+    ///   subito, dato che una successiva Update non rileverebbe alcuna transizione di stato.
+    /// - Quando lo Stato Esonero passa a "Attivo" (1) via **Update** (transizione da altro stato):
+    ///   fotografa il carico attuale del magistrato in agc_punteggioalmomentoesonero. Se il tipo
+    ///   esonero e' "Totale" (1), fotografa anche il carico attuale di tutti i colleghi magistrati
+    ///   "eleggibili" (nessun esonero Attivo in corso) in record agc_fotocaricoesonero, da usare al
+    ///   rientro per individuare il collega piu' simile.
     /// - Quando lo Stato Esonero passa da "Attivo" (1) a "Chiuso" (2) (rientro, sia per chiusura
     ///   manuale sia per chiusura automatica da flow schedulato su scadenza Data Fine):
     ///   - Esonero "Parziale" (2): fotografa il carico attuale del magistrato in
@@ -51,11 +54,20 @@ namespace AgicAspen.Plugins
             var service = localPluginContext.PluginUserService;
             var tracer = localPluginContext.TracingService;
 
-            // Funziona solo su Update in Post-Operation
-            if (context.MessageName != "Update" || context.Stage != 40)
+            // Funziona solo in Post-Operation, sui messaggi Create e Update
+            if (context.Stage != 40)
                 return;
 
             if (!context.InputParameters.Contains("Target") || !(context.InputParameters["Target"] is Entity target))
+                return;
+
+            if (context.MessageName == "Create")
+            {
+                GestisciCreate(service, tracer, context, target);
+                return;
+            }
+
+            if (context.MessageName != "Update")
                 return;
 
             if (!target.Contains("agc_statoesonero"))
@@ -87,10 +99,7 @@ namespace AgicAspen.Plugins
                 return;
             }
 
-            var magistrato = service.Retrieve("contact", magistratoRef.Id, new ColumnSet("agc_caricoattuale"));
-            var caricoAttuale = magistrato.Contains("agc_caricoattuale")
-                ? magistrato.GetAttributeValue<decimal>("agc_caricoattuale")
-                : 0m;
+            var caricoAttuale = LeggiCaricoAttuale(service, magistratoRef.Id);
 
             // Il tipo esonero e' immutabile dopo la creazione: lo recuperiamo direttamente
             // dal record corrente invece di estendere la PreImage registrata.
@@ -103,8 +112,9 @@ namespace AgicAspen.Plugins
 
             if (nuovoStato == StatoAttivo)
             {
-                tracer.Trace($"EsoneroRientroPlugin: esonero attivato, fotografo carico attuale ({caricoAttuale}) in agc_punteggioalmomentoesonero.");
+                tracer.Trace($"EsoneroRientroPlugin: esonero attivato (update), fotografo carico attuale ({caricoAttuale}) in agc_punteggioalmomentoesonero.");
                 esoneroUpdate["agc_punteggioalmomentoesonero"] = caricoAttuale;
+                service.Update(esoneroUpdate);
 
                 if (tipoEsonero == TipoTotale)
                 {
@@ -120,13 +130,67 @@ namespace AgicAspen.Plugins
                 {
                     RiallineaCaricoAlRientro(service, tracer, target.Id, magistratoRef.Id, esoneroUpdate);
                 }
+
+                service.Update(esoneroUpdate);
             }
-            else
+            // altre transizioni (es. verso Annullato) non gestite
+        }
+
+        /// <summary>
+        /// Gestisce la Create: se il record nasce gia' in stato "Attivo" (caso normale, dato che il
+        /// campo Stato Esonero e' obbligatorio e l'utente lo valorizza direttamente in creazione),
+        /// esegue subito la fotografia di attivazione, perche' nessuna Update successiva rilevera'
+        /// mai una transizione di stato (non c'e' un "prima" diverso da Attivo).
+        /// </summary>
+        private void GestisciCreate(IOrganizationService service, ITracingService tracer, IPluginExecutionContext context, Entity target)
+        {
+            if (!target.Contains("agc_statoesonero"))
+                return;
+
+            var statoIniziale = ((OptionSetValue)target["agc_statoesonero"]).Value;
+            if (statoIniziale != StatoAttivo)
+                return; // nasce in uno stato diverso da Attivo: nessuna fotografia da fare ora
+
+            if (!target.Contains("agc_magistrato"))
             {
-                return; // altre transizioni (es. verso Annullato) non gestite
+                tracer.Trace("EsoneroRientroPlugin: creazione senza magistrato associato, skip.");
+                return;
             }
 
-            service.Update(esoneroUpdate);
+            var esoneroId = target.Id != Guid.Empty
+                ? target.Id
+                : (context.OutputParameters.Contains("id") ? (Guid)context.OutputParameters["id"] : Guid.Empty);
+
+            if (esoneroId == Guid.Empty)
+            {
+                tracer.Trace("EsoneroRientroPlugin: impossibile determinare l'id dell'esonero appena creato, skip.");
+                return;
+            }
+
+            var magistratoRef = (EntityReference)target["agc_magistrato"];
+            var caricoAttuale = LeggiCaricoAttuale(service, magistratoRef.Id);
+            var tipoEsonero = target.Contains("agc_tipoesonero")
+                ? ((OptionSetValue)target["agc_tipoesonero"]).Value
+                : (int?)null;
+
+            tracer.Trace($"EsoneroRientroPlugin: esonero creato gia' in stato Attivo, fotografo carico attuale ({caricoAttuale}) in agc_punteggioalmomentoesonero.");
+            service.Update(new Entity("agc_esonero", esoneroId)
+            {
+                ["agc_punteggioalmomentoesonero"] = caricoAttuale
+            });
+
+            if (tipoEsonero == TipoTotale)
+            {
+                CreaFotoCaricoColleghi(service, tracer, esoneroId, magistratoRef.Id);
+            }
+        }
+
+        private static decimal LeggiCaricoAttuale(IOrganizationService service, Guid magistratoId)
+        {
+            var magistrato = service.Retrieve("contact", magistratoId, new ColumnSet("agc_caricoattuale"));
+            return magistrato.Contains("agc_caricoattuale")
+                ? magistrato.GetAttributeValue<decimal>("agc_caricoattuale")
+                : 0m;
         }
 
         /// <summary>

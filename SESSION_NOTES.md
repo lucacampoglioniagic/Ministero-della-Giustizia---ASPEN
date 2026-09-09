@@ -88,6 +88,29 @@ via Update, per triggerare correttamente il plugin come farebbe un flusso reale)
 - Campo `agc_esonero.agc_collegariferimento` (nuovo, live)
 - `README.md` (nuovo item 23, ✅ Risolto)
 
+### Bug scoperto durante il test manuale dell'utente e fix — gestione anche della Create
+Testando manualmente (esonero Totale creato per Marco Bianchi, poi chiuso), l'utente ha notato che il
+carico **non veniva riallineato**. Diagnosi: l'esonero era stato creato **direttamente in stato Attivo**
+tramite il form (un solo salvataggio, workflow naturale per l'utente finale, dato che il campo Stato
+Esonero è obbligatorio). Il plugin però reagiva solo a **Update** con transizione di stato: una `Create`
+che nasce già Attivo non genera alcuna transizione rilevabile (non c'è uno stato "prima" diverso), quindi
+né la fotografia del carico all'attivazione né le foto colleghi venivano mai create — stesso identico
+comportamento già osservato per il record reale di Chiara Marini. Conferma della diagnosi: i campi
+`agc_punteggioalmomentoesonero` e soprattutto `agc_collegariferimento` risultavano modificati
+dall'utente stesso (non dal plugin) e quest'ultimo puntava al magistrato stesso — impossibile da produrre
+dall'algoritmo (M1 è sempre escluso da se stesso).
+
+Confermato con l'utente che **l'esonero nascerà sempre già in stato Attivo** in produzione: non è un
+caso limite di test ma il flusso normale. Fix: aggiunto un secondo step del plugin registrato su
+**Create** (Post-Operation, stage 40, stesso plugin type) che, se il record nasce con
+`agc_statoesonero = Attivo`, esegue subito la fotografia (carico attuale + foto colleghi se Totale),
+esattamente come farebbe la transizione Update. La logica di rientro (Update Attivo→Chiuso) resta
+invariata. Verificato end-to-end creando un esonero direttamente in Attivo (Marco Bianchi, carico 88):
+foto colleghi create immediatamente (Laura Verdi 81, Paolo Russo 77, Alessia Gialli 81, esclusi Anna
+Greco e Chiara Marini per esonero attivo), chiusura → carico riallineato correttamente a 81. Puliti anche
+i dati residui del test fallito dell'utente (record esonero errato eliminato, carichi di Laura Verdi e
+Alessia Gialli, temporaneamente alterati per il test, ripristinati a 81).
+
 ---
 
 ## Session 2026-09-09 — Tasto "Modifica Carico" (admin) sul form Contatto/Magistrato
