@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RibbonDiffXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CustomActions>
+    <!-- Tasto "Modifica Carico" nel form Contatto/Magistrato, gruppo Actions.
+         Location verificata il tramite RetrieveEntityRibbon sull'ambiente live. -->
+    <CustomAction Id="agc.Form.contact.MainTab.Actions.ModificaCarico.CustomAction"
+      Location="Mscrm.Form.contact.MainTab.Actions.Controls._children"
+      Sequence="15">
+      <CommandUIDefinition>
+        <Button Id="agc.Form.contact.MainTab.Actions.ModificaCarico.Button"
+          Command="agc.Form.contact.ModificaCarico.Command"
+          LabelText="Modifica Carico"
+          Alt="Modifica Carico"
+          ToolTipTitle="Modifica Carico"
+          ToolTipDescription="Corregge manualmente il carico del magistrato (riservato agli amministratori di sistema)"
+          TemplateAlias="o1"
+          Sequence="15"
+          ModernImage="$webresource:agc_modificacarico_icon.svg" />
+      </CommandUIDefinition>
+    </CustomAction>
+  </CustomActions>
+  <Templates>
+    <RibbonTemplates Id="Mscrm.Templates"></RibbonTemplates>
+  </Templates>
+  <CommandDefinitions>
+    <CommandDefinition Id="agc.Form.contact.ModificaCarico.Command">
+      <EnableRules>
+        <EnableRule Id="Mscrm.FormStateExistingOrReadOnly" />
+      </EnableRules>
+      <DisplayRules>
+        <DisplayRule Id="agc.ModificaCarico.IsSystemAdministrator.DisplayRule" />
+      </DisplayRules>
+      <Actions>
+        <JavaScriptFunction FunctionName="AgicAspen.ModificaCarico.openDialog"
+          Library="$webresource:agc_modificacarico.js">
+          <CrmParameter Value="PrimaryControl" />
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+  </CommandDefinitions>
+  <RuleDefinitions>
+    <TabDisplayRules />
+    <DisplayRules>
+      <!-- Nasconde completamente il tasto se l'utente corrente non è System Administrator -->
+      <DisplayRule Id="agc.ModificaCarico.IsSystemAdministrator.DisplayRule">
+        <CustomRule FunctionName="AgicAspen.ModificaCarico.isSystemAdministrator"
+          Library="$webresource:agc_modificacarico.js"
+          Default="false" />
+      </DisplayRule>
+    </DisplayRules>
+    <EnableRules />
+  </RuleDefinitions>
+  <LocLabels />
+</RibbonDiffXml>

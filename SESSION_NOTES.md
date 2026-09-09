@@ -4,6 +4,115 @@
 
 ---
 
+## Session 2026-09-09 — Tasto "Modifica Carico" (admin) sul form Contatto/Magistrato
+
+### Requisito
+Punto 1 dei "Prossimi passi" raccolti in sessione 2026-09-08 (cont. 3): tasto visibile solo agli
+amministratori di sistema sul form Contatto/Magistrato per correggere manualmente
+`agc_caricoattuale`, con nota di giustificazione obbligatoria e traccia di audit.
+
+### Decisioni con l'utente
+- Ruolo di sicurezza: quello esistente **"System Administrator"**
+  (roleid `5eaeacb4-735a-f111-a825-000d3ade6bac`), niente ruolo dedicato nuovo.
+- Tabella di audit: `agc_modificacarico` (creata manualmente dall'utente: lookup `agc_magistrato`
+  → contact, `agc_valoreprecedente`, `agc_valorenuovo`, `agc_nota`). Niente colonna
+  `agc_utentemodifica` dedicata: si usano i campi standard `createdby`/`createdon`.
+- Meccanismo: Custom API (non plugin su Update, non Cloud Flow).
+- Metodo di lavoro: "usa le API dove possibile, altrimenti Playwright" → in pratica tutto fatto
+  via Web API dirette con `az account get-access-token --resource <org-url>` + `Invoke-RestMethod`
+  (stesso pattern di sessioni precedenti — `pac auth token` restituisce sempre `Token: ******`,
+  mascherato, quindi inutilizzabile per chiamate REST dirette).
+
+### Implementazione
+- **Plugin Custom API** `ModificaCaricoMagistratoPlugin.cs`
+  (`05 - Power Platform/Plugin-Custom-API/`): valida `Nota` non vuota e `NuovoValore` presente,
+  verifica lato server l'appartenenza del chiamante al ruolo System Administrator (join
+  `role`/`systemuserroles`, difesa in profondità oltre al check client-side), legge il vecchio
+  `agc_caricoattuale`, aggiorna il contact, crea il record di audit `agc_modificacarico` e
+  restituisce `AuditId`.
+- **Custom API** `agc_ModificaCaricoMagistrato` (bound a `contact`): parametri richiesta
+  `NuovoValore` (Decimal) e `Nota` (String), risposta `AuditId` (GUID). Registrata interamente via
+  Web API dirette (assembly aggiornato via PATCH su `pluginassemblies`, nuovo `plugintype`, nuovo
+  `customapi` con `PluginTypeId@odata.bind`, `customapirequestparameters`,
+  `customapiresponseproperties`).
+  - **Gotcha**: il navigation property per legare `customapi` a `plugintype` è `PluginTypeId`
+    (P/T maiuscole), non `plugintypeid`.
+  - **Gotcha grave**: fatto un errore iniziale impostando `NuovoValore` come tipo 8 (Money)
+    invece di 2 (Decimal) → errore runtime `Unable to cast object of type
+    'Microsoft.Xrm.Sdk.Money'`. **PATCHare il campo `type` di un `customapirequestparameter` già
+    creato non ha alcun effetto reale** (risponde 204 ma il messaggio SDK sottostante resta col
+    vecchio tipo): bisogna **cancellare e ricreare** il parametro con il tipo corretto.
+- **JS/HTML** (`05 - Power Platform/AssegnaFascicolo/WebResources/`):
+  `agc_modificacarico.js` (`AgicAspen.ModificaCarico.isSystemAdministrator()` +
+  `.openDialog(formContext)`, apre un webresource HTML in dialog via `Xrm.Navigation.navigateTo`)
+  e `agc_modificacaricodialog.html` (form con carico attuale, nuovo valore, nota obbligatoria,
+  POST diretto alla Custom API via `fetch`). Il nome del magistrato nel dialog viene letto da
+  `formContext.data.entity.getEntityReference().name` e non da `getAttribute("fullname")`, perché
+  quest'ultimo restituisce `null` se l'attributo non è presente nel layout del form corrente
+  (mentre l'`EntityReference` del record espone comunque il nome primario).
+- **Tasto in command bar (RibbonDiffXml)**: la moderna **Command Designer non supporta la
+  visibilità via funzione JS** — l'unica opzione oltre "Mostra sempre" è "Mostra in base a
+  condizione da formula" (**Power Fx**), e la funzione `User()` di Power Fx **non è disponibile
+  nelle app model-driven** (solo nelle Canvas App) — confermato su
+  `learn.microsoft.com/power-apps/maker/model-driven-apps/use-command-designer` e
+  `commanding-use-powerfx`. Per nascondere davvero il tasto ai non-amministratori serve quindi il
+  **ribbon classico** (`RibbonDiffXml`), con `DisplayRule`/`CustomRule` che richiama
+  `AgicAspen.ModificaCarico.isSystemAdministrator` in JS.
+  - La solution `ASPEN POC Ribbon` (`ASPENPOCRibbon`, che già include `contact` come root
+    component) si è rivelata **non re-importabile**: sia il roundtrip
+    `pac solution export/unpack/pack/import` sia l'`ImportSolution` diretto via Web API falliscono
+    **sempre**, anche re-importando lo zip esportato senza alcuna modifica, con
+    `Cannot have object with no publish instances, Name:Active, BaseInstance(SolutionId=
+    fd140aae-4df4-11dd-bd17-0019b9312238, ...)` — causato quasi certamente dalle
+    `<MissingDependencies>` presenti nel `Solution.xml` esportato (referenziano un componente di
+    `msdynce_AppCommon`/`msdynce_PortalPrivacyExtensions` non risolvibile in questo ambiente).
+    Rimuovere del tutto il nodo `<MissingDependencies>` cambia l'errore in
+    `Solution manifest import: FAILURE: Object reference not set to an instance of an object.`
+    (NullReferenceException lato piattaforma): la soluzione che ha funzionato è **lasciare un
+    `<MissingDependencies />` vuoto** (nodo presente ma senza figli) invece di ometterlo o
+    popolarlo con le voci originali.
+  - Per evitare di toccare/rischiare la solution `ASPENPOCRibbon` esistente (bloccata comunque
+    dal problema sopra), il tasto è stato deployato tramite una **nuova solution unmanaged
+    isolata e minimale**, creata da zero, `AgicModificaCaricoRibbon`
+    (cartella `05 - Power Platform/AssegnaFascicolo/ContactRibbonOnly_unpacked/`), con `contact`
+    come unico root component (`behavior="2"`, RibbonDiffXml popolato con `CustomAction` +
+    `CommandDefinition` + `DisplayRule`/`CustomRule`). Import riuscito, `RetrieveEntityRibbon`
+    confermato con il pulsante presente e funzionante.
+  - Location verificata (non "a manuale") tramite `RetrieveEntityRibbon` sul form Contact live:
+    `Mscrm.Form.contact.MainTab.Actions.Controls._children`. Icona: nuovo webresource SVG
+    `agc_modificacarico_icon.svg` (matita), `ModernImage="$webresource:agc_modificacarico_icon.svg"`.
+    Sequence finale `15` (tra "Chiudi", Sequence 9, e il flyout "Processo", Sequence 62) per
+    posizionare il tasto più a sinistra nella command bar, come richiesto dall'utente dopo il primo
+    test (che lo mostrava per ultimo, Sequence 100).
+
+### Verifica end-to-end
+Testato più volte su record reali (incl. contatto "Laura Verdi" e un test finale dall'utente
+stesso da browser con utente amministratore): tasto visibile solo a System Administrator, dialog
+con nome magistrato e carico attuale popolati correttamente, salvataggio aggiorna
+`agc_caricoattuale` e crea il record di audit in `agc_modificacarico` con valore precedente,
+nuovo valore, nota, `createdby`/`createdon`. Dati di test ripristinati/puliti dopo ogni verifica.
+
+### File toccati
+- `05 - Power Platform/Plugin-Custom-API/ModificaCaricoMagistratoPlugin.cs` (nuovo)
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_modificacarico.js` (nuovo)
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_modificacaricodialog.html` (nuovo)
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_modificacarico_icon.svg` (nuovo)
+- `05 - Power Platform/AssegnaFascicolo/ContactRibbonOnly_unpacked/` (nuovo — solution isolata
+  `AgicModificaCaricoRibbon`, source of truth per il ribbon del tasto Modifica Carico)
+
+### Ambiente live (`lccministerogiustiziademo.crm4.dynamics.com`)
+- Tabella `agc_modificacarico` (creata manualmente dall'utente in Maker Portal)
+- Plugin assembly `Plugin-Custom-API` (`5cd6cdfb-e163-f111-ab0c-7ced8d72f54e`) aggiornato
+- `plugintype` `AgicAspen.Plugins.ModificaCaricoMagistratoPlugin`
+  (`3dee2b2c-2bac-f111-aaab-7ced8d775612`)
+- `customapi` `agc_ModificaCaricoMagistrato` (`e8f5ab3e-2bac-f111-aaab-7ced8d775612`)
+- Webresource `agc_modificacarico.js` (`e62e55c2-2bac-f111-aaab-7ced8d775612`),
+  `agc_modificacaricodialog.html` (`ea2e55c2-2bac-f111-aaab-7ced8d775612`),
+  `agc_modificacarico_icon.svg` (`411120f1-33ac-f111-aaab-7ced8d71a68d`)
+- Solution `AgicModificaCaricoRibbon` (nuova, contiene solo `contact` come root component)
+
+---
+
 ## Session 2026-09-08 (cont. 3) — Blocco assegnazione manuale con esonero Totale + fix carico prima assegnazione + coefficiente esonero Parziale
 
 ### Requisito cliente
