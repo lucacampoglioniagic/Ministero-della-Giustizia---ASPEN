@@ -111,6 +111,28 @@ Greco e Chiara Marini per esonero attivo), chiusura → carico riallineato corre
 i dati residui del test fallito dell'utente (record esonero errato eliminato, carichi di Laura Verdi e
 Alessia Gialli, temporaneamente alterati per il test, ripristinati a 81).
 
+### Miglioramenti form `agc_esonero` — prevenire errori di test/uso futuri
+Su richiesta dell'utente, per evitare che i campi gestiti dal plugin vengano toccati manualmente (come
+successo nel test sopra) e per velocizzare la creazione di un nuovo esonero (che nasce sempre già
+Attivo):
+- **`DefaultFormValue` = 1 (Attivo)** impostato sul campo picklist `agc_statoesonero` via
+  `PUT EntityDefinitions(...)/Attributes(<metadataid>)` (il PUT per-attributo richiede il `MetadataId`
+  numerico/guid dell'attributo: navigare per `LogicalName` con PATCH/PUT diretto non è supportato, va
+  prima recuperato il `MetadataId` con una GET). Da ora un nuovo esonero nasce con "Stato Esonero" già
+  preselezionato su "Attivo".
+- **Main form (`systemforms`, type=2) di `agc_esonero`** aggiornato via Web API (lettura/scrittura
+  diretta di `formxml`, poi `PublishXml`): il controllo `agc_punteggioalmomentoesonero` (già presente)
+  reso `disabled="true"`; aggiunte due nuove righe **di sola lettura** per `agc_punteggioalrientro` e
+  `agc_collegariferimento` (non erano ancora presenti su nessuna delle 3 form dell'entità — verificato
+  cercando questi due nomi campo nel `formxml` di tutte e tre). Tutti e tre restano visibili per
+  audit/log ma non più editabili manualmente dall'utente.
+
+### File coinvolti (aggiornamento)
+- Metadata campo `agc_esonero.agc_statoesonero` (`DefaultFormValue`, live) e main form `agc_esonero`
+  (`formxml`, live) — non tracciati nel repository (nessuna cartella solution unpacked per
+  `agc_esonero`), modificati direttamente in ambiente.
+- `README.md` (item 23 aggiornato con le migliorie form).
+
 ---
 
 ## Session 2026-09-09 — Tasto "Modifica Carico" (admin) sul form Contatto/Magistrato
