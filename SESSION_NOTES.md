@@ -4,6 +4,92 @@
 
 ---
 
+## Session 2026-09-09 (cont.) — Riallineamento punteggio al rientro da esonero Totale
+
+### Requisito
+Requisito cliente emerso in sessione 2026-09-08 (cont. 3), che **supera** il design "solo log" implementato
+in sessione 2026-09-08 (cont.) per il todo `3.1-riallineamento-punteggio`: per gli esoneri **Totale**
+(non Parziale), al rientro il carico reale del magistrato deve essere effettivamente riallineato al
+carico del "collega più simile", non solo loggato.
+
+### Decisioni di design (confermate con l'utente)
+1. **M2 candidati**: esclusi il magistrato M1 stesso e chiunque avesse un esonero **attivo** (Totale o
+   Parziale) nello stesso momento (attivazione di M1) — verificabile in tempo reale senza query su
+   intervalli di date storici.
+2. **Tie-break**: a parità di distanza dal carico di M1 all'attivazione, vince il collega col **carico
+   più basso**.
+3. **Nuova tabella snapshot**: `agc_fotocaricoesonero` (lookup a `agc_esonero`, lookup a `contact`
+   magistrato, `agc_carico` decimale) — fotografa il carico di tutti i colleghi eleggibili nel momento in
+   cui un esonero **Totale** diventa Attivo.
+4. **Tracciabilità**: nuovo campo lookup `agc_esonero.agc_collegariferimento` → `contact`, popolato al
+   rientro con il collega scelto come M2.
+5. Gli esoneri **Parziali** mantengono invariato il comportamento di solo log (`agc_punteggioalrientro`,
+   nessuna modifica al carico reale) implementato in sessione 2026-09-08 (cont.).
+
+### Implementazione
+- **Tabella `agc_fotocaricoesonero`** creata via Web API dirette (`EntityDefinitions`,
+  `RelationshipDefinitions`, `Attributes`) con lo stesso pattern token `az account get-access-token` +
+  `Invoke-RestMethod` già usato per `agc_modificacarico`. Campi: `agc_name` (primaria), `agc_esonero`
+  (lookup, required), `agc_magistrato` (lookup a contact, required), `agc_carico` (decimal, required).
+- **Nuovo campo `agc_esonero.agc_collegariferimento`** (lookup a contact, opzionale) per audit.
+- **`EsoneroRientroPlugin.cs`** esteso (non sostituito):
+  - Sulla transizione ad **Attivo**, se `agc_tipoesonero` = Totale, `CreaFotoCaricoColleghi()` interroga
+    tutti i contact con `agc_ruolomagistrato` popolato (esclusi M1 e chi ha un `agc_esonero` Attivo in
+    corso) e crea una riga `agc_fotocaricoesonero` per ciascuno col loro carico attuale.
+  - Sulla transizione **Attivo → Chiuso**, se Totale, `RiallineaCaricoAlRientro()` legge
+    `agc_punteggioalmomentoesonero` di M1, interroga le foto colleghi di questo esonero, sceglie M2 per
+    minima distanza assoluta (tie-break: carico più basso), aggiorna `contact(M1).agc_caricoattuale` al
+    carico **attuale** (oggi) di M2, e popola `agc_collegariferimento`. Se non ci sono foto (nessun
+    collega eleggibile all'attivazione), mantiene il vecchio comportamento di solo log con trace warning.
+  - Il tipo esonero (immutabile) viene letto con una `Retrieve` diretta sul record corrente invece di
+    estendere la PreImage registrata (`agc_statoesonero`, `agc_magistrato`), per non toccare la
+    registrazione dello step.
+- Assembly ricompilato (`dotnet build`, net462) e caricato via `PATCH pluginassemblies(...)` riusando
+  l'assembly esistente (`5cd6cdfb-e163-f111-ab0c-7ced8d72f54e`), nessun nuovo plugintype necessario.
+
+### Gotcha tecnico — navigation property OData vs. nome schema
+La `@odata.bind` sul lookup `agc_magistrato` di `agc_esonero` **non** funziona con
+`"agc_magistrato@odata.bind"` (nome dell'attributo/schema): l'entità Web API la espone con un nome
+navigation property diverso, **`agc_Magistrato`** (M maiuscola, radice del nome relazione
+`agc_contact_agc_esonero_Magistrato`), altrimenti errore OData "undeclared property ... has property
+annotations ... but no property value". Verificato interrogando `$metadata` grezzo (via
+`Invoke-WebRequest`, non `Invoke-RestMethod` che lo parsifica come XML e complica la ricerca) e cercando
+`NavigationProperty Name="..." Partner="agc_contact_agc_esonero_Magistrato"`. Da tenere a mente per
+futuri lookup con nome navigation property non banale.
+
+### Backfill dati reali
+L'esonero Totale già attivo di **Chiara Marini** ("Ferie", dal 02/09/2026) non aveva
+`agc_punteggioalmomentoesonero` valorizzato, perché il record era stato creato **direttamente** in stato
+Attivo (Create, non Update — il plugin scatta solo su transizioni Update, comportamento noto e atteso,
+non un difetto). Backfill manuale via Web API:
+- `agc_punteggioalmomentoesonero` = carico attuale di Chiara (100,00) al 09/09/2026, come approssimazione
+  ragionevole del valore reale al 02/09/2026 (durante un esonero Totale il magistrato non riceve nuove
+  assegnazioni, quindi il carico non dovrebbe essere cambiato nel frattempo).
+- 4 righe `agc_fotocaricoesonero` create per i colleghi eleggibili al 09/09/2026: Laura Verdi (81),
+  Marco Bianchi (88), Paolo Russo (77), Alessia Gialli (81) — esclusi Chiara stessa e Anna Greco (esonero
+  Parziale attivo, "Esonero test").
+
+### Test end-to-end e verifica
+Creato un esonero di test sintetico per Marco Bianchi (Totale, creato in stato Annullato poi transizionato
+via Update, per triggerare correttamente il plugin come farebbe un flusso reale):
+1. **Attivazione** → `agc_punteggioalmomentoesonero` = 88 (carico di Marco), create 3 foto colleghi
+   (Laura 81, Paolo 77, Alessia 81 — correttamente esclusi Anna Greco e Chiara Marini, entrambe con
+   esonero attivo in quel momento).
+2. **Chiusura** → distanza da 88: Laura/Alessia = 7 (parità), Paolo = 11 → scelta Laura Verdi
+   (tie-break ok, primo valore restituito a parità di carico), `agc_collegariferimento` popolato,
+   carico di Marco riallineato correttamente a 81.
+3. **Cleanup**: ripristinato carico originale di Marco (88), eliminate le 3 foto di test e il record
+   esonero di test. Verificato che il backfill di Chiara Marini restasse intatto e i carichi degli altri
+   magistrati invariati.
+
+### File coinvolti
+- `05 - Power Platform/Plugin-Custom-API/EsoneroRientroPlugin.cs` (esteso)
+- Tabella `agc_fotocaricoesonero` (nuova, live)
+- Campo `agc_esonero.agc_collegariferimento` (nuovo, live)
+- `README.md` (nuovo item 23, ✅ Risolto)
+
+---
+
 ## Session 2026-09-09 — Tasto "Modifica Carico" (admin) sul form Contatto/Magistrato
 
 ### Requisito
