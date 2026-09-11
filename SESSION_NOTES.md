@@ -4,6 +4,62 @@
 
 ---
 
+## Session 2026-09-11 (cont. 2) — Split Canestro in Peso 1 / Peso 2 (canestro a due dimensioni)
+
+### Richiesta utente
+Il cliente ha chiesto di rendere il peso "a canestro" bidimensionale: rinominare la tabella Canestro in **Peso 1**, creare una nuova tabella **Peso 2** (stessa struttura, entità generica popolabile liberamente da ogni tribunale), collegare entrambe al fascicolo come due lookup indipendenti, e sommare al peso calcolato del fascicolo anche il peso di Peso 2 quando presente. Richiesto di valutare prima l'impatto con un'analisi (Fable) e poi procedere all'implementazione.
+
+### Analisi preliminare
+- Verificato che la tabella effettivamente in uso, referenziata dalla lookup su `agc_fascicolo2`, è `agc_canestrofascicolo` (MetadataId `86fa285c-6ca1-433e-8e43-2561b8ef9736`) — **non** l'omonima `agc_canestro` (`77b92dc3-...`), che è un'entità orfana/corrotta da un'operazione di pulizia incompleta documentata in `Risposta_MS_Support_EntityMap_Corruption.md` e non è referenziata da nulla nell'app. **Lezione**: prima di modificare metadati di un'entità, verificare sempre il `Targets` della lookup che la referenzia, non fidarsi del nome.
+- Nessun impatto individuato su plugin C# (`EsoneroRientroPlugin`, `EsoneroOverlapValidationPlugin`, `AnnoRegistroValidationPlugin`) né su Custom API, poiché nessuno di essi referenzia il canestro.
+- Impatti individuati: FormXml Fascicolo e Peso2 (nuovo), 2 viste Cruscotto, 7 viste di sistema del Canestro, sezione dashboard "Fascicoli per Canestro", 3 controlli PCF con label/query "Canestro" (`FascicoliPerCanestroChart`, `CaricoPerCanestro`, `CaricoMagistratiChart`), webresource `agc_assignfascicolo.js`, sicurezza (ruolo "Operatore ASPEN").
+
+### Implementazione — Peso 2 (nuova tabella)
+- Creata tabella `agc_peso2` (MetadataId `f3e0edc4-b73d-41e2-ab16-ac93dde23290`), struttura identica a Canestro: `agc_name` (primary, String) + `agc_peso` (Integer).
+- Form principale Peso 2 (`bccdd2db-e1c8-4214-8cc3-c43ef994e4d8`): il campo `agc_peso` mancava del tutto dal FormXml, aggiunto con PATCH (attenzione a inserire la riga XML esattamente prima di `</rows></section>`, non dopo `</row></rows></section>`, per evitare tag di chiusura duplicati/malformati). Scoperto inoltre che il campo primario `agc_name`, pur presente nel FormXml, risultava **invisibile** in UI: risolto impostando un'etichetta non vuota ("Nome") e aggiungendo un elemento `<header>` (anche minimale, sul modello del form Canestro) — serve la combinazione di entrambe le cose perché il campo primario si visualizzi correttamente.
+- Aggiunta colonna `agc_peso` alla vista predefinita "Peso 2 attivi/e" (`f95c57f6-0be6-4b35-86eb-6c0a1dca0d47`).
+- Verificato E2E con un record di test ("Test Peso2", peso=5) creato via Playwright.
+
+### Implementazione — collegamento a Fascicolo
+- FormXml Fascicolo (`b41ca47e-38b5-4fcf-85a2-afb9efe1fac8`): rinominata l'etichetta della riga "Canestro fascicolo" in "Peso 1"; aggiunta nuova riga lookup "Peso 2" (`agc_peso2`).
+- **Test E2E critico**: assegnato un record Peso 2 di test (peso=5) a un fascicolo con Peso1=5 → `agc_pesocalcolato` è passato correttamente da 5.00 a **10.00**; rimosso il collegamento → tornato a 5. Record di test eliminato al termine.
+- Aggiunta colonna `agc_peso2` alle 2 viste del Cruscotto (`9cdb22db-...`, `3c5b46e1-...`).
+- Formula di `agc_pesocalcolato` aggiornata: `agc_numeroimputati + agc_numeroimputazioni + agc_Canestrofascicolo.agc_peso + If(IsBlank(agc_Peso2), 0, agc_Peso2.agc_peso) + 1`.
+
+### Rinomina Canestro → Peso 1
+- Tentativo iniziale di rinominare l'entità sbagliata (`agc_canestro`, l'orfana) fallito ripetutamente con errore SQL generico (`0x80044150`/SQL error 207) indipendentemente da payload (PUT/PATCH, con/senza header `MSCRM.MergeLabels`) — comportamento coerente con la corruzione nota, non un problema del payload.
+- Rinominata correttamente l'entità **`agc_canestrofascicolo`** (DisplayName + DisplayCollectionName → "Peso 1") via `PUT EntityDefinitions(id)` con header `MSCRM.MergeLabels: true` e i `MetadataId` delle label esistenti preservati (nota: PATCH non è supportato su EntityMetadata, serve PUT).
+- Rinominato l'attributo lookup `agc_canestrofascicolo` (su `agc_fascicolo2`) → "Peso 1".
+- Rinominate tutte le 7 viste di sistema generate automaticamente (es. "Canestro fascicolo attivi/e" → "Peso 1 attivi/e") via PATCH su `savedqueries`.
+- Rinominata la sezione dashboard "Fascicoli per Canestro" → "Fascicoli per Peso 1" nel FormXml del Cruscotto ASPEN (`d4cd81e8-...`).
+- **Problema di cache**: la rinomina della sezione dashboard non compariva in UI nonostante ripetuti `PublishAllXml`, hard refresh e attese — risolto solo cancellando manualmente IndexedDB/localStorage/sessionStorage/Cache Storage del browser via `playwright-browser_evaluate`. Coerente con il problema di caching lato client già documentato per i webresource version-stamped.
+
+### PCF e webresource
+- Aggiornate le etichette "Canestro"→"Peso 1" in 3 controlli PCF e ridistribuiti singolarmente in Dataverse (stesso workaround `pac pcf push` con cartelle "fratelle" spostate temporaneamente + fallback a `pac solution import` sullo zip generato in caso di MSB3231):
+  - `FascicoliPerCanestroChart` (manifest display-name/description, proprietà `canestroField`, titolo grafico in `index.ts`).
+  - `CaricoPerCanestro` (manifest display-name/description, titolo grafico in `index.ts`).
+  - `CaricoMagistratiChart` (header colonna tabella in `index.ts`).
+- `agc_assignfascicolo.js`: aggiunta simmetria — `formContext.getControl("agc_peso2")?.setDisabled(false)` accanto all'abilitazione già esistente del controllo Canestro in `onFormLoad`. Ridistribuito al webresource live (`7c6a37dd-7b63-f111-ab0d-7ced8d4550b3`).
+
+### Sicurezza
+- Ruolo "Operatore ASPEN": verificati/concessi i privilegi Create/Write (Local) su entrambe `agc_canestrofascicolo` (Peso 1) e `agc_peso2` (Peso 2), oltre a Read/Append/AppendTo/Assign (Global) già presenti su Peso 1.
+
+### Decisioni esplicite
+- Peso 1 resta **facoltativo** (non impostato `ApplicationRequired`) per non rompere i fascicoli esistenti — scelta esplicita dell'utente ("keep_optional"), non un'omissione.
+- L'entità orfana `agc_canestro` è stata deliberatamente **lasciata intatta**, non rinominata: non è usata da nessun componente e i tentativi di modificarla falliscono per corruzione nota.
+
+### Verifica finale
+- Confermato via Playwright (dopo pulizia cache browser): sitemap mostra "Peso 1"/"Peso 2", sezione dashboard "Fascicoli per Peso 1", modal drill-down "Fascicoli di [magistrato]" mostra correttamente la colonna "Peso 1".
+
+### File coinvolti
+- `05 - Power Platform/PCF-Pie/FascicoliPerCanestroChart/ControlManifest.Input.xml`, `index.ts`
+- `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/ControlManifest.Input.xml`, `index.ts`
+- `05 - Power Platform/PCF/CaricoMagistratiChart/index.ts`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js`
+- `README.md` (sezione modello dati + changelog)
+
+---
+
 ## Session 2026-09-11 (cont.) — Ridisegno dashboard "Cruscotto ASPEN": nuovi grafici Fascicoli per Canestro, Esoneri Attivi, Andamento Carico Mensile
 
 ### Richiesta utente

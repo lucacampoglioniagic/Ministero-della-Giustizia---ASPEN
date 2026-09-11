@@ -435,6 +435,11 @@ AgicAspen.AssegnaFascicolo = (function () {
             if (canestroCtrl) canestroCtrl.setDisabled(false);
         } catch (e) { /* ignore */ }
 
+        try {
+            var peso2Ctrl = formContext.getControl("agc_peso2");
+            if (peso2Ctrl) peso2Ctrl.setDisabled(false);
+        } catch (e) { /* ignore */ }
+
         setTimeout(function () {
             try { formContext.ui.refreshRibbon(true); } catch (e) { /* ignore */ }
         }, 1000);

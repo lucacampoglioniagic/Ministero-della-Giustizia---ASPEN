@@ -303,7 +303,7 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
         <thead>
           <tr>
             <th>N. RG</th>
-            <th>Canestro</th>
+            <th>Peso 1</th>
             <th>Peso</th>
             <th>Stato</th>
             <th>Data</th>

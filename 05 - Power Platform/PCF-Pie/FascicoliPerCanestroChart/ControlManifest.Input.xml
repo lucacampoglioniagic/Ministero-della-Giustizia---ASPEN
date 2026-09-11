@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest>
   <control namespace="AgicAspen" constructor="FascicoliPerCanestroChart" version="1.0.0"
-    display-name-key="Fascicoli per Canestro"
-    description-key="Grafico a torta dei fascicoli suddivisi per canestro"
+    display-name-key="Fascicoli per Peso 1"
+    description-key="Grafico a torta dei fascicoli suddivisi per Peso 1"
     control-type="standard">
     <external-service-usage enabled="false" />
     <!--
@@ -18,7 +18,7 @@
       agc_magistratocontatto/name, agc_statocaso, agc_pesocalcolato, agc_datacaso.
     -->
     <data-set name="fascicoliDataSet" display-name-key="Fascicoli">
-      <property-set name="canestroField" display-name-key="Canestro"
+      <property-set name="canestroField" display-name-key="Peso 1"
         of-type="Lookup.Simple" usage="bound" required="true" />
     </data-set>
     <resources>

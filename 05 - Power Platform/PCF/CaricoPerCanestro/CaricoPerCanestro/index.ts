@@ -136,7 +136,7 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
 
     /* ── Titolo ── */
     const title = document.createElement("h3");
-    title.textContent = "Carico per Canestro";
+    title.textContent = "Carico per Peso 1";
     title.style.cssText =
       "margin:0 0 12px;font-size:14px;font-weight:600;color:#242424;";
     this._container.appendChild(title);

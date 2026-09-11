@@ -57,7 +57,7 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
 
     const title = document.createElement("h2");
     title.className = "chart-title";
-    title.textContent = "Fascicoli per Canestro";
+    title.textContent = "Fascicoli per Peso 1";
 
     const filterWrap = document.createElement("div");
     filterWrap.className = "year-filter";
