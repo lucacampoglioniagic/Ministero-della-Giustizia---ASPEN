@@ -257,29 +257,23 @@ Plugin registrato su **`agc_fascicolo2`** per la gestione automatica del team pr
 
 ### Custom Page — Home ASPEN
 
-Custom page (canvas page) usata come **home** della Model-Driven App. Presenta 3 card operative e 4 KPI dinamici in un layout completamente responsivo.
+Custom page (canvas page) usata come **home** della Model-Driven App. Presenta 3 card operative e 4 KPI dinamici in un layout responsivo a piena larghezza, sfondo `#FAFAFA` e riquadri con angoli arrotondati (12px per card/pannello statistiche, 10px per i quadrati icona).
 
-#### Layout responsivo (AutoLayout containers)
+#### Layout responsivo (Named Formulas + posizionamento calcolato)
 
-La pagina è costruita con container AutoLayout annidati per adattarsi a qualsiasi larghezza dello schermo:
+Il controllo `rectangle` disponibile in questa app **non supporta il posizionamento in container AutoLayout/Fluid Grid** (versione del control template non aggiornata) né proprietà di raggio; il layout reale (`Src/Screen1.fx.yaml`, vedi `05 - Power Platform/Model-Driven-App/AspenHomeCustomPage/Source/`) resta quindi a posizionamento assoluto (`X`/`Y`/`Width`/`Height`), ma tutte le coordinate sono calcolate dinamicamente tramite **Named Formulas** dichiarate in `App.fx.yaml`, basate su `App.Width` (la larghezza reale del contenitore host, aggiornata automaticamente al resize):
 
-```
-conRoot (Vertical, fills Parent.Width/Height, LayoutOverflowY: Scroll)
-├── [Header — titolo e sottotitolo]
-├── conCards (Horizontal, LayoutWrap: true)
-│   ├── conCardDashboard  (Vertical, FillPortions: 1, LayoutMinWidth: 280)
-│   ├── conCardList        (Vertical, FillPortions: 1, LayoutMinWidth: 280)
-│   └── conCardCreate      (Vertical, FillPortions: 1, LayoutMinWidth: 280)
-└── conStats (Horizontal, LayoutWrap: true)
-    ├── [Fascicoli Attivi]
-    ├── [Creati (7 giorni)]
-    ├── [Peso medio]
-    └── [Imputati totali]
-```
+| Formula | Scopo |
+|---|---|
+| `HomeMargin` | Margine laterale (16px sotto i 700px, 24px altrove) |
+| `HomeNumCols` | Numero di colonne delle 3 card: 3 (≥1150px) → 2 (700-1150px) → 1 (<700px) |
+| `HomeCardWidth` | Larghezza calcolata delle card in base a `HomeNumCols`, per riempire tutta la larghezza disponibile |
+| `HomeStatsCols` | Colonne del pannello statistiche: 4 (≥700px) → 2 (<700px), con divisori verticali nascosti quando a 2 colonne |
+| `HomeStatsItemW`, `HomeStatsHeight`, `HomeStatsY` | Dimensioni/posizione del pannello statistiche in base al numero di righe delle card e delle statistiche |
 
-- `conCards` usa `LayoutWrap: true` — le 3 card si dispongono su più righe quando lo schermo è stretto.
-- Ogni card ha `FillPortions: 1` e `LayoutMinWidth: 280` per distribuzione equa e soglia minima di wrapping.
-- `conStats` usa lo stesso pattern wrap per le 4 KPI stat box.
+Le 3 card usano `Mod()`/`RoundDown()` sull'indice per calcolare colonna/riga in base a `HomeNumCols`, per cui sotto i 1150px la terza card va a capo, e sotto i 700px tutte e 3 le card si dispongono in colonna singola a piena larghezza. Il pannello KPI si estende sempre su tutta la larghezza disponibile (`App.Width - 2*HomeMargin`).
+
+I riquadri (card, quadrati icona, pannello statistiche) sono implementati come controlli `button` con `DisplayMode.Disabled` e `Text=""` (anziché `rectangle`) per poter usare le proprietà `RadiusTopLeft/TopRight/BottomLeft/BottomRight`, non disponibili sul controllo rectangle in questa versione dell'app.
 
 #### KPI dinamici da Dataverse
 

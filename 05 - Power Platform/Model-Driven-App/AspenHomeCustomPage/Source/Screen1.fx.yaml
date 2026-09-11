@@ -1,0 +1,529 @@
+Screen1 As screen:
+    Fill: =RGBA(250, 250, 250, 1)
+    LoadingSpinnerColor: =RGBA(0, 120, 212, 1)
+
+    lblHeroTitle As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(11, 52, 106, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        Height: =52
+        Size: =32
+        Text: |
+            ="Benvenuto nel Sistema ASPEN"
+        Width: =App.Width - 2*HomeMargin
+        X: =HomeMargin
+        Y: =32
+        ZIndex: =1
+
+    lblHeroSubtitle As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(97, 106, 120, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =32
+        Size: =16
+        Text: |
+            ="Gestione avanzata e analisi dei carichi di lavoro giudiziari."
+        Width: =App.Width - 2*HomeMargin
+        X: =HomeMargin
+        Y: =84
+        ZIndex: =2
+
+    recCardDashboard As button:
+        BorderColor: =RGBA(213, 216, 221, 1)
+        BorderThickness: =1
+        DisabledBorderColor: =RGBA(213, 216, 221, 1)
+        DisabledColor: =RGBA(255, 255, 255, 1)
+        DisabledFill: =RGBA(255, 255, 255, 1)
+        DisplayMode: =DisplayMode.Disabled
+        Fill: =RGBA(255, 255, 255, 1)
+        RadiusTopLeft: =12
+        RadiusTopRight: =12
+        RadiusBottomLeft: =12
+        RadiusBottomRight: =12
+        Text: |
+            =""
+        Height: =HomeCardHeight
+        Width: =HomeCardWidth
+        X: =HomeMargin
+        Y: =HomeHeroBottom
+        ZIndex: =3
+
+    recCardList As button:
+        BorderColor: =RGBA(213, 216, 221, 1)
+        BorderThickness: =1
+        DisabledBorderColor: =RGBA(213, 216, 221, 1)
+        DisabledColor: =RGBA(255, 255, 255, 1)
+        DisabledFill: =RGBA(255, 255, 255, 1)
+        DisplayMode: =DisplayMode.Disabled
+        Fill: =RGBA(255, 255, 255, 1)
+        RadiusTopLeft: =12
+        RadiusTopRight: =12
+        RadiusBottomLeft: =12
+        RadiusBottomRight: =12
+        Text: |
+            =""
+        Height: =HomeCardHeight
+        Width: =HomeCardWidth
+        X: =HomeMargin + Mod(1, HomeNumCols) * (HomeCardWidth + HomeGap)
+        Y: =HomeHeroBottom + RoundDown(1 / HomeNumCols, 0) * (HomeCardHeight + HomeGap)
+        ZIndex: =4
+
+    recCardCreate As button:
+        BorderColor: =RGBA(213, 216, 221, 1)
+        BorderThickness: =1
+        DisabledBorderColor: =RGBA(213, 216, 221, 1)
+        DisabledColor: =RGBA(255, 255, 255, 1)
+        DisabledFill: =RGBA(255, 255, 255, 1)
+        DisplayMode: =DisplayMode.Disabled
+        Fill: =RGBA(255, 255, 255, 1)
+        RadiusTopLeft: =12
+        RadiusTopRight: =12
+        RadiusBottomLeft: =12
+        RadiusBottomRight: =12
+        Text: |
+            =""
+        Height: =HomeCardHeight
+        Width: =HomeCardWidth
+        X: =HomeMargin + Mod(2, HomeNumCols) * (HomeCardWidth + HomeGap)
+        Y: =HomeHeroBottom + RoundDown(2 / HomeNumCols, 0) * (HomeCardHeight + HomeGap)
+        ZIndex: =5
+
+    recIconDashboard As button:
+        BorderColor: =App.Theme.Colors.Darker40
+        DisabledBorderColor: =App.Theme.Colors.Darker40
+        DisabledColor: =RGBA(228, 238, 255, 1)
+        DisabledFill: =RGBA(228, 238, 255, 1)
+        DisplayMode: =DisplayMode.Disabled
+        Fill: =RGBA(228, 238, 255, 1)
+        RadiusTopLeft: =10
+        RadiusTopRight: =10
+        RadiusBottomLeft: =10
+        RadiusBottomRight: =10
+        Text: |
+            =""
+        Height: =52
+        Width: =52
+        X: =recCardDashboard.X + 32
+        Y: =recCardDashboard.Y + 32
+        ZIndex: =6
+
+    recIconList As button:
+        BorderColor: =App.Theme.Colors.Darker40
+        DisabledBorderColor: =App.Theme.Colors.Darker40
+        DisabledColor: =RGBA(228, 238, 255, 1)
+        DisabledFill: =RGBA(228, 238, 255, 1)
+        DisplayMode: =DisplayMode.Disabled
+        Fill: =RGBA(228, 238, 255, 1)
+        RadiusTopLeft: =10
+        RadiusTopRight: =10
+        RadiusBottomLeft: =10
+        RadiusBottomRight: =10
+        Text: |
+            =""
+        Height: =52
+        Width: =52
+        X: =recCardList.X + 32
+        Y: =recCardList.Y + 32
+        ZIndex: =7
+
+    recIconCreate As button:
+        BorderColor: =App.Theme.Colors.Darker40
+        DisabledBorderColor: =App.Theme.Colors.Darker40
+        DisabledColor: =RGBA(228, 238, 255, 1)
+        DisabledFill: =RGBA(228, 238, 255, 1)
+        DisplayMode: =DisplayMode.Disabled
+        Fill: =RGBA(228, 238, 255, 1)
+        RadiusTopLeft: =10
+        RadiusTopRight: =10
+        RadiusBottomLeft: =10
+        RadiusBottomRight: =10
+        Text: |
+            =""
+        Height: =52
+        Width: =52
+        X: =recCardCreate.X + 32
+        Y: =recCardCreate.Y + 32
+        ZIndex: =8
+
+    lblIconDashboard As label:
+        Align: =Align.Center
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 96, 171, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Bold
+        Height: =52
+        Size: =22
+        Text: |
+            ="▥"
+        Width: =52
+        X: =recCardDashboard.X + 32
+        Y: =recCardDashboard.Y + 32
+        ZIndex: =9
+
+    lblIconList As label:
+        Align: =Align.Center
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 96, 171, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Bold
+        Height: =52
+        Size: =22
+        Text: |
+            ="☷"
+        Width: =52
+        X: =recCardList.X + 32
+        Y: =recCardList.Y + 32
+        ZIndex: =10
+
+    lblIconCreate As label:
+        Align: =Align.Center
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(0, 96, 171, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Bold
+        Height: =52
+        Size: =24
+        Text: |
+            ="+"
+        Width: =52
+        X: =recCardCreate.X + 32
+        Y: =recCardCreate.Y + 32
+        ZIndex: =11
+
+    lblDashboardTitle As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(6, 38, 84, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        Height: =32
+        Size: =20
+        Text: |
+            ="Cruscotto ASPEN"
+        Width: =HomeCardWidth - 64
+        X: =recCardDashboard.X + 32
+        Y: =recCardDashboard.Y + 108
+        ZIndex: =12
+
+    lblDashboardBody As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(62, 72, 86, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =72
+        Text: |
+            ="Analisi statistiche e monitoraggio costante dei carichi magistrati per un'efficienza ottimizzata."
+        Width: =HomeCardWidth - 64
+        X: =recCardDashboard.X + 32
+        Y: =recCardDashboard.Y + 148
+        ZIndex: =13
+
+    btnCruscotto As button:
+        BorderColor: =App.Theme.Colors.Primary
+        DisabledBorderColor: =RGBA(244, 244, 244, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        DisabledFill: =RGBA(244, 244, 244, 1)
+        Fill: =RGBA(0, 120, 212, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        HoverBorderColor: =App.Theme.Colors.Darker10
+        HoverColor: =App.Theme.Colors.PrimaryForeground
+        HoverFill: =RGBA(0, 96, 171, 1)
+        OnSelect: |
+            =Launch(
+                "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=dashboard&id=d4cd81e8-5963-f111-ab0c-7ced8d72f54e&type=system&_canOverride=true",
+                {},
+                LaunchTarget.Replace
+            )
+        PressedBorderColor: =App.Theme.Colors.Darker40
+        PressedColor: =Self.Color
+        PressedFill: =App.Theme.Colors.Darker40
+        Size: =14
+        Text: |
+            ="Vai alla dashboard"
+        Width: =HomeCardWidth - 64
+        X: =recCardDashboard.X + 32
+        Y: =recCardDashboard.Y + 248
+        ZIndex: =14
+
+    lblListTitle As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(6, 38, 84, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        Height: =32
+        Size: =20
+        Text: |
+            ="Lista Fascicoli"
+        Width: =HomeCardWidth - 64
+        X: =recCardList.X + 32
+        Y: =recCardList.Y + 108
+        ZIndex: =15
+
+    lblListBody As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(62, 72, 86, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =72
+        Text: |
+            ="Consulta l'elenco completo dei procedimenti aperti e lo stato di avanzamento di ogni pratica."
+        Width: =HomeCardWidth - 64
+        X: =recCardList.X + 32
+        Y: =recCardList.Y + 148
+        ZIndex: =16
+
+    btnAssegnaFascicolo As button:
+        BorderColor: =RGBA(213, 216, 221, 1)
+        BorderThickness: =1
+        Color: =RGBA(6, 38, 84, 1)
+        DisabledBorderColor: =RGBA(244, 244, 244, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        DisabledFill: =RGBA(244, 244, 244, 1)
+        Fill: =RGBA(255, 255, 255, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        HoverBorderColor: =App.Theme.Colors.Darker10
+        HoverColor: =App.Theme.Colors.PrimaryForeground
+        HoverFill: =RGBA(244, 247, 251, 1)
+        OnSelect: |
+            =Launch(
+                "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entitylist&etn=agc_fascicolo2&viewid=66ef2ecc-32ca-4275-901c-80f0637f1003&viewType=1039",
+                {},
+                LaunchTarget.Replace
+            )
+        PressedBorderColor: =App.Theme.Colors.Darker40
+        PressedColor: =Self.Color
+        PressedFill: =App.Theme.Colors.Darker40
+        Size: =14
+        Text: |
+            ="Apri elenco"
+        Width: =HomeCardWidth - 64
+        X: =recCardList.X + 32
+        Y: =recCardList.Y + 248
+        ZIndex: =17
+
+    lblCreateTitle As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(6, 38, 84, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        Height: =32
+        Size: =20
+        Text: |
+            ="Nuovo Fascicolo"
+        Width: =HomeCardWidth - 64
+        X: =recCardCreate.X + 32
+        Y: =recCardCreate.Y + 108
+        ZIndex: =18
+
+    lblCreateBody As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(62, 72, 86, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =72
+        Text: |
+            ="Inserimento rapido di un nuovo elemento procedurale nel sistema centrale ASPEN."
+        Width: =HomeCardWidth - 64
+        X: =recCardCreate.X + 32
+        Y: =recCardCreate.Y + 148
+        ZIndex: =19
+
+    btnCreaFascicolo As button:
+        BorderColor: =App.Theme.Colors.Primary
+        DisabledBorderColor: =RGBA(244, 244, 244, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        DisabledFill: =RGBA(244, 244, 244, 1)
+        Fill: =RGBA(11, 52, 106, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        HoverBorderColor: =App.Theme.Colors.Darker10
+        HoverColor: =App.Theme.Colors.PrimaryForeground
+        HoverFill: =RGBA(8, 42, 84, 1)
+        OnSelect: |
+            =Launch(
+                "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entityrecord&etn=agc_fascicolo2",
+                {},
+                LaunchTarget.Replace
+            )
+        PressedBorderColor: =App.Theme.Colors.Darker40
+        PressedColor: =Self.Color
+        PressedFill: =App.Theme.Colors.Darker40
+        Size: =14
+        Text: |
+            ="Crea ora"
+        Width: =HomeCardWidth - 64
+        X: =recCardCreate.X + 32
+        Y: =recCardCreate.Y + 248
+        ZIndex: =20
+
+    recStatsPanel As button:
+        BorderColor: =RGBA(213, 216, 221, 1)
+        BorderThickness: =1
+        DisabledBorderColor: =RGBA(213, 216, 221, 1)
+        DisabledColor: =RGBA(255, 255, 255, 1)
+        DisabledFill: =RGBA(255, 255, 255, 1)
+        DisplayMode: =DisplayMode.Disabled
+        Fill: =RGBA(255, 255, 255, 1)
+        RadiusTopLeft: =12
+        RadiusTopRight: =12
+        RadiusBottomLeft: =12
+        RadiusBottomRight: =12
+        Text: |
+            =""
+        Height: =HomeStatsHeight
+        Width: =App.Width - 2*HomeMargin
+        X: =HomeMargin
+        Y: =HomeStatsY
+        ZIndex: =21
+
+    recStatDivider1 As rectangle:
+        BorderColor: =App.Theme.Colors.Darker40
+        Fill: =RGBA(222, 225, 229, 1)
+        Height: =60
+        Width: =1
+        Visible: =HomeStatsCols = 4
+        X: =HomeMargin + 32 + HomeStatsItemW + HomeGap/2
+        Y: =recStatsPanel.Y + 22
+        ZIndex: =22
+
+    recStatDivider2 As rectangle:
+        BorderColor: =App.Theme.Colors.Darker40
+        Fill: =RGBA(222, 225, 229, 1)
+        Height: =60
+        Width: =1
+        Visible: =HomeStatsCols = 4
+        X: =HomeMargin + 32 + 2*(HomeStatsItemW + HomeGap) - HomeGap/2
+        Y: =recStatsPanel.Y + 22
+        ZIndex: =23
+
+    recStatDivider3 As rectangle:
+        BorderColor: =App.Theme.Colors.Darker40
+        Fill: =RGBA(222, 225, 229, 1)
+        Height: =60
+        Width: =1
+        Visible: =HomeStatsCols = 4
+        X: =HomeMargin + 32 + 3*(HomeStatsItemW + HomeGap) - HomeGap/2
+        Y: =recStatsPanel.Y + 22
+        ZIndex: =24
+
+    lblStat1Title As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(115, 119, 128, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =20
+        Size: =11
+        Text: |
+            ="FASCICOLI ATTIVI"
+        Width: =HomeStatsItemW
+        X: =HomeMargin + 32 + Mod(0, HomeStatsCols) * (HomeStatsItemW + HomeGap)
+        Y: =recStatsPanel.Y + 20 + RoundDown(0 / HomeStatsCols, 0) * HomeStatsRowH
+        ZIndex: =25
+
+    lblStat1Value As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(11, 52, 106, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        Size: =28
+        Text: |-
+            =Text(CountIf(Fascicoli, true), "#,##0")
+        Width: =HomeStatsItemW
+        X: =HomeMargin + 32 + Mod(0, HomeStatsCols) * (HomeStatsItemW + HomeGap)
+        Y: =lblStat1Title.Y + 22
+        ZIndex: =26
+
+    lblStat2Title As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(115, 119, 128, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =20
+        Size: =11
+        Text: |
+            ="CREATI ULTIMA SETTIMANA"
+        Width: =HomeStatsItemW
+        X: =HomeMargin + 32 + Mod(1, HomeStatsCols) * (HomeStatsItemW + HomeGap)
+        Y: =recStatsPanel.Y + 20 + RoundDown(1 / HomeStatsCols, 0) * HomeStatsRowH
+        ZIndex: =27
+
+    lblStat2Value As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(191, 42, 36, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        Size: =28
+        Text: |-
+            =Text(CountRows(Filter(Fascicoli, 'Data creazione' >= DateAdd(Today(), -7, TimeUnit.Days))), "#,##0")
+        Width: =HomeStatsItemW
+        X: =HomeMargin + 32 + Mod(1, HomeStatsCols) * (HomeStatsItemW + HomeGap)
+        Y: =lblStat2Title.Y + 22
+        ZIndex: =28
+
+    lblStat3Title As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(115, 119, 128, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =20
+        Size: =11
+        Text: |
+            ="PESO MEDIO"
+        Width: =HomeStatsItemW
+        X: =HomeMargin + 32 + Mod(2, HomeStatsCols) * (HomeStatsItemW + HomeGap)
+        Y: =recStatsPanel.Y + 20 + RoundDown(2 / HomeStatsCols, 0) * HomeStatsRowH
+        ZIndex: =29
+
+    lblStat3Value As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(11, 52, 106, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        Size: =28
+        Text: |-
+            =Text(Round(Average(Fascicoli, 'Peso calcolato'), 1), "#,##0.0")
+        Width: =HomeStatsItemW
+        X: =HomeMargin + 32 + Mod(2, HomeStatsCols) * (HomeStatsItemW + HomeGap)
+        Y: =lblStat3Title.Y + 22
+        ZIndex: =30
+
+    lblStat4Title As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(115, 119, 128, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        Height: =20
+        Size: =11
+        Text: |
+            ="IMPUTATI TOTALI"
+        Width: =HomeStatsItemW
+        X: =HomeMargin + 32 + Mod(3, HomeStatsCols) * (HomeStatsItemW + HomeGap)
+        Y: =recStatsPanel.Y + 20 + RoundDown(3 / HomeStatsCols, 0) * HomeStatsRowH
+        ZIndex: =31
+
+    lblStat4Value As label:
+        BorderColor: =App.Theme.Colors.Darker40
+        Color: =RGBA(11, 52, 106, 1)
+        DisabledColor: =RGBA(166, 166, 166, 1)
+        Font: =App.Theme.Font
+        FontWeight: =FontWeight.Semibold
+        Size: =28
+        Text: |-
+            =Text(Sum(Fascicoli, 'N. imputati'), "#,##0")
+        Width: =HomeStatsItemW
+        X: =HomeMargin + 32 + Mod(3, HomeStatsCols) * (HomeStatsItemW + HomeGap)
+        Y: =lblStat4Title.Y + 22
+        ZIndex: =32

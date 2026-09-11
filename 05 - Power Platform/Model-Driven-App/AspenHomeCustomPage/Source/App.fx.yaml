@@ -1,0 +1,25 @@
+App As appinfo:
+    BackEnabled: =true
+    Theme: =PowerAppsTheme
+    Formulas: |
+        =HomeMargin = If(App.Width < 700, 16, 24);
+        HomeGap = 16;
+        HomeNumCols = If(App.Width < 700, 1, If(App.Width < 1150, 2, 3));
+        HomeCardWidth = (App.Width - 2*HomeMargin - (HomeNumCols-1)*HomeGap) / HomeNumCols;
+        HomeCardHeight = 340;
+        HomeHeroBottom = 148;
+        HomeCardsRows = RoundDown(2 / HomeNumCols, 0) + 1;
+        HomeStatsY = HomeHeroBottom + HomeCardsRows * (HomeCardHeight + HomeGap);
+        HomeStatsCols = If(App.Width < 700, 2, 4);
+        HomeStatsRowH = 94;
+        HomeStatsRows = RoundUp(4 / HomeStatsCols, 0);
+        HomeStatsHeight = HomeStatsRows * HomeStatsRowH + 32;
+        HomeStatsItemW = (App.Width - 2*HomeMargin - 64 - (HomeStatsCols-1)*HomeGap) / HomeStatsCols;
+
+    Host As hostControl.DefaultHostControlVariant:
+        OnCancel: =false
+        OnEdit: =false
+        OnNew: =false
+        OnSave: =false
+        OnView: =false
+
