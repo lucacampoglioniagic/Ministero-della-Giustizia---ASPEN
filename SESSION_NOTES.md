@@ -10,7 +10,7 @@
 Il cliente ha chiesto di rendere il peso "a canestro" bidimensionale: rinominare la tabella Canestro in **Peso 1**, creare una nuova tabella **Peso 2** (stessa struttura, entità generica popolabile liberamente da ogni tribunale), collegare entrambe al fascicolo come due lookup indipendenti, e sommare al peso calcolato del fascicolo anche il peso di Peso 2 quando presente. Richiesto di valutare prima l'impatto con un'analisi (Fable) e poi procedere all'implementazione.
 
 ### Analisi preliminare
-- Verificato che la tabella effettivamente in uso, referenziata dalla lookup su `agc_fascicolo2`, è `agc_canestrofascicolo` (MetadataId `86fa285c-6ca1-433e-8e43-2561b8ef9736`) — **non** l'omonima `agc_canestro` (`77b92dc3-...`), che è un'entità orfana/corrotta da un'operazione di pulizia incompleta documentata in `Risposta_MS_Support_EntityMap_Corruption.md` e non è referenziata da nulla nell'app. **Lezione**: prima di modificare metadati di un'entità, verificare sempre il `Targets` della lookup che la referenzia, non fidarsi del nome.
+- Verificato che la tabella effettivamente in uso, referenziata dalla lookup su `agc_fascicolo2`, è `agc_canestrofascicolo` (MetadataId `86fa285c-6ca1-433e-8e43-2561b8ef9736`) — **non** l'omonima `agc_canestro` (`77b92dc3-...`), che è un'entità orfana/corrotta da un'operazione di pulizia incompleta documentata in `06 - Riferimenti Normativi e Tecnici/Risposta_MS_Support_EntityMap_Corruption.md` e non è referenziata da nulla nell'app. **Lezione**: prima di modificare metadati di un'entità, verificare sempre il `Targets` della lookup che la referenzia, non fidarsi del nome.
 - Nessun impatto individuato su plugin C# (`EsoneroRientroPlugin`, `EsoneroOverlapValidationPlugin`, `AnnoRegistroValidationPlugin`) né su Custom API, poiché nessuno di essi referenzia il canestro.
 - Impatti individuati: FormXml Fascicolo e Peso2 (nuovo), 2 viste Cruscotto, 7 viste di sistema del Canestro, sezione dashboard "Fascicoli per Canestro", 3 controlli PCF con label/query "Canestro" (`FascicoliPerCanestroChart`, `CaricoPerCanestro`, `CaricoMagistratiChart`), webresource `agc_assignfascicolo.js`, sicurezza (ruolo "Operatore ASPEN").
 
@@ -519,7 +519,7 @@ La custom page "Home" era stata eliminata in una sessione precedente durante un 
 workaround per il **bug Microsoft** relativo a metadata orfani della tabella `agc_canestro` che
 impediscono l'eliminazione di `agc_giudice` e modifiche di schema su `agc_fascicolo`.
 **Il bug è tuttora aperto**, in attesa di verifica da parte del supporto Microsoft/Dynamics
-(riferimento: email di Iwayemi Akinmoju, vedi anche `Risposta_MS_Support_EntityMap_Corruption.md`
+(riferimento: email di Iwayemi Akinmoju, vedi anche `06 - Riferimenti Normativi e Tecnici/Risposta_MS_Support_EntityMap_Corruption.md`
 in repo). In questa sessione si è quindi ricostruita la pagina Home da zero.
 
 ### Cosa è stato fatto
