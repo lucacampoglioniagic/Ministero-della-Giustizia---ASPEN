@@ -33,6 +33,13 @@ interface EsoneroRow {
   dataFine: string;
 }
 
+function toDateOrNull(value: unknown): Date | null {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+  const parsed = new Date(value as string | number);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
 function isEsoneroEffettivamenteAttivo(
   record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord,
 ): boolean {
@@ -44,11 +51,12 @@ function isEsoneroEffettivamenteAttivo(
   const oggi = new Date();
   oggi.setHours(0, 0, 0, 0);
 
-  const inizio = record.getValue("dataInizioField") as Date | null;
-  if (!inizio || Number.isNaN(inizio.getTime()) || inizio > oggi) return false;
+  const inizio = toDateOrNull(record.getValue("dataInizioField"));
+  if (!inizio || inizio > oggi) return false;
 
-  const fine = record.getValue("dataFineField") as Date | null;
-  if (fine && !Number.isNaN(fine.getTime()) && fine < oggi) return false;
+  const fine = toDateOrNull(record.getValue("dataFineField"));
+  if (fine && fine < oggi) return false;
+
 
   return true;
 }
@@ -180,9 +188,27 @@ export class EsoneriAttiviChart implements ComponentFramework.StandardControl<
       this._chart.data.datasets[0].backgroundColor = colors;
       this._chart.data.datasets[0].hoverBackgroundColor = hoverColors;
       this._chart.update();
+      // Il canvas può essere stato display:none fino a poco fa (nessun dato in precedenza):
+      // forza un resize dopo che il browser ha ricalcolato il layout, altrimenti Chart.js
+      // resta bloccato sulle dimensioni di default 300x150 pur essendo il canvas stirato via CSS.
+      requestAnimationFrame(() => this._chart?.resize());
       return;
     }
 
+    // Costruzione del grafico rimandata al frame successivo: se il canvas è appena passato
+    // da display:none a display:block, crearlo subito leggerebbe una dimensione 0x0 (il
+    // browser non ha ancora ricalcolato il layout) e Chart.js resterebbe bloccato sulle
+    // dimensioni di default 300x150, rendendo il grafico invisibile pur essendo "presente".
+    requestAnimationFrame(() => this._createChart(labels, values, colors, hoverColors));
+  }
+
+  private _createChart(
+    labels: string[],
+    values: number[],
+    colors: string[],
+    hoverColors: string[],
+  ): void {
+    if (this._chart) return;
     this._chart = new Chart(this._canvas, {
       type: "bar",
       data: {
