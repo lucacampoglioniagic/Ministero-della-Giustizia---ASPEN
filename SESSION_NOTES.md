@@ -4,6 +4,37 @@
 
 ---
 
+## Session 2026-09-11 — Conversione campo `agc_rgnr.agc_annoregistro` da Intero a Testo con validazione 4 cifre / range 1900-2200
+
+### Richiesta utente
+Il campo "Anno Registro" (`agc_annoregistro`) sulla tabella `agc_rgnr` era di tipo Intero. Richiesto di:
+1. Convertirlo in campo di tipo Testo.
+2. Limitare l'inserimento a sole 4 cifre, solo numeriche.
+3. Obbligare (dove possibile) che il valore inserito sia un anno compreso tra 1900 e 2200.
+
+### Analisi preliminare
+- Verificato via Web API che il campo era `Integer`, non obbligatorio, senza vincoli di range.
+- Dataverse **non consente di cambiare il tipo di un attributo esistente**: unica via è eliminarlo e ricrearlo.
+- Un campo Testo Dataverse non supporta nativamente regex/range: la validazione "solo 4 cifre" e "1900-2200" richiede un plugin server-side (stesso pattern già usato nel progetto, es. `EsoneroOverlapValidationPlugin.cs`).
+- Trovati **2 record esistenti** in `agc_rgnr` con `agc_annoregistro` valorizzato: `1040` (RGNR "12321321", fuori dal nuovo range) e `2020` (RGNR "111111", valido). Chiesto conferma all'utente su come gestire il valore `1040`: **deciso di correggerlo a `2020`** durante la migrazione (non obbligatorietà del campo).
+
+### Implementazione
+1. **Rimozione temporanea delle dipendenze**: il campo era referenziato dalla form "Informazioni" di `agc_rgnr` (systemform `26af67d9-e8e2-47b1-aefa-0c54f3dfd8ac`) e dalla vista "RGNR attivi/e" (savedquery `fea68b4b-0c06-4c22-9393-a369cdadc865`, sia in `fetchxml` che `layoutxml`). Rimosso il riferimento da entrambe via PATCH Web API e pubblicato, per sbloccare `RetrieveDependenciesForDelete`.
+2. **Eliminazione e ricreazione del campo**: eliminato l'attributo `Integer` (`eec8d3c9-bca2-f111-aaac-7c1e52764872`) via `DELETE EntityDefinitions(...)/Attributes(...)`; ricreato come `StringAttributeMetadata` (`SchemaName agc_AnnoRegistro`, `MaxLength 4`, `RequiredLevel None`) via `POST EntityDefinitions(agc_rgnr)/Attributes`. Pubblicato.
+3. **Ripristino su form e vista**: riaggiunta la stessa cella/riga alla form "Informazioni" (control testo, stesso `classid` usato per `agc_name`) e la stessa colonna alla vista "RGNR attivi/e" (fetchxml + layoutxml). Pubblicato.
+4. **Migrazione dati**: i 2 record esistenti aggiornati a `"2020"` (stringa) — corretto anche il valore `1040`, ormai fuori range, come concordato con l'utente.
+5. **Nuovo plugin `AnnoRegistroValidationPlugin.cs`** (progetto `Plugin-Custom-API`): Pre-Operation su Create/Update di `agc_rgnr`, valida `agc_annoregistro` solo se presente nel `Target` (campo non obbligatorio: se assente/vuoto nessuna validazione) — deve matchare la regex `^\d{4}$` ed essere un intero tra 1900 e 2200, altrimenti `InvalidPluginExecutionException` con messaggio esplicito. Compilato (`dotnet build`, net462, nessun errore) e registrato nello stesso assembly `Plugin-Custom-API` (`5cd6cdfb-e163-f111-ab0c-7ced8d72f54e`, PATCH `content` base64): nuovo `plugintype` `AgicAspen.Plugins.AnnoRegistroValidationPlugin` (id `5ced4a02-ccad-f111-aaab-7ced8d71a68d`) e 2 nuovi `sdkmessageprocessingstep` (Create e Update, Pre-Operation stage 20, sincroni, nessuna image necessaria).
+
+### Verifica end-to-end
+Testata la creazione di record `agc_rgnr` con vari valori (poi ripuliti): `2024`, `1900`, `2200` → **creati correttamente**; `abcd`, `123` (formato non valido) e `1899`, `2201` (fuori range) → **bloccati** con il messaggio di errore atteso. Verificato che i 2 record reali restano `2020`/`2020` sul campo testo.
+
+**Files changed**:
+- `05 - Power Platform/Plugin-Custom-API/AnnoRegistroValidationPlugin.cs` (nuovo)
+- Dataverse live: attributo `agc_rgnr.agc_annoregistro` (ricreato come Testo), form "Informazioni", vista "RGNR attivi/e", assembly `Plugin-Custom-API`, nuovo `plugintype` + 2 `sdkmessageprocessingstep`
+- `README.md` / `SESSION_NOTES.md` aggiornati
+
+---
+
 ## Session 2026-09-10 — Fix ribbon, ricerca magistrati, esclusione esonero totale in continuità RGNR, blocco esoneri sovrapposti
 
 ### Richieste utente
