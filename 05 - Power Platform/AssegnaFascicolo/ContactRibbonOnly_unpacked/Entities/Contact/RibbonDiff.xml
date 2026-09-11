@@ -2,10 +2,14 @@
 <RibbonDiffXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <CustomActions>
     <!-- Tasto "Modifica Carico" nel form Contatto/Magistrato, gruppo Actions.
-         Location verificata il tramite RetrieveEntityRibbon sull'ambiente live. -->
+         Location verificata il tramite RetrieveEntityRibbon sull'ambiente live.
+         Sequence abbassata (era 15, tra "Chiudi"=9 e il flyout "Processo"=62) per
+         posizionare il tasto subito dopo "Nuovo" nella command bar, su richiesta
+         dell'utente (11/09/2026). Valore stimato: da verificare via RetrieveEntityRibbon
+         dopo il redeploy della solution AgicAspenRibbon e regolare se necessario. -->
     <CustomAction Id="agc.Form.contact.MainTab.Actions.ModificaCarico.CustomAction"
       Location="Mscrm.Form.contact.MainTab.Actions.Controls._children"
-      Sequence="15">
+      Sequence="11">
       <CommandUIDefinition>
         <Button Id="agc.Form.contact.MainTab.Actions.ModificaCarico.Button"
           Command="agc.Form.contact.ModificaCarico.Command"
@@ -14,7 +18,7 @@
           ToolTipTitle="Modifica Carico"
           ToolTipDescription="Corregge manualmente il carico del magistrato (riservato agli amministratori di sistema)"
           TemplateAlias="o1"
-          Sequence="15"
+          Sequence="11"
           ModernImage="$webresource:agc_modificacarico_icon.svg" />
       </CommandUIDefinition>
     </CustomAction>

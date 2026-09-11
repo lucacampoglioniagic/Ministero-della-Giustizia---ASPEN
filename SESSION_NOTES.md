@@ -4,6 +4,32 @@
 
 ---
 
+## Session 2026-09-10 — Fix ribbon, ricerca magistrati, esclusione esonero totale in continuità RGNR, blocco esoneri sovrapposti
+
+### Richieste utente
+1. Spostare il tasto "Modifica Carico" sulla ribbon del Contatto (Magistrato) subito dopo "Nuovo".
+2. Spostare il PCF "Carico per Canestro" dalla tab "Generale" alla tab "Fascicoli" del form Contatto (primo campo, sotto la subgrid fascicoli).
+3. Aggiungere un campo di ricerca/filtro magistrati nella modale "Assegna Fascicolo".
+4. Fix logica di continuità RGNR: se un altro fascicolo dello stesso PGNR/RGNR è assegnato a un magistrato che nel frattempo ha un esonero **Totale**, il codice non deve riproporlo per continuità ma deve ricadere sulla regola di assegnazione classica.
+5. Chiarimento + fix comportamento con esoneri sovrapposti: deciso di **bloccare la creazione/modifica di qualsiasi esonero che si sovrapponga temporalmente** a un altro esonero Attivo dello stesso magistrato, indipendentemente dal tipo (Totale/Parziale).
+6. Bug aggiuntivo segnalato: nella griglia fascicoli il tasto "Assegna Fascicolo" compare anche se il magistrato è già assegnato (nel modulo invece il comportamento è corretto).
+
+### Implementazione e stato
+1. **Ribbon "Modifica Carico"** — `RibbonDiff.xml` (`ContactRibbonOnly_unpacked`): Sequence del bottone/CustomAction cambiata da 15 a 11 per posizionarlo subito dopo "Nuovo". Pacchettizzato (`pac solution pack`) e importato live (`pac solution import --publish-changes`). **✅ Deployato e pubblicato.**
+2. **Spostamento PCF "Carico per Canestro"** — il FormXml del Contatto non è tracciato nel repo (solo `RibbonDiff.xml`/`Entity.xml` per il Contact in `ContactRibbonOnly_unpacked`); non modificabile via file. **⏳ Da fare manualmente in Maker Portal (Form Designer)**, oppure valutare un intervento diretto via Web API `systemform`/FormXml in una sessione successiva.
+3. **Ricerca magistrati nella modale** — `agc_assignfascicolodialog.html`: aggiunto input `#mag-search`, CSS `.mag-search`/`.mag-item.hidden`, filtro JS su `item.dataset.nome`. **✅ Deployato** (content aggiornato via Web API PATCH su `webresourceset` + `PublishXml`, verificato post-deploy).
+4. **Esclusione esonero Totale nella continuità RGNR (flusso modale)** — `agc_assignfascicolodialog.html`: prima di assegnare per continuità RGNR, ora interroga `getEsoneriAttivi([contId])` e se il magistrato ha un esonero attivo con `agc_tipoesonero === 1` (Totale) esclude la continuità e ricade sulla regola di assegnazione classica. Il flusso massivo (`agc_assignfascicolo.js`) già gestiva correttamente questo caso, nessuna modifica necessaria lì. **✅ Deployato** (stesso webresource, stesso deploy del punto 3).
+5. **Blocco esoneri sovrapposti** — creato nuovo plugin `EsoneroOverlapValidationPlugin.cs` (progetto `Plugin-Custom-API`), registrato in **Pre-Operation (stage 20)** su Create e Update di `agc_esonero`, con PreImage (`agc_datainizio,agc_datafine,agc_statoesonero,agc_magistrato`) sullo step di Update. Blocca qualunque sovrapposizione temporale con un esonero Attivo esistente dello stesso magistrato, indipendentemente dal tipo. Registrazione fatta interamente via Web API dirette (`az account get-access-token` + `Invoke-RestMethod`/`Invoke-WebRequest`), stesso pattern usato in tutte le sessioni precedenti per operazioni dirette sui metadati Dataverse (il tentativo di riusare la cache token di `pac` con `ServiceClient`/MSAL è fallito per necessità di login interattivo loopback, non ripetibile in ambiente headless). **✅ Plugin compilato, assembly `Plugin-Custom-API` aggiornato via PATCH `content` base64, plugintype e step creati, testato end-to-end** (creazione con date sovrapposte bloccata con messaggio custom; creazione senza sovrapposizione riuscita). Notato che esistevano già in produzione due esoneri "Ferie" sovrapposti per lo stesso magistrato inseriti prima del fix (dati storici, non retroattivamente bloccati).
+6. **Bug griglia "Assegna Fascicolo" sempre visibile** — causa: la formula Power Fx del Command Designer per la visibilità del bottone controlla il campo legacy `agc_magistratoassegnato` (mai popolato) invece di `agc_magistratocontatto` (campo realmente usato). La formula non è tracciata in file di repo (non è parte del RibbonDiffXml classico). **⏳ Da correggere manualmente in Maker Portal (Command Designer)**, salvo investigare se il comando moderno sia esposto in una tabella Dataverse interrogabile via Web API.
+
+### Note tecniche
+- Confermato che `az account get-access-token --resource <org-url>` + `Invoke-RestMethod` è il pattern corretto e consolidato per operazioni Web API dirette su Dataverse (incluse registrazione plugin), **non** il token cache di `pac` (valido solo per `api.powerplatform.com`, non per la Web API dell'organizzazione).
+- Plugin assembly `Plugin-Custom-API` (pluginassemblyid `5cd6cdfb-e163-f111-ab0c-7ced8d72f54e`) aggiornato con la nuova classe; plugintype `AgicAspen.Plugins.EsoneroOverlapValidationPlugin` creato con id `f0c1bbc4-c1ad-f111-aaab-7ced8d71a68d`.
+
+### Follow-up: chiarimento ambito controllo + messaggio errore con periodo
+- Segnalato un caso apparentemente anomalo (record "test" creato nonostante una sovrapposizione visibile in griglia): verificato che **non è un bug**. Il vecchio esonero "ferie" sovrapposto era già `agc_statoesonero = Chiuso` nel momento della creazione del nuovo record: il plugin blocca solo la sovrapposizione tra esoneri **entrambi Attivi contemporaneamente**, per design. Confermato con l'utente che questo è il comportamento desiderato (non estendere il controllo agli esoneri Chiusi).
+- Migliorato il messaggio di errore del plugin per includere il periodo (date inizio/fine, o "a tempo indeterminato" se `agc_datafine` è nullo) dell'esonero Attivo in conflitto, es.: *"Il magistrato ha già un esonero Attivo (Ferie) dal 02/09/2026 al 16/09/2026 il cui periodo si sovrappone a quello inserito..."*. Assembly ricompilato e ripubblicato via PATCH `content` su `pluginassemblies(5cd6cdfb-e163-f111-ab0c-7ced8d72f54e)` (stesso plugintype/step già registrati, nessuna nuova registrazione necessaria). Testato end-to-end: messaggio verificato corretto.
+
 ## Session 2026-09-09 (cont.) — Riallineamento punteggio al rientro da esonero Totale
 
 ### Requisito
