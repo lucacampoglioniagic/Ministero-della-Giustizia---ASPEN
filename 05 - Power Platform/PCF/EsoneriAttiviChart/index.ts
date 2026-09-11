@@ -136,7 +136,13 @@ export class EsoneriAttiviChart implements ComponentFramework.StandardControl<
         typeof tipoRaw === "number"
           ? tipoRaw
           : Number((tipoRaw as { value?: number })?.value ?? tipoRaw);
-      const percentuale = Number(record.getValue("percentualeField")) || 0;
+      // Per gli esoneri di tipo Totale il campo percentuale non viene valorizzato (l'esonero è
+      // per definizione al 100%, vedi agc_assignfascicolo.js che ignora la percentuale per il
+      // tipo Totale); leggerlo come 0 nasconderebbe la barra pur essendo l'esonero pienamente attivo.
+      const percentuale =
+        tipoNum === TIPO_TOTALE_VALUE
+          ? 100
+          : Number(record.getValue("percentualeField")) || 0;
 
       // Se per qualunque motivo storico esistesse più di un esonero attivo per lo stesso
       // magistrato, si mostra quello con percentuale maggiore (caso limite non atteso: il
