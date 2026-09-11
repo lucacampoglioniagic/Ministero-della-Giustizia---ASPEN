@@ -37,6 +37,9 @@ Nel Cruscotto ASPEN il secondo grafico ("Fascicoli per Stato": Validato/Proposto
 - `05 - Power Platform/PCF/EsoneriAttiviChart/` (nuovo)
 - `05 - Power Platform/PCF/AndamentoCaricoMensileChart/` (nuovo)
 
+### Bugfix — grafico "Esoneri Attivi" vuoto (11/09/2026, stessa sessione)
+Dopo la pubblicazione l'utente ha segnalato il grafico "Esoneri Attivi per Magistrato" completamente vuoto (nessuna barra, nessun messaggio "Nessun magistrato in esonero"). **Causa**: il `fetchxml` della vista Dataverse "Esoneri attivi/e" (usata come `ViewId` del dataset) non includeva l'attributo `agc_statoesonero`, pur essendo mappato dal controllo come `statoField`; il controllo scarta ogni record il cui stato non risulta letto/valorizzato (`isEsoneroEffettivamenteAttivo` richiede `agc_statoesonero = Attivo`), quindi tutti i record venivano esclusi a prescindere dallo stato reale. **Fix**: aggiunto `<attribute name="agc_statoesonero"/>` al fetchxml della `savedquery` "Esoneri attivi/e" (id `e989b9e4-4dd6-469c-a554-688e547618e3`) via Web API diretta (PATCH + `PublishAllXml`), senza toccare il `layoutxml` (la colonna non deve comparire come colonna visibile nella vista, serve solo come dato disponibile al dataset del PCF). Verificato che il fetchxml pubblicato contenga l'attributo.
+
 ---
 
 ## Session 2026-09-11 — Conversione campo `agc_rgnr.agc_annoregistro` da Intero a Testo con validazione 4 cifre / range 1900-2200
