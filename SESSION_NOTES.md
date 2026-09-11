@@ -4,6 +4,41 @@
 
 ---
 
+## Session 2026-09-11 (cont.) — Ridisegno dashboard "Cruscotto ASPEN": nuovi grafici Fascicoli per Canestro, Esoneri Attivi, Andamento Carico Mensile
+
+### Richiesta utente
+Nel Cruscotto ASPEN il secondo grafico ("Fascicoli per Stato": Validato/Proposto/Chiuso) non ha più senso ora che si sa che il carico del magistrato non diminuisce alla chiusura del fascicolo (regola di business monotona, punto 21 README). Richiesto di pensare a un nuovo grafico sostitutivo e ad altri grafici utili in base agli sviluppi recenti.
+
+### Analisi
+- Analizzato lo schema `agc_fascicolo2` (stato, canestro, peso calcolato, data caso, magistrato) e `agc_esonero` (magistrato, tipo Totale/Parziale, stato Attivo/Chiuso/Annullato, percentuale, date inizio/fine).
+- Recuperato il FormXml della dashboard (`systemform` "Cruscotto ASPEN", id `d4cd81e8-...`): la griglia era già 2×2, con 2 celle placeholder inutilizzate (`ispreviewcell="true"`) pronte per nuovi grafici senza dover ristrutturare il layout.
+- Proposte 6 opzioni di grafico all'utente; scelti: **Fascicoli per Canestro** (sostituisce Fascicoli per Stato), **Esoneri Attivi**, **Andamento Carico Mensile**.
+
+### Implementazione
+- **`FascicoliPerCanestroChart`** (nuovo PCF, pie chart, cartella `PCF-Pie/`): clonato da `StatoFascicoliChart`, raggruppa i fascicoli per `agc_canestrofascicolo` invece che per stato.
+- **`EsoneriAttiviChart`** (nuovo PCF, bar chart orizzontale, cartella `PCF/`): esoneri attivi per magistrato, colorati per tipo (Totale=rosso/Parziale=arancio); applica lato client lo stesso filtro di business già usato in `agc_assignfascicolodialog.html`/`agc_assignfascicolo.js` (`agc_statoesonero=Attivo` AND intervallo `[agc_datainizio, agc_datafine]` comprendente oggi), perché la vista "Esoneri attivi/e" filtra solo su `statecode`.
+- **`AndamentoCaricoMensileChart`** (nuovo PCF, line chart, cartella `PCF/`): carico cumulato per magistrato mese su mese, calcolato da `agc_pesocalcolato`/`agc_datacaso` ordinati cronologicamente.
+- Build locale ok per tutti e 3 (`npm run build` in `PCF-Pie` e in `PCF`).
+
+### Blocco deployment e soluzione
+- `pac pcf push` fallisce con "Found more than one project source file" se la cartella progetto (`PCF-Pie`/`PCF`) contiene più di un `ControlManifest.Input.xml` (ora ne hanno 2 e 3 rispettivamente); fallisce anche se lanciato dentro la sottocartella del singolo controllo, perché richiede il `.pcfproj` (presente solo alla radice).
+- **Soluzione**: spostare temporaneamente le cartelle dei controlli "fratelli" fuori dall'albero del progetto (in `%TEMP%`), lanciare `pac pcf push --publisher-prefix agc` per il controllo rimasto da solo, poi ripristinare le cartelle spostate. Ripetuto un controllo alla volta.
+- Per 2 dei 3 controlli (`EsoneriAttiviChart`, `AndamentoCaricoMensileChart`) il comando ha comunque fallito in fase di cleanup MSBuild (`MSB3231`, file lock su `obj\Debug\Metadata`), ma lo zip della solution era già stato generato in `obj/PowerAppsToolsTemp_agc/bin/Debug/PowerAppsToolsTemp_agc.zip`: importato manualmente con `pac solution import --path <zip> --force-overwrite --publish-changes`, con successo.
+- Tutti e 3 i controlli confermati registrati in Dataverse (`agc_AgicAspen.<Nome>`).
+
+### Aggiornamento dashboard
+- FormXml del `systemform` "Cruscotto ASPEN" (`d4cd81e8-5963-f111-ab0c-7ced8d72f54e`) modificato via Web API diretta:
+  - Cella "Fascicoli per Stato" → rinominata "Fascicoli per Canestro", `controlDescription` (tutti i formFactor 0/1/2) aggiornata da `StatoFascicoliChart` a `FascicoliPerCanestroChart` (`canestroField` → `agc_canestrofascicolo`).
+  - Le 2 celle placeholder valorizzate con nuovi controlli: "Esoneri Attivi" (`EsoneriAttiviChart`, vista "Esoneri attivi/e") e "Andamento Carico Mensile" (`AndamentoCaricoMensileChart`, stessa vista fascicoli usata da `CaricoMagistratiChart`).
+  - PATCH su `systemforms(...)` + `PublishAllXml`; verificato che il FormXml pubblicato contenga tutti e 3 i nuovi nomi di controllo.
+
+### File coinvolti
+- `05 - Power Platform/PCF-Pie/FascicoliPerCanestroChart/` (nuovo)
+- `05 - Power Platform/PCF/EsoneriAttiviChart/` (nuovo)
+- `05 - Power Platform/PCF/AndamentoCaricoMensileChart/` (nuovo)
+
+---
+
 ## Session 2026-09-11 — Conversione campo `agc_rgnr.agc_annoregistro` da Intero a Testo con validazione 4 cifre / range 1900-2200
 
 ### Richiesta utente

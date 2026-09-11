@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest>
+  <control namespace="AgicAspen" constructor="FascicoliPerCanestroChart" version="1.0.0"
+    display-name-key="Fascicoli per Canestro"
+    description-key="Grafico a torta dei fascicoli suddivisi per canestro"
+    control-type="standard">
+    <external-service-usage enabled="false" />
+    <!--
+      Tabella sorgente: agc_fascicolo2
+      Sostituisce il precedente StatoFascicoliChart (stato Validato/Proposto/Chiuso): con la
+      regola "il carico non diminuisce alla chiusura" la distribuzione per stato non è più
+      significativa dal punto di vista del carico di lavoro. Raggruppa invece per Canestro
+      (categoria del fascicolo), utile per capire la composizione del lavoro in ingresso.
+      Mapping consigliato:
+        canestroField  →  agc_canestrofascicolo  (Lookup → agc_canestro)
+      Colonne aggiuntive lette dal dataset (non dichiarate come property-set, richiedono
+      che la view Dataverse bindata al dashboard le includa): agc_numeroregistrogenerale,
+      agc_magistratocontatto/name, agc_statocaso, agc_pesocalcolato, agc_datacaso.
+    -->
+    <data-set name="fascicoliDataSet" display-name-key="Fascicoli">
+      <property-set name="canestroField" display-name-key="Canestro"
+        of-type="Lookup.Simple" usage="bound" required="true" />
+    </data-set>
+    <resources>
+      <code path="index.ts" order="1" />
+      <css path="css/chart.css" order="1" />
+    </resources>
+  </control>
+</manifest>

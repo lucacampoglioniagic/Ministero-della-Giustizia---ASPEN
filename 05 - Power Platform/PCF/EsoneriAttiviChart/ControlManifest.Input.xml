@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest>
+  <control namespace="AgicAspen" constructor="EsoneriAttiviChart" version="1.0.0"
+    display-name-key="Esoneri Attivi per Magistrato"
+    description-key="Grafico dei magistrati attualmente in esonero (Totale/Parziale)"
+    control-type="standard">
+    <external-service-usage enabled="false" />
+    <!--
+      Tabella sorgente: agc_esonero
+      View consigliata: "Esoneri attivi/e" (filtra solo statecode attivo; il controllo applica
+      comunque un filtro aggiuntivo lato client su agc_statoesonero = Attivo e sull'intervallo
+      [agc_datainizio, agc_datafine] che comprende la data odierna, stessa logica già usata in
+      agc_assignfascicolodialog.html/agc_assignfascicolo.js per l'esclusione dei magistrati
+      esonerati dall'assegnazione automatica).
+      Mapping consigliato:
+        magistratoField   →  agc_magistrato        (Lookup → contact)
+        tipoField         →  agc_tipoesonero        (Picklist: 1 Totale, 2 Parziale)
+        statoField        →  agc_statoesonero       (Picklist: 1 Attivo, 2 Chiuso, 3 Annullato)
+        percentualeField  →  agc_percentualeesonero (Decimal)
+        dataInizioField   →  agc_datainizio         (DateTime)
+        dataFineField     →  agc_datafine           (DateTime, opzionale — esonero a tempo indeterminato se nullo)
+    -->
+    <type-group name="percentualeTypes">
+      <type>Whole.None</type>
+      <type>FP</type>
+      <type>Decimal</type>
+    </type-group>
+    <data-set name="esoneriDataSet" display-name-key="Esoneri">
+      <property-set name="magistratoField" display-name-key="Magistrato (lookup)"
+        of-type="Lookup.Simple" usage="bound" required="true" />
+      <property-set name="tipoField" display-name-key="Tipo esonero"
+        of-type="OptionSet" usage="bound" required="true" />
+      <property-set name="statoField" display-name-key="Stato esonero"
+        of-type="OptionSet" usage="bound" required="true" />
+      <property-set name="percentualeField" display-name-key="Percentuale esonero"
+        of-type-group="percentualeTypes" usage="bound" required="false" />
+      <property-set name="dataInizioField" display-name-key="Data inizio"
+        of-type="DateAndTime.DateAndTime" usage="bound" required="true" />
+      <property-set name="dataFineField" display-name-key="Data fine"
+        of-type="DateAndTime.DateAndTime" usage="bound" required="false" />
+    </data-set>
+    <resources>
+      <code path="index.ts" order="1" />
+      <css path="css/chart.css" order="1" />
+    </resources>
+  </control>
+</manifest>

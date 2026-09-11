@@ -1,0 +1,148 @@
+.stato-fascicoli-chart {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    box-sizing: border-box;
+    padding: 16px;
+    background: #ffffff;
+    border-radius: 8px;
+    font-family: "Segoe UI", Segoe, Arial, sans-serif;
+}
+.stato-fascicoli-chart .chart-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+.stato-fascicoli-chart .chart-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.stato-fascicoli-chart .chart-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f6cbd;
+}
+.stato-fascicoli-chart .year-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(180deg, #f8fbff 0%, #edf4fd 100%);
+    border: 1px solid #c7dbf7;
+    border-radius: 999px;
+    padding: 4px 8px 4px 10px;
+}
+.stato-fascicoli-chart .year-filter-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f6cbd;
+    white-space: nowrap;
+}
+.stato-fascicoli-chart .year-filter-select {
+    border: 1px solid #b6cef2;
+    border-radius: 999px;
+    padding: 4px 24px 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #0f6cbd;
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+}
+.stato-fascicoli-chart .year-filter-select:focus {
+    border-color: #0f6cbd;
+    box-shadow: 0 0 0 2px rgba(15, 108, 189, 0.2);
+}
+.stato-fascicoli-chart .chart-canvas {
+    flex: 1;
+    width: 100% !important;
+    min-height: 200px;
+}
+
+/* Shared modal styles (same as CaricoMagistratiChart) */
+.aspen-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    font-family: "Segoe UI", Segoe, Arial, sans-serif;
+}
+.aspen-modal {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+    width: min(760px, 92vw);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.aspen-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    color: #fff;
+}
+.aspen-modal-title {
+    font-size: 15px;
+    font-weight: 400;
+}
+.aspen-modal-title strong {
+    font-weight: 700;
+}
+.aspen-modal-close {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0 4px;
+}
+.aspen-modal-close:hover {
+    opacity: 0.8;
+}
+.aspen-modal-body {
+    overflow-y: auto;
+    padding: 16px 20px;
+}
+.aspen-modal-empty {
+    color: #888;
+    font-style: italic;
+    text-align: center;
+    padding: 24px 0;
+}
+.aspen-modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.aspen-modal-table th {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 2px solid #0f6cbd;
+    color: #0f6cbd;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.aspen-modal-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #e8e8e8;
+    color: #222;
+}
+.aspen-modal-table tr:last-child td {
+    border-bottom: none;
+}
+.aspen-modal-table tr:hover td {
+    background: #f3f9ff;
+}
