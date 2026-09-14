@@ -4,6 +4,29 @@
 
 ---
 
+## Session 2026-09-14 — Verifica corruzione agc_canestro post-follow-up Microsoft e risposta al ticket
+
+### Contesto
+Microsoft Support ha risposto al ticket aperto su `agc_canestro`/`agc_fascicolo` (vedi `Risposta_MS_Support_EntityMap_Corruption.md`) chiedendo di eseguire un test e fornire un riscontro, senza dichiarare esplicitamente di aver applicato un fix.
+
+### Verifica eseguita (Web API, stesso pattern `az account get-access-token` + Invoke-RestMethod su `lccministerogiustiziademo.crm4.dynamics.com`)
+- `agc_canestro` esiste ancora (MetadataId `77b92dc3-7caa-4ece-a422-5a6dcc13b227`, invariato).
+- `ManyToOneRelationships` su `agc_fascicolo` non elenca più alcuna relazione verso `agc_canestro` (la colonna lookup `agc_canestro` è però ancora fisicamente presente sull'entità).
+- La relazione fantasma puntuale `cb984bf8-e237-43fe-bf30-1f8a3daae1ad` risulta non trovabile (404), come già prima.
+- `RetrieveDependenciesForDelete` su `agc_canestro` restituisce **ancora gli stessi 2 record di dipendenza bloccante** già osservati in precedenza (nessun cambiamento). Uno dei due (`dependentcomponentobjectid = 1e8be637-4f63-f111-ab0c-7ced8d4558ae`, tipo componente EntityRelationship) coincide **esattamente** con il GUID riportato nell'errore di importazione solution segnalato dall'utente (vedi sotto).
+
+### Evidenze raccolte dall'utente (screenshot)
+1. **Import solution fallito**: "ASPEN POC 1.0.0.4" non importabile — `The Entity Relationship with EntityRelationshipId '1e8be637-4f63-f111-ab0c-7ced8d4558ae' was not found in the MetadataCache` (stesso GUID della dipendenza bloccante rilevata via API — conferma diretta che è la relazione fantasma a causare il fallimento dell'import/export).
+2. **Eliminazione manuale di `agc_fascicolo`**: nessun errore a schermo, ma in console `POST /api/data/v9.0/%24batch` → 500 `"This EntityMap cannot be deleted because it has at least one system AttributeMap."` (`serverErrorCode: 0x80046202`).
+
+### Esito
+**Corruzione non risolta.** Inviata risposta al ticket Microsoft (14/09/2026) con entrambe le evidenze e la correlazione tra il GUID della relazione fantasma e l'errore di import, chiedendo conferma se un fix backend sia stato effettivamente applicato all'ambiente. In attesa di riscontro.
+
+### Prossimo passo
+Seguire l'evolversi del ticket; nessuna azione lato codice/API possibile fino a intervento Microsoft (bug lato backend, non risolvibile via API pubbliche).
+
+---
+
 ## Session 2026-09-11 (cont. 2) — Split Canestro in Peso 1 / Peso 2 (canestro a due dimensioni)
 
 ### Richiesta utente
