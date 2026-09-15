@@ -490,6 +490,27 @@ AgicAspen.AssegnaFascicolo = (function () {
                 });
             }
 
+            /* ── Regola 3.11 "carico monotono" (rimozione assegnazione): quando il
+               magistrato viene tolto dal fascicolo (campo svuotato) senza assegnarne
+               uno nuovo, il peso del fascicolo va comunque decrementato dal carico
+               del magistrato che lo deteneva. ── */
+            function decrementaCaricoRimozione(vecchioMagId) {
+                if (!vecchioMagId) return;
+                var pesoAttr = formContext.getAttribute("agc_pesocalcolato");
+                var peso = pesoAttr ? (pesoAttr.getValue() || 0) : 0;
+                var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
+
+                Xrm.WebApi.retrieveRecord("contact", vecchioMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
+                    var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
+                    return Xrm.WebApi.updateRecord("contact", vecchioMagId, { agc_caricoattuale: nuovoCaricoOld });
+                }).then(function () {
+                    origMagId = null; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
+                    console.log("[ASPEN] Rimozione assegnazione fascicolo " + fascicoloId + ": carico decrementato per magistrato " + vecchioMagId);
+                }).catch(function (e) {
+                    console.error("[ASPEN] Errore decremento carico su rimozione assegnazione:", e);
+                });
+            }
+
             formContext.data.entity.addOnSave(function (saveEventArgs) {
                 try {
                     var magAttr = formContext.getAttribute("agc_magistratocontatto");
@@ -530,7 +551,14 @@ AgicAspen.AssegnaFascicolo = (function () {
                     }
                     esoneroTotaleBypass = false;
 
-                    if (!newMagId || newMagId === origMagId) return;
+                    if (newMagId === origMagId) return;
+
+                    if (!newMagId) {
+                        // Il campo magistrato è stato svuotato: nessuna assegnazione nuova,
+                        // ma il carico del magistrato precedente va comunque decrementato.
+                        decrementaCaricoRimozione(origMagId);
+                        return;
+                    }
 
                     if (riservaGupBypass) {
                         riservaGupBypass = false;

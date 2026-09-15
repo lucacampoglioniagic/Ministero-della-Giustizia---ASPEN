@@ -4,6 +4,29 @@
 
 ---
 
+## Session 2026-09-15 — Fix Ribbon Workbench (contact/agc_canestro) e regola 3.11 su rimozione assegnazione
+
+### Ribbon Workbench non caricava la solution "ASPEN POC Ribbon" (`ASPENPOCRibbon`)
+- Errore XrmToolBox: *"The solution contains non-entity components (e.g. attributes/forms/apps/dashboards/workflows)"*. Analizzato l'export della solution (`pac solution export`): il manifest dichiarava solo 5 RootComponent di tipo tabella con `behavior=2` ("solo metadati"), ma il pacchetto includeva comunque 1 `systemform` — il form "Informazioni" (header/sidebar) della tabella standard **`contact`**, proveniente dalla solution Microsoft `msdynce_AppCommon` (id `894cc46a-b0cb-4ab0-8bf6-200544e46a2d`), incluso automaticamente nonostante `behavior=2` perché `contact` è una tabella di sistema con customizzazioni preesistenti.
+- **Fix (utente, da Maker Portal)**: rimossa la tabella `contact` dalla solution `ASPENPOCRibbon`. Ribbon Workbench torna a caricarsi correttamente.
+- Successivo tentativo di **pubblicazione** dal Ribbon Workbench falliva con `Cannot have object with no publish instances, Name:Active, ... ComponentState=255`. Causa: stesso pattern di corruzione metadati già noto sulla tabella orfana **`agc_canestro`** (vedi sessione 2026-09-14 e punto 35 del README), ancora presente come RootComponent nella solution ribbon.
+- **Fix (utente)**: rimossa anche `agc_canestro` dalla solution `ASPENPOCRibbon`. Pubblicazione riuscita.
+
+### Regola 3.11 "carico monotono" — mancava il decremento su rimozione assegnazione
+**Richiesta utente**: quando si rimuove da un fascicolo l'associazione con il magistrato (contact), il carico (`agc_caricoattuale`) del magistrato deve diminuire del peso (`agc_pesocalcolato`) di quel fascicolo — coerente con la regola già esistente per la riassegnazione (decremento sul vecchio magistrato + incremento sul nuovo).
+
+- **Bug individuato** in `agc_assignfascicolo.js` (`onFormLoad` → `addOnSave`): quando il campo Magistrato viene svuotato (`newMagId` null), la guardia `if (!newMagId || newMagId === origMagId) return;` usciva senza eseguire alcun decremento.
+- **Fix**: aggiunta nuova funzione `decrementaCaricoRimozione(vecchioMagId)` (simmetrica a `aggiornaCaricoRiassegnazione`, ma senza la parte di incremento su un nuovo magistrato) che sottrae il peso del fascicolo dal carico del magistrato originario (mai sotto zero, `Math.max(0, ...)`). Guardia riscritta: `if (newMagId === origMagId) return;` seguita da un ramo dedicato `if (!newMagId) { decrementaCaricoRimozione(origMagId); return; }` prima del ramo di riassegnazione esistente.
+- Verificata sintassi con `node --check` (nessun errore).
+- **Deploy**: tentato l'aggiornamento automatico del web resource via `pac solution export/unpack/pack/import` sulla solution `ASPENPOC` (quella che contiene `agc_assignfascicolo.js`), ma l'export fallisce con lo stesso errore di corruzione metadati (`EntityRelationship ... not found in MetadataCache`) già noto per `agc_canestro`/`agc_fascicolo` — non è la sola solution ribbon a esserne affetta, blocca anche l'export della solution principale. Non estratto un token grezzo per bypassare via Web API diretta (scelta deliberata, per non aggirare la mascheratura di sicurezza di `pac auth token` in un ambiente già fragile). **Risolto manualmente dall'utente**: codice fornito per copia/incolla diretto nell'editor del web resource da Maker Portal, salvato e pubblicato.
+- **Verificato end-to-end dall'utente**: rimuovendo il magistrato da un fascicolo assegnato, il carico del magistrato precedente diminuisce correttamente del peso del fascicolo.
+
+### Prossimo passo
+- Continua a mancare una via automatizzata (CLI) per aggiornare i web resource in `ASPENPOC` finché la corruzione `agc_canestro`/`agc_fascicolo` non viene risolta da Microsoft (blocca l'export dell'intera solution, non solo quella ribbon). Nel frattempo, eventuali modifiche a web resource vanno applicate manualmente da Maker Portal.
+- Valutare, se il ticket Microsoft continua a non progredire, se rimuovere `agc_canestro` anche da `ASPENPOC` (non solo dalle solution ribbon) per sbloccare l'export automatizzato — impatto da analizzare con più attenzione trattandosi della solution principale.
+
+---
+
 ## Session 2026-09-14 — Verifica corruzione agc_canestro post-follow-up Microsoft e risposta al ticket
 
 ### Contesto
