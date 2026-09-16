@@ -396,12 +396,31 @@
       var orgUrl = window.location.origin;
       var apiHeaders = { "OData-MaxVersion": "4.0", "OData-Version": "4.0", "Accept": "application/json" };
 
+      /* ── Legge il body JSON di una risposta fetch, rifiutando esplicitamente se la
+         risposta HTTP non è ok (es. 403/500): senza questo controllo un errore di
+         permessi/servizio produce un body senza "value", che verrebbe interpretato
+         silenziosamente come "nessun dato" (es. nessun esonero attivo) invece che
+         segnalato come errore. ── */
+      function parseJsonOrThrow(r) {
+        if (!r.ok) {
+          return r.text().then(function (text) {
+            var msg = "HTTP " + r.status;
+            try {
+              var parsed = text ? JSON.parse(text) : null;
+              if (parsed && parsed.error && parsed.error.message) msg += ": " + parsed.error.message;
+            } catch (e) { /* body non JSON, ignora */ }
+            throw new Error(msg);
+          });
+        }
+        return r.json();
+      }
+
       /* ── Load magistrati ── */
       fetch(
         orgUrl + "/api/data/v9.2/contacts?$select=fullname,contactid&$filter=agc_ismagistrato eq true&$orderby=fullname",
         { headers: apiHeaders }
       )
-        .then(function (r) { return r.json(); })
+        .then(parseJsonOrThrow)
         .then(function (data) {
           var list = document.getElementById("mag-list");
           list.innerHTML = "";
@@ -506,7 +525,7 @@
           orgUrl + "/api/data/v9.2/agc_esoneros?$select=agc_tipoesonero,agc_percentualeesonero,_agc_magistrato_value&$filter=(" + filterEsoneri + ") and statecode eq 0 and agc_statoesonero eq 1 and agc_datainizio le " + oggiIso + " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)",
           { headers: apiHeaders }
         )
-          .then(function (r) { return r.json(); })
+          .then(parseJsonOrThrow)
           .then(function (data) {
             var esoneroPer = {};
             (data.value || []).forEach(function (e) {
@@ -537,7 +556,7 @@
           orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_fascicolo2id&$filter=" + filtroGup + "&$top=1",
           { headers: apiHeaders }
         )
-          .then(function (r) { return r.json(); })
+          .then(parseJsonOrThrow)
           .then(function (gupData) {
             if ((gupData.value || []).length > 0) return { warn: false };
 
@@ -549,7 +568,7 @@
               orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=_agc_magistratocontatto_value&$filter=" + filtroGip,
               { headers: apiHeaders }
             )
-              .then(function (r) { return r.json(); })
+              .then(parseJsonOrThrow)
               .then(function (gipData) {
                 var assegnati = {};
                 (gipData.value || []).forEach(function (f) {
@@ -566,7 +585,7 @@
                   orgUrl + "/api/data/v9.2/contacts?$select=contactid&$filter=" + filtroMag,
                   { headers: apiHeaders }
                 )
-                  .then(function (r) { return r.json(); })
+                  .then(parseJsonOrThrow)
                   .then(function (magData) {
                     var totale = (magData.value || []).length;
                     if (totale > 0 && distinti >= totale) {
@@ -605,7 +624,7 @@
             orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value,agc_ruoloassegnazione,_owningbusinessunit_value",
             { headers: apiHeaders }
           );
-          var fascicoloCorrente = await fascResp0.json();
+          var fascicoloCorrente = await parseJsonOrThrow(fascResp0);
           var rgnrId = fascicoloCorrente["_agc_rgnr_value"];
           var ruoloFascicolo = fascicoloCorrente.agc_ruoloassegnazione;
           var businessUnitFascicolo = fascicoloCorrente["_owningbusinessunit_value"];
@@ -665,7 +684,7 @@
             orgUrl + "/api/data/v9.2/contacts?$select=contactid,fullname,agc_caricoattuale&$filter=agc_ismagistrato eq true",
             { headers: apiHeaders }
           );
-          var magData = await magResp.json();
+          var magData = await parseJsonOrThrow(magResp);
           var magistrati = (magData.value || []).filter(function (m) {
             return !incompatibili[m.contactid];
           });

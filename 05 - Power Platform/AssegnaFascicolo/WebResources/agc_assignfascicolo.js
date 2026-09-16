@@ -546,12 +546,34 @@ AgicAspen.AssegnaFascicolo = (function () {
                             magistratoGiaValidato = newMagId;
                             // Il carico viene aggiornato dal plugin server-side alla scrittura di
                             // questo salvataggio: nessuna ulteriore azione lato client necessaria.
-                            return formContext.data.save();
+                            // Un eventuale errore di persistenza (es. regola server-side bloccante,
+                            // come l'esonero Totale rilevato lato plugin) viene gestito qui
+                            // separatamente dagli errori di VERIFICA più sotto: si mostra il vero
+                            // errore all'utente, senza ritentare ciecamente il salvataggio.
+                            return formContext.data.save().catch(function (saveErr) {
+                                magistratoGiaValidato = null;
+                                console.error("[ASPEN] Errore durante il salvataggio dell'assegnazione:", saveErr);
+                                Xrm.Navigation.openAlertDialog({
+                                    title: "Salvataggio non riuscito",
+                                    text: "Non è stato possibile salvare l'assegnazione: " +
+                                        (saveErr && saveErr.message ? saveErr.message : "errore sconosciuto") +
+                                        ". Il fascicolo NON è stato riassegnato: verificare e riprovare."
+                                });
+                            });
                         });
                     }).catch(function (e) {
-                        console.error("[ASPEN] Errore verifica esonero/riserva, salvataggio consentito senza controllo:", e);
-                        magistratoGiaValidato = newMagId;
-                        formContext.data.save();
+                        // Errore nella VERIFICA (esonero Totale / riserva GUP), non nel
+                        // salvataggio: l'esonero Totale è un vincolo bloccante, quindi in caso di
+                        // errore di rete/permessi la verifica non può essere bypassata. Il
+                        // salvataggio resta annullato (form ancora dirty) e l'utente viene avvisato,
+                        // invece di procedere silenziosamente come se non ci fossero esoneri.
+                        console.error("[ASPEN] Errore verifica esonero/riserva GUP, salvataggio annullato per sicurezza:", e);
+                        magistratoGiaValidato = null;
+                        Xrm.Navigation.openAlertDialog({
+                            title: "Verifica non riuscita",
+                            text: "Non è stato possibile verificare gli esoneri/la riserva GUP per il magistrato selezionato (errore di rete o di permessi). " +
+                                "Il salvataggio è stato annullato per sicurezza. Riprovare più tardi o contattare l'amministratore."
+                        });
                     });
                 } catch (e) {
                     console.error("[ASPEN] Errore onSave riassegnazione:", e);
