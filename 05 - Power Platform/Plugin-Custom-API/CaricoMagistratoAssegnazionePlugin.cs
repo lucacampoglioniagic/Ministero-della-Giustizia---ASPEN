@@ -15,8 +15,12 @@ namespace AgicAspen.Plugins
     /// Questo sostituisce e centralizza la logica di incremento/decremento carico che in
     /// precedenza viveva solo lato client (agc_assignfascicolo.js, agc_assignfascicolodialog.html):
     /// quei file continuano a gestire le validazioni che richiedono un'interazione con l'utente
-    /// prima del salvataggio (blocco per esonero Totale, avviso di riserva GUP), ma NON scrivono
-    /// più direttamente <c>agc_caricoattuale</c>, per evitare un doppio conteggio.
+    /// prima del salvataggio (messaggio immediato di blocco per esonero Totale, avviso di
+    /// riserva GUP), ma NON scrivono più direttamente <c>agc_caricoattuale</c>, per evitare un
+    /// doppio conteggio. Il blocco per esonero Totale è inoltre riapplicato qui come vincolo
+    /// bloccante (eccezione, intera operazione annullata), per coprire anche i percorsi che non
+    /// aprono mai il form del fascicolo (subgrid "Aggiungi esistente", bulk edit, import, Web
+    /// API dirette), dove la validazione client non verrebbe mai eseguita.
     ///
     /// Il peso del fascicolo (<c>agc_pesocalcolato</c>) viene sempre riletto fresco dal server
     /// dopo l'operazione (Post-Operation), perché è un campo calcolato che referenzia un'altra
@@ -31,6 +35,7 @@ namespace AgicAspen.Plugins
     /// </summary>
     public class CaricoMagistratoAssegnazionePlugin : PluginBase
     {
+        private const int TipoEsoneroTotale = 1;
         private const int TipoEsoneroParziale = 2;
         private const int StatoEsoneroAttivo = 1;
         private const int StagePostOperation = 40;
@@ -92,6 +97,19 @@ namespace AgicAspen.Plugins
             if (oldMagId == newMagId)
                 return; // nessuna modifica reale (es. stesso magistrato riselezionato)
 
+            // Blocco server-side per esonero Totale (regola già applicata lato client in
+            // agc_assignfascicolo.js#verificaEsoneroTotale, ma qui necessaria per coprire anche
+            // i percorsi che non passano dal form: subgrid "Aggiungi esistente", bulk edit,
+            // import, Web API dirette). Un magistrato con esonero Totale attivo oggi non può
+            // ricevere NESSUNA nuova assegnazione, né in Create né in Update: l'intera
+            // operazione viene annullata (nessuna scrittura parziale del carico).
+            if (newMagId.HasValue && HaEsoneroTotaleAttivo(service, newMagId.Value))
+            {
+                tracer.Trace($"CaricoMagistratoAssegnazionePlugin: assegnazione negata, il magistrato {newMagId.Value} ha un esonero Totale attivo.");
+                throw new InvalidPluginExecutionException(
+                    "Impossibile assegnare il fascicolo: il magistrato selezionato è attualmente in esonero Totale e non può ricevere nuove assegnazioni.");
+            }
+
             var fascicolo = service.Retrieve("agc_fascicolo2", target.Id, new ColumnSet("agc_pesocalcolato"));
             var peso = fascicolo.Contains("agc_pesocalcolato") ? fascicolo.GetAttributeValue<decimal>("agc_pesocalcolato") : 0m;
 
@@ -125,6 +143,36 @@ namespace AgicAspen.Plugins
 
             service.Update(new Entity("contact", magistratoId) { ["agc_caricoattuale"] = nuovoCarico });
             tracer.Trace($"CaricoMagistratoAssegnazionePlugin: incrementato carico magistrato {magistratoId} da {caricoAttuale} a {nuovoCarico} (peso {peso} x coefficiente {coefficiente}).");
+        }
+
+        /// <summary>
+        /// Verifica se il magistrato ha un esonero Totale (1) Attivo (1) la cui finestra
+        /// [agc_datainizio, agc_datafine] comprende la data odierna (agc_datafine opzionale =
+        /// a tempo indeterminato). Stessa regola già applicata lato client in
+        /// agc_assignfascicolo.js#verificaEsoneroTotale, qui riproposta server-side come
+        /// vincolo bloccante per coprire anche i percorsi che non aprono il form del fascicolo.
+        /// </summary>
+        private static bool HaEsoneroTotaleAttivo(IOrganizationService service, Guid magistratoId)
+        {
+            var oggi = DateTime.UtcNow;
+
+            var query = new QueryExpression("agc_esonero")
+            {
+                ColumnSet = new ColumnSet("agc_esoneroid"),
+                TopCount = 1
+            };
+            query.Criteria.AddCondition("agc_magistrato", ConditionOperator.Equal, magistratoId);
+            query.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
+            query.Criteria.AddCondition("agc_statoesonero", ConditionOperator.Equal, StatoEsoneroAttivo);
+            query.Criteria.AddCondition("agc_tipoesonero", ConditionOperator.Equal, TipoEsoneroTotale);
+            query.Criteria.AddCondition("agc_datainizio", ConditionOperator.LessEqual, oggi);
+
+            var dataFineFilter = new FilterExpression(LogicalOperator.Or);
+            dataFineFilter.AddCondition("agc_datafine", ConditionOperator.GreaterEqual, oggi);
+            dataFineFilter.AddCondition("agc_datafine", ConditionOperator.Null);
+            query.Criteria.AddFilter(dataFineFilter);
+
+            return service.RetrieveMultiple(query).Entities.Count > 0;
         }
 
         /// <summary>
