@@ -451,13 +451,18 @@ AgicAspen.AssegnaFascicolo = (function () {
            Caso "Nuovo Fascicolo" da subgrid del Contatto: il campo Magistrato
            Contatto risulta già precompilato al caricamento (ereditato dal record
            padre), ma il carico non è mai stato incrementato per questo fascicolo.
-           Su form Create il valore "originale" va quindi considerato nullo, così
-           il salvataggio la tratta come una vera prima assegnazione. ── */
+           Il record è privo di Id finché non viene salvato la prima volta,
+           indipendentemente dal tipo di form (Create pieno o pannello Quick
+           Create aperto dalla subgrid, formType 5): usare questa condizione
+           invece di formType è quindi più affidabile. Su un record nuovo il
+           valore "originale" va considerato nullo, così il salvataggio lo
+           tratta come una vera prima assegnazione. ── */
         try {
-            var isCreateForm = formContext.ui.getFormType() === 1;
+            var rawFascicoloId = formContext.data.entity.getId();
+            var isNewRecord = !rawFascicoloId || rawFascicoloId === "{00000000-0000-0000-0000-000000000000}";
             var origMagAttr = formContext.getAttribute("agc_magistratocontatto");
             var origMagValue = origMagAttr ? origMagAttr.getValue() : null;
-            var origMagId = (!isCreateForm && origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
+            var origMagId = (!isNewRecord && origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
             var riservaGupBypass = false; // evita di ri-verificare la riserva sul resave programmatico
             var esoneroTotaleBypass = false; // evita di ri-verificare l'esonero sul resave programmatico
 
