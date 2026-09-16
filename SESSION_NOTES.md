@@ -4,6 +4,32 @@
 
 ---
 
+## Session 2026-09-16 (bis) — Script voiceover per il video dimostrativo ASPEN
+
+### What was done
+- Redatto un nuovo testo di voiceover per il video dimostrativo dell'applicazione, pensato per essere letto da una voce sintetizzata (TTS) sopra la registrazione della navigazione nel portale.
+- Analizzato lo stato attuale del progetto (README.md, SESSION_NOTES.md, analisi AS-IS) per censire tutte le funzionalità in essere: Home (KPI, elenco fascicoli, creazione nuovo fascicolo), creazione fascicolo con calcolo automatico del peso e doppia classificazione per materia (Peso 1 / Peso 2), assegnazione automatica (minor carico, incompatibilità, continuità sullo stesso procedimento/RGNR, controllo esoneri), assegnazione massiva, chiusura fascicolo, gestione esoneri (totale/parziale, blocco sovrapposizioni, riallineamento carico al rientro), Cruscotto ASPEN (grafico carico a semaforo, fascicoli per materia, esoneri attivi, andamento mensile del carico, grafico carico per materia sulla scheda magistrato), modifica manuale del carico riservata agli amministratori con audit trail.
+- Creato il nuovo file `03 - Documentazione Prodotta/Video/ASPEN - Script Voiceover Demo (16-09-2026).txt`, mantenendo il file precedente come versione storica di riferimento.
+- Aggiornato il README.md (sezione "Documenti di riferimento") aggiungendo la riga per il nuovo script e rietichettando il precedente come "storico".
+
+### Decisions made
+- Testo scritto ad alto livello, senza terminologia tecnica interna (nessun riferimento a Dataverse, PCF, plugin, ecc.), per un pubblico non tecnico che guarderà il video demo.
+- Versioning per file datato invece di sovrascrivere lo script esistente, per mantenere tracciabilità storica delle versioni del voiceover mano a mano che l'applicazione evolve.
+
+### Current status
+- Attività di sola documentazione: nessuna modifica al codice applicativo, ai plugin o ai dati/metadati Dataverse in questa sessione.
+- Script pronto per essere usato con un motore TTS a supporto della registrazione video della navigazione nel portale.
+
+### Next steps
+- Registrare/produrre il video demo abbinando lo script al TTS scelto.
+- Se l'applicazione evolve ulteriormente (nuove funzionalità/cruscotti), aggiornare lo script con una nuova versione datata anziché modificare quelle esistenti.
+
+### Files changed
+- `03 - Documentazione Prodotta/Video/ASPEN - Script Voiceover Demo (16-09-2026).txt` — nuovo script voiceover aggiornato.
+- `README.md` — aggiunta voce in tabella "Documenti di riferimento" per il nuovo script e per quello storico.
+
+---
+
 ## Session 2026-09-16 — Bug esoneri disattivati/carico non aggiornato, plugin server-side per il carico, code review "Astra" (6 rilievi Alta risolti)
 
 ### Bug #1 — esoneri disattivati (`statecode`) ancora considerati durante l'assegnazione

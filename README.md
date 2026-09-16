@@ -68,7 +68,8 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 | Analisi AS-IS | [`02 - Analisi/AS-IS/ASPEN - Analisi AS-IS.md`](02%20-%20Analisi/AS-IS/ASPEN%20-%20Analisi%20AS-IS.md) | Bozza da validare con il cliente |
 | Analisi e documentazione principale | [`03 - Documentazione Prodotta/Funzionale/ASPEN - Analisi e documentazione.docx`](03%20-%20Documentazione%20Prodotta/Funzionale/ASPEN%20-%20Analisi%20e%20documentazione.docx) | Documento funzionale principale |
 | Sintesi call 04/06/2026 | [`04 - Riunioni e Call/ASPEN - Sintesi call 04-06-2026.docx`](04%20-%20Riunioni%20e%20Call/ASPEN%20-%20Sintesi%20call%2004-06-2026.docx) | Prima call di analisi AS-IS |
-| Script voiceover video demo | [`03 - Documentazione Prodotta/Video/ASPEN - Script Voiceover Demo.txt`](03%20-%20Documentazione%20Prodotta/Video/ASPEN%20-%20Script%20Voiceover%20Demo.txt) | Testo per TTS (~2,5 min), usato per il video dimostrativo dell'app |
+| Script voiceover video demo (storico) | [`03 - Documentazione Prodotta/Video/ASPEN - Script Voiceover Demo.txt`](03%20-%20Documentazione%20Prodotta/Video/ASPEN%20-%20Script%20Voiceover%20Demo.txt) | Testo per TTS (~2,5 min), usato per il video dimostrativo dell'app |
+| Script voiceover video demo (16/09/2026) | [`03 - Documentazione Prodotta/Video/ASPEN - Script Voiceover Demo (16-09-2026).txt`](03%20-%20Documentazione%20Prodotta/Video/ASPEN%20-%20Script%20Voiceover%20Demo%20%2816-09-2026%29.txt) | Versione aggiornata, non tecnica, allineata alle funzionalità attuali (assegnazione, esoneri, cruscotto) |
 
 ---
 
