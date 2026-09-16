@@ -214,6 +214,7 @@ namespace AgicAspen.Plugins
             {
                 ColumnSet = new ColumnSet("agc_magistrato")
             };
+            esoneratiAttivi.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
             esoneratiAttivi.Criteria.AddCondition("agc_statoesonero", ConditionOperator.Equal, StatoAttivo);
             esoneratiAttivi.Criteria.AddCondition("agc_magistrato", ConditionOperator.NotEqual, magistratoId);
 

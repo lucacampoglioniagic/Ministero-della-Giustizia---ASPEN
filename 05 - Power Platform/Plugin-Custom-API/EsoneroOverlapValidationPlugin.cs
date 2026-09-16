@@ -82,6 +82,7 @@ namespace AgicAspen.Plugins
                 ColumnSet = new ColumnSet("agc_name", "agc_datainizio", "agc_datafine", "agc_tipoesonero")
             };
             query.Criteria.AddCondition("agc_magistrato", ConditionOperator.Equal, magistratoRef.Id);
+            query.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
             query.Criteria.AddCondition("agc_statoesonero", ConditionOperator.Equal, StatoAttivo);
             if (target.Id != Guid.Empty)
                 query.Criteria.AddCondition("agc_esoneroid", ConditionOperator.NotEqual, target.Id);

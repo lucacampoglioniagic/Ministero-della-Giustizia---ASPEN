@@ -78,7 +78,7 @@ AgicAspen.AssegnaFascicolo = (function () {
     function verificaEsoneroTotale(candidatoContactId) {
         var oggiIso = new Date().toISOString();
         var filtro = "_agc_magistrato_value eq " + candidatoContactId +
-            " and agc_statoesonero eq 1 and agc_tipoesonero eq 1" +
+            " and statecode eq 0 and agc_statoesonero eq 1 and agc_tipoesonero eq 1" +
             " and agc_datainizio le " + oggiIso +
             " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)";
 
@@ -107,7 +107,7 @@ AgicAspen.AssegnaFascicolo = (function () {
     function ottieniCoefficienteCarico(candidatoContactId) {
         var oggiIso = new Date().toISOString();
         var filtro = "_agc_magistrato_value eq " + candidatoContactId +
-            " and agc_statoesonero eq 1 and agc_tipoesonero eq 2" +
+            " and statecode eq 0 and agc_statoesonero eq 1 and agc_tipoesonero eq 2" +
             " and agc_datainizio le " + oggiIso +
             " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)";
 
@@ -207,7 +207,7 @@ AgicAspen.AssegnaFascicolo = (function () {
 
                     return Xrm.WebApi.retrieveMultipleRecords(
                         "agc_esonero",
-                        "?$select=agc_tipoesonero,agc_percentualeesonero,_agc_magistrato_value&$filter=(" + filterEsoneri + ") and agc_statoesonero eq 1 and agc_datainizio le " + oggiIso + " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)"
+                        "?$select=agc_tipoesonero,agc_percentualeesonero,_agc_magistrato_value&$filter=(" + filterEsoneri + ") and statecode eq 0 and agc_statoesonero eq 1 and agc_datainizio le " + oggiIso + " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)"
                     ).then(function (esoneriResult) {
                         var esoneroPer = {}; // contactid -> { tipo, percentuale }
                         (esoneriResult.entities || []).forEach(function (e) {

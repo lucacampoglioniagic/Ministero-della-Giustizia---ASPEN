@@ -503,7 +503,7 @@
         }).join(" or ");
 
         return fetch(
-          orgUrl + "/api/data/v9.2/agc_esoneros?$select=agc_tipoesonero,agc_percentualeesonero,_agc_magistrato_value&$filter=(" + filterEsoneri + ") and agc_statoesonero eq 1 and agc_datainizio le " + oggiIso + " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)",
+          orgUrl + "/api/data/v9.2/agc_esoneros?$select=agc_tipoesonero,agc_percentualeesonero,_agc_magistrato_value&$filter=(" + filterEsoneri + ") and statecode eq 0 and agc_statoesonero eq 1 and agc_datainizio le " + oggiIso + " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)",
           { headers: apiHeaders }
         )
           .then(function (r) { return r.json(); })
