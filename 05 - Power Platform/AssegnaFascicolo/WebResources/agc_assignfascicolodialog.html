@@ -435,12 +435,24 @@
             item.dataset.nome = nome.toLowerCase();
 
             var chkId = "chk-" + id;
-            item.innerHTML =
-              '<input type="checkbox" id="' + chkId + '" value="' + id + '">' +
-              '<label for="' + chkId + '">' + nome + '</label>' +
-              '<span class="incomp-tag">Incompatibile</span>';
+            /* ── Costruzione via DOM (non innerHTML): "nome" proviene da Dataverse e non va
+               interpretato come markup, per evitare HTML injection/XSS persistente. ── */
+            var chk = document.createElement("input");
+            chk.type = "checkbox";
+            chk.id = chkId;
+            chk.value = id;
 
-            var chk = item.querySelector("input");
+            var label = document.createElement("label");
+            label.setAttribute("for", chkId);
+            label.textContent = nome;
+
+            var tag = document.createElement("span");
+            tag.className = "incomp-tag";
+            tag.textContent = "Incompatibile";
+
+            item.appendChild(chk);
+            item.appendChild(label);
+            item.appendChild(tag);
 
             chk.addEventListener("change", function () {
               if (chk.checked) {
