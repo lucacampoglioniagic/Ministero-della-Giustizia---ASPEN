@@ -583,31 +583,10 @@
           });
       }
 
-      /* ── Incrementa il carico cumulativo (agc_caricoattuale) di un magistrato ──
-         Il carico non deve mai diminuire per chiusura fascicolo (regola 3.11
-         "carico monotono"): viene sempre e solo sommato ad ogni nuova
-         assegnazione. Ritorna il nuovo valore. */
-      function incrementaCaricoMagistrato(contactId, delta) {
-        return fetch(
-          orgUrl + "/api/data/v9.2/contacts(" + contactId + ")?$select=agc_caricoattuale",
-          { headers: apiHeaders }
-        )
-          .then(function (r) { return r.json(); })
-          .then(function (c) {
-            var nuovo = (c.agc_caricoattuale || 0) + delta;
-            return fetch(
-              orgUrl + "/api/data/v9.2/contacts(" + contactId + ")",
-              {
-                method: "PATCH",
-                headers: Object.assign({}, apiHeaders, {
-                  "Content-Type": "application/json; charset=utf-8",
-                  "If-Match": "*"
-                }),
-                body: JSON.stringify({ agc_caricoattuale: nuovo })
-              }
-            ).then(function () { return nuovo; });
-          });
-      }
+      /* NOTA: l'aggiornamento di agc_caricoattuale (regola 3.11 "carico monotono") è ora
+         gestito interamente lato server dal plugin CaricoMagistratoAssegnazionePlugin,
+         registrato su Create/Update di agc_fascicolo2. Non è quindi più necessario
+         incrementarlo qui: basta scrivere agc_magistratocontatto sul fascicolo. */
 
       /* ── Conferma: logica assegnazione reale ── */
       document.getElementById("btn-conferma").addEventListener("click", async function () {
@@ -621,14 +600,13 @@
         }
 
         try {
-          // 0. Recupera RGNR, ruolo, business unit e peso del fascicolo corrente
+          // 0. Recupera RGNR, ruolo e business unit del fascicolo corrente
           var fascResp0 = await fetch(
-            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value,agc_pesocalcolato,agc_ruoloassegnazione,_owningbusinessunit_value",
+            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value,agc_ruoloassegnazione,_owningbusinessunit_value",
             { headers: apiHeaders }
           );
           var fascicoloCorrente = await fascResp0.json();
           var rgnrId = fascicoloCorrente["_agc_rgnr_value"];
-          var pesoFascicolo = fascicoloCorrente.agc_pesocalcolato || 0;
           var ruoloFascicolo = fascicoloCorrente.agc_ruoloassegnazione;
           var businessUnitFascicolo = fascicoloCorrente["_owningbusinessunit_value"];
 
@@ -669,7 +647,6 @@
                   }
                 );
                 if (!patchRespCont.ok) throw new Error("HTTP " + patchRespCont.status);
-                await incrementaCaricoMagistrato(contId, pesoFascicolo);
 
                 document.getElementById("spinner-overlay").classList.remove("show");
                 document.getElementById("success-sub").textContent =
@@ -768,8 +745,8 @@
           );
           if (!patchResp.ok) throw new Error("HTTP " + patchResp.status);
 
-          // 7. Incrementa il carico cumulativo del magistrato scelto (mai decrementato per chiusura)
-          await incrementaCaricoMagistrato(migliore.contactid, pesoFascicolo);
+          // Il carico cumulativo (agc_caricoattuale) viene aggiornato dal plugin server-side
+          // CaricoMagistratoAssegnazionePlugin non appena il campo Magistrato viene scritto sopra.
 
           document.getElementById("spinner-overlay").classList.remove("show");
 

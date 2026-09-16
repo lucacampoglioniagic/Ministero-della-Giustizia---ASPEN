@@ -99,26 +99,6 @@ AgicAspen.AssegnaFascicolo = (function () {
         return gg + "/" + mm + "/" + d.getFullYear();
     }
 
-    /* ── Coefficiente di carico per esonero parziale (assegnazione manuale) ──
-       Un magistrato con esonero Parziale (2) attivo ha capacità ridotta: ogni
-       fascicolo assegnatogli pesa di più sul suo carico reale, proporzionalmente
-       alla percentuale di esonero (es. 30% => il peso del fascicolo va
-       moltiplicato per 1.3). Nessun esonero attivo => coefficiente 1 (peso invariato). */
-    function ottieniCoefficienteCarico(candidatoContactId) {
-        var oggiIso = new Date().toISOString();
-        var filtro = "_agc_magistrato_value eq " + candidatoContactId +
-            " and statecode eq 0 and agc_statoesonero eq 1 and agc_tipoesonero eq 2" +
-            " and agc_datainizio le " + oggiIso +
-            " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)";
-
-        return Xrm.WebApi.retrieveMultipleRecords("agc_esonero", "?$select=agc_percentualeesonero&$filter=" + filtro + "&$top=1")
-            .then(function (result) {
-                var entities = result.entities || [];
-                var percentuale = entities.length > 0 ? (entities[0].agc_percentualeesonero || 0) : 0;
-                return percentuale > 0 ? (1 + percentuale / 100) : 1;
-            });
-    }
-
     /* ── Apre il dialog dalla form del fascicolo ── */
     function openDialog(formContext) {
         var rawId = formContext.data.entity.getId();
@@ -334,16 +314,18 @@ AgicAspen.AssegnaFascicolo = (function () {
                                                     skippedCount++;
                                                     return;
                                                 }
+                                                // Il carico reale (agc_caricoattuale) viene aggiornato dal plugin
+                                                // server-side CaricoMagistratoAssegnazionePlugin appena il campo
+                                                // Magistrato viene scritto: qui si aggiorna solo pesoPer in memoria,
+                                                // per scegliere correttamente il magistrato meno carico al giro
+                                                // successivo, senza riscrivere il contact (eviterebbe doppio conteggio).
                                                 return Xrm.WebApi.updateRecord("agc_fascicolo2", f.agc_fascicolo2id, {
                                                     "agc_magistratocontatto@odata.bind": "/contacts(" + scelto + ")"
                                                 }).then(function () {
                                                     var pesoEffettivo = peso * coeffPer[scelto];
-                                                    var nuovoCarico = pesoPer[scelto] + pesoEffettivo;
-                                                    return Xrm.WebApi.updateRecord("contact", scelto, { agc_caricoattuale: nuovoCarico }).then(function () {
-                                                        pesoPer[scelto] = nuovoCarico;
-                                                        if (rgnrId) rgnrToMagistrato[rgnrId] = scelto;
-                                                        assignedCount++;
-                                                    });
+                                                    pesoPer[scelto] = pesoPer[scelto] + pesoEffettivo;
+                                                    if (rgnrId) rgnrToMagistrato[rgnrId] = scelto;
+                                                    assignedCount++;
                                                 });
                                             });
                                         }).catch(function (e) {
@@ -464,80 +446,18 @@ AgicAspen.AssegnaFascicolo = (function () {
             var origMagValue = origMagAttr ? origMagAttr.getValue() : null;
             var origMagId = (!isNewRecord && origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
             // Unico flag di stato per il magistrato già validato (esonero Totale +
-            // eventuale riserva GUP) in questo giro di salvataggio: evita sia di
+            // eventuale riserva GUP) in questo giro di salvataggio: evita di
             // ripetere i controlli ad ogni resave programmatico (con conseguente
-            // doppia verifica/loop), sia di leggere il carico prima che il
-            // salvataggio sia realmente completato.
+            // doppia verifica/loop).
             var magistratoGiaValidato = null;
 
-            function aggiornaCaricoRiassegnazione(newMagId) {
-                // agc_pesocalcolato è un campo calcolato che referenzia un'altra
-                // tabella (Peso 1/Peso 2): per un fascicolo nuovo (o appena
-                // salvato) il valore lato client può non essere ancora allineato
-                // a quello calcolato dal server. Si rilegge quindi il valore
-                // autoritativo via Web API (stesso approccio già usato dal
-                // dialog di assegnazione assistita), a salvataggio completato.
-                var fascicoloIdRaw = formContext.data.entity.getId();
-                var fascicoloId = fascicoloIdRaw ? fascicoloIdRaw.replace(/[{}]/g, "") : null;
-                var vecchioMagId = origMagId; // può essere null (prima assegnazione, nessun decremento)
-
-                var pesoPromise = fascicoloId
-                    ? Xrm.WebApi.retrieveRecord("agc_fascicolo2", fascicoloId, "?$select=agc_pesocalcolato").then(function (f) {
-                        return f.agc_pesocalcolato || 0;
-                    })
-                    : Promise.resolve(0);
-
-                pesoPromise.then(function (peso) {
-                    // Decremento carico del vecchio magistrato (mai sotto zero), solo se già assegnato
-                    var decrementoPromise = vecchioMagId
-                        ? Xrm.WebApi.retrieveRecord("contact", vecchioMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
-                            var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
-                            return Xrm.WebApi.updateRecord("contact", vecchioMagId, { agc_caricoattuale: nuovoCaricoOld });
-                        })
-                        : Promise.resolve();
-
-                    return decrementoPromise.then(function () {
-                        // Incremento del nuovo magistrato: se ha un esonero Parziale attivo, il peso
-                        // del fascicolo viene aumentato proporzionalmente (es. 30% => x1.3)
-                        return Promise.all([
-                            Xrm.WebApi.retrieveRecord("contact", newMagId, "?$select=agc_caricoattuale"),
-                            ottieniCoefficienteCarico(newMagId)
-                        ]);
-                    }).then(function (results) {
-                        var newContact = results[0];
-                        var coeff = results[1];
-                        var pesoEffettivo = peso * coeff;
-                        var nuovoCaricoNew = (newContact.agc_caricoattuale || 0) + pesoEffettivo;
-                        return Xrm.WebApi.updateRecord("contact", newMagId, { agc_caricoattuale: nuovoCaricoNew });
-                    }).then(function () {
-                        origMagId = newMagId; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
-                        console.log("[ASPEN] Assegnazione fascicolo " + (fascicoloId || "(nuovo)") + ": carico spostato da " + (vecchioMagId || "(nessuno)") + " a " + newMagId + " (peso=" + peso + ")");
-                    });
-                }).catch(function (e) {
-                    console.error("[ASPEN] Errore aggiornamento carico su riassegnazione:", e);
-                });
-            }
-
-            /* ── Regola 3.11 "carico monotono" (rimozione assegnazione): quando il
-               magistrato viene tolto dal fascicolo (campo svuotato) senza assegnarne
-               uno nuovo, il peso del fascicolo va comunque decrementato dal carico
-               del magistrato che lo deteneva. ── */
-            function decrementaCaricoRimozione(vecchioMagId) {
-                if (!vecchioMagId) return;
-                var pesoAttr = formContext.getAttribute("agc_pesocalcolato");
-                var peso = pesoAttr ? (pesoAttr.getValue() || 0) : 0;
-                var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
-
-                Xrm.WebApi.retrieveRecord("contact", vecchioMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
-                    var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
-                    return Xrm.WebApi.updateRecord("contact", vecchioMagId, { agc_caricoattuale: nuovoCaricoOld });
-                }).then(function () {
-                    origMagId = null; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
-                    console.log("[ASPEN] Rimozione assegnazione fascicolo " + fascicoloId + ": carico decrementato per magistrato " + vecchioMagId);
-                }).catch(function (e) {
-                    console.error("[ASPEN] Errore decremento carico su rimozione assegnazione:", e);
-                });
-            }
+            // NOTA: l'aggiornamento di agc_caricoattuale (regola 3.11 "carico monotono") è
+            // gestito interamente lato server dal plugin CaricoMagistratoAssegnazionePlugin,
+            // registrato su Create/Update di agc_fascicolo2. Questo copre in modo uniforme
+            // tutti i percorsi di assegnazione (form, subgrid, "Aggiungi esistente", bulk edit,
+            // import), incluso il caso in cui il campo venga impostato senza mai aprire il form
+            // (dove questo script non verrebbe eseguito). Qui restano solo le validazioni che
+            // richiedono un'interazione con l'utente prima del salvataggio.
 
             formContext.data.entity.addOnSave(function (saveEventArgs) {
                 try {
@@ -547,23 +467,20 @@ AgicAspen.AssegnaFascicolo = (function () {
 
                     if (newMagId === origMagId) {
                         magistratoGiaValidato = null;
-                        return; // nessuna modifica al magistrato: nulla da fare
+                        return; // nessuna modifica al magistrato: nulla da validare
                     }
 
                     if (!newMagId) {
-                        // Il campo magistrato è stato svuotato: nessuna assegnazione nuova,
-                        // ma il carico del magistrato precedente va comunque decrementato.
+                        // Il campo magistrato è stato svuotato: nessuna validazione necessaria,
+                        // il decremento del carico è gestito dal plugin server-side.
                         magistratoGiaValidato = null;
-                        decrementaCaricoRimozione(origMagId);
                         return;
                     }
 
                     // Se i controlli (esonero Totale + eventuale riserva GUP) sono già
                     // stati superati in questo stesso giro di salvataggio (resave
                     // programmatico da noi stessi innescato), lascia procedere il
-                    // salvataggio nativo senza ripeterli: l'aggiornamento del carico
-                    // avviene nel .then() del salvataggio che ha innescato questo giro,
-                    // quando l'id e il peso calcolato sono ormai definitivi.
+                    // salvataggio nativo senza ripeterli.
                     if (magistratoGiaValidato === newMagId) return;
 
                     var eventArgsEsonero = saveEventArgs.getEventArgs();
@@ -627,16 +544,14 @@ AgicAspen.AssegnaFascicolo = (function () {
                                 return; // salvataggio resta annullato, form ancora dirty
                             }
                             magistratoGiaValidato = newMagId;
-                            return formContext.data.save().then(function () {
-                                aggiornaCaricoRiassegnazione(newMagId);
-                            });
+                            // Il carico viene aggiornato dal plugin server-side alla scrittura di
+                            // questo salvataggio: nessuna ulteriore azione lato client necessaria.
+                            return formContext.data.save();
                         });
                     }).catch(function (e) {
                         console.error("[ASPEN] Errore verifica esonero/riserva, salvataggio consentito senza controllo:", e);
                         magistratoGiaValidato = newMagId;
-                        formContext.data.save().then(function () {
-                            aggiornaCaricoRiassegnazione(newMagId);
-                        });
+                        formContext.data.save();
                     });
                 } catch (e) {
                     console.error("[ASPEN] Errore onSave riassegnazione:", e);
