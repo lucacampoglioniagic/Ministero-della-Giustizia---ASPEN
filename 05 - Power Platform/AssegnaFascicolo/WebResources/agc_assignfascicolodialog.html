@@ -688,27 +688,21 @@
           }
 
           // 3. Carico cumulativo attuale (agc_caricoattuale, regola 3.11 "carico monotono":
-          // cresce con ogni assegnazione, non diminuisce mai per chiusura fascicolo)
+          // cresce con ogni assegnazione, non diminuisce mai per chiusura fascicolo).
+          // Il saldo REALE già contiene i contributi maggiorati dagli esoneri parziali
+          // applicati alle assegnazioni precedenti (li scrive CaricoMagistratoAssegnazionePlugin),
+          // quindi il confronto tra magistrati si fa direttamente su questo valore, senza
+          // ri-moltiplicare per il coefficiente di esonero (altrimenti si penalizzerebbe due
+          // volte lo stesso magistrato, divergendo dal criterio usato nell'assegnazione massiva).
           var pesoPer = {};
           magistrati.forEach(function (m) { pesoPer[m.contactid] = m.agc_caricoattuale || 0; });
 
-          // 4. Applica il coefficiente di esonero parziale (tipo 2) al carico:
-          // un magistrato con esonero parziale ha una capacità ridotta, quindi il suo
-          // carico "equivalente" ai fini del confronto viene aumentato proporzionalmente
-          // (es. 30% di esonero => carico equivalente = carico reale * (1 + 0.30))
-          magistrati.forEach(function (m) {
-            var es = esoneroPer[m.contactid];
-            if (es && es.tipo === 2 && es.percentuale > 0) {
-              pesoPer[m.contactid] = pesoPer[m.contactid] * (1 + es.percentuale / 100);
-            }
-          });
-
-          // 5. Trova il magistrato col peso (equivalente) minore
+          // 4. Trova il magistrato col carico reale minore
           var migliore = magistrati.reduce(function (best, m) {
             return pesoPer[m.contactid] < pesoPer[best.contactid] ? m : best;
           });
 
-          // 5b. Verifica riserva GUP (3.4): avviso non bloccante se questa assegnazione
+          // 5. Verifica riserva GUP (3.4): avviso non bloccante se questa assegnazione
           // esaurisce l'ultimo magistrato disponibile del tribunale come GIP sull'RGNR
           var esitoRiserva = await verificaRiservaGup({
             rgnrId: rgnrId,
