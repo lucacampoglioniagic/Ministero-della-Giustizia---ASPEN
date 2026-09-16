@@ -27,11 +27,19 @@ namespace AgicAspen.Plugins
     /// tabella (Peso 1/Peso 2 tramite agc_Canestrofascicolo) e non è quindi presente/affidabile
     /// nel Target o nelle Image.
     ///
+    /// Il campo <c>agc_contributocaricoassegnato</c> (sul fascicolo) memorizza il contributo
+    /// esatto (peso x coefficiente esonero parziale del magistrato al momento dell'assegnazione)
+    /// applicato al carico del magistrato attualmente assegnato: viene scritto qui dopo ogni
+    /// incremento e riletto dalla PreImage al decremento successivo, cosi' la rimozione/
+    /// riassegnazione annulla esattamente quanto era stato aggiunto, anche se nel frattempo
+    /// l'esonero del vecchio magistrato è cambiato o terminato (altrimenti si lascerebbe un
+    /// residuo di carico "fantasma"). Gestito solo da questo plugin, non editabile manualmente.
+    ///
     /// Registrazione richiesta (Plugin Registration Tool / Web API dirette):
     /// - Step su Create, Post-Operation (stage 40), Modalità sincrona, nessuna image necessaria.
     /// - Step su Update, Post-Operation (stage 40), Modalità sincrona, filtro sull'attributo
     ///   agc_magistratocontatto, con una PreImage ("PreImage") contenente almeno
-    ///   agc_magistratocontatto.
+    ///   agc_magistratocontatto e agc_contributocaricoassegnato.
     /// </summary>
     public class CaricoMagistratoAssegnazionePlugin : PluginBase
     {
@@ -68,6 +76,7 @@ namespace AgicAspen.Plugins
 
             EntityReference oldMagRef = null;
             EntityReference newMagRef;
+            Entity preImage = null;
 
             if (context.MessageName == "Create")
             {
@@ -85,7 +94,7 @@ namespace AgicAspen.Plugins
 
                 newMagRef = target["agc_magistratocontatto"] as EntityReference;
 
-                var preImage = context.PreEntityImages.Contains("PreImage") ? context.PreEntityImages["PreImage"] : null;
+                preImage = context.PreEntityImages.Contains("PreImage") ? context.PreEntityImages["PreImage"] : null;
                 oldMagRef = preImage != null && preImage.Contains("agc_magistratocontatto")
                     ? preImage["agc_magistratocontatto"] as EntityReference
                     : null;
@@ -116,23 +125,43 @@ namespace AgicAspen.Plugins
             tracer.Trace($"CaricoMagistratoAssegnazionePlugin: fascicolo={target.Id} peso={peso} vecchioMagistrato={oldMagId} nuovoMagistrato={newMagId}");
 
             if (oldMagId.HasValue)
-                DecrementaCarico(service, tracer, oldMagId.Value, peso);
+            {
+                // Rimuove esattamente il contributo (peso x coefficiente esonero) registrato al
+                // momento dell'assegnazione, non il peso "nudo" corrente: evita un residuo di
+                // carico se l'esonero parziale del vecchio magistrato è nel frattempo cambiato o
+                // terminato. Fallback al peso base per fascicoli assegnati prima dell'introduzione
+                // di questo campo (mai valorizzato, quindi assente dalla PreImage).
+                var contributoDaRimuovere = preImage != null && preImage.Contains("agc_contributocaricoassegnato")
+                    ? preImage.GetAttributeValue<decimal>("agc_contributocaricoassegnato")
+                    : peso;
+                DecrementaCarico(service, tracer, oldMagId.Value, contributoDaRimuovere);
+            }
 
+            decimal? nuovoContributo = null;
             if (newMagId.HasValue)
-                IncrementaCarico(service, tracer, newMagId.Value, peso);
+                nuovoContributo = IncrementaCarico(service, tracer, newMagId.Value, peso);
+
+            // Registra sul fascicolo il contributo appena applicato (null se il magistrato è
+            // stato rimosso), cosi' un successivo decremento/riassegnazione potra' rimuovere
+            // esattamente quanto e' stato aggiunto ora, incluso l'eventuale coefficiente esonero
+            // parziale. Il campo non fa parte dei filteringattributes dello step Update, quindi
+            // questa scrittura non ri-esegue il plugin.
+            var fascicoloUpdate = new Entity("agc_fascicolo2", target.Id);
+            fascicoloUpdate["agc_contributocaricoassegnato"] = nuovoContributo.HasValue ? (object)nuovoContributo.Value : null;
+            service.Update(fascicoloUpdate);
         }
 
-        private static void DecrementaCarico(IOrganizationService service, ITracingService tracer, Guid magistratoId, decimal peso)
+        private static void DecrementaCarico(IOrganizationService service, ITracingService tracer, Guid magistratoId, decimal contributo)
         {
             var contact = service.Retrieve("contact", magistratoId, new ColumnSet("agc_caricoattuale"));
             var caricoAttuale = contact.Contains("agc_caricoattuale") ? contact.GetAttributeValue<decimal>("agc_caricoattuale") : 0m;
-            var nuovoCarico = Math.Max(0m, caricoAttuale - peso);
+            var nuovoCarico = Math.Max(0m, caricoAttuale - contributo);
 
             service.Update(new Entity("contact", magistratoId) { ["agc_caricoattuale"] = nuovoCarico });
-            tracer.Trace($"CaricoMagistratoAssegnazionePlugin: decrementato carico magistrato {magistratoId} da {caricoAttuale} a {nuovoCarico} (peso {peso}).");
+            tracer.Trace($"CaricoMagistratoAssegnazionePlugin: decrementato carico magistrato {magistratoId} da {caricoAttuale} a {nuovoCarico} (contributo rimosso {contributo}).");
         }
 
-        private static void IncrementaCarico(IOrganizationService service, ITracingService tracer, Guid magistratoId, decimal peso)
+        private static decimal IncrementaCarico(IOrganizationService service, ITracingService tracer, Guid magistratoId, decimal peso)
         {
             var coefficiente = OttieniCoefficienteCarico(service, magistratoId);
             var pesoEffettivo = peso * coefficiente;
@@ -143,6 +172,7 @@ namespace AgicAspen.Plugins
 
             service.Update(new Entity("contact", magistratoId) { ["agc_caricoattuale"] = nuovoCarico });
             tracer.Trace($"CaricoMagistratoAssegnazionePlugin: incrementato carico magistrato {magistratoId} da {caricoAttuale} a {nuovoCarico} (peso {peso} x coefficiente {coefficiente}).");
+            return pesoEffettivo;
         }
 
         /// <summary>
