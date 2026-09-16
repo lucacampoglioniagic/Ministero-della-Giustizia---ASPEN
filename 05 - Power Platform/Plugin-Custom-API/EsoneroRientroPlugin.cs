@@ -286,10 +286,12 @@ namespace AgicAspen.Plugins
 
             tracer.Trace($"EsoneroRientroPlugin: collega piu' simile individuato ({collegaRef.Id}), riallineo carico magistrato a {caricoCollegaAttuale}.");
 
-            service.Update(new Entity("contact", magistratoId)
-            {
-                ["agc_caricoattuale"] = caricoCollegaAttuale
-            });
+            // Scrittura con retry su concorrenza ottimistica: il riallineamento e' una
+            // sostituzione assoluta (il valore non dipende dal carico attuale del magistrato,
+            // solo da quello del collega), ma la scrittura deve comunque avvenire sull'ultima
+            // versione committata del contact, per non fallire silenziosamente se un'altra
+            // assegnazione ha scritto nel frattempo.
+            CaricoConcurrencyHelper.AggiornaCaricoConRetry(service, tracer, nameof(EsoneroRientroPlugin), magistratoId, _ => caricoCollegaAttuale);
 
             esoneroUpdate["agc_collegariferimento"] = collegaRef;
         }

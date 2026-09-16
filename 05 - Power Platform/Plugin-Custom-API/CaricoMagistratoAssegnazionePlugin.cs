@@ -153,12 +153,16 @@ namespace AgicAspen.Plugins
 
         private static void DecrementaCarico(IOrganizationService service, ITracingService tracer, Guid magistratoId, decimal contributo)
         {
-            var contact = service.Retrieve("contact", magistratoId, new ColumnSet("agc_caricoattuale"));
-            var caricoAttuale = contact.Contains("agc_caricoattuale") ? contact.GetAttributeValue<decimal>("agc_caricoattuale") : 0m;
-            var nuovoCarico = Math.Max(0m, caricoAttuale - contributo);
-
-            service.Update(new Entity("contact", magistratoId) { ["agc_caricoattuale"] = nuovoCarico });
-            tracer.Trace($"CaricoMagistratoAssegnazionePlugin: decrementato carico magistrato {magistratoId} da {caricoAttuale} a {nuovoCarico} (contributo rimosso {contributo}).");
+            // Scrittura con retry su concorrenza ottimistica (RowVersion): se un altro processo
+            // (assegnazione concorrente, rientro da esonero, correzione manuale) ha gia' scritto
+            // sul contact dopo l'ultima lettura, il calcolo viene ripetuto sul valore fresco
+            // invece di sottrarre il contributo da un carico ormai obsoleto.
+            CaricoConcurrencyHelper.AggiornaCaricoConRetry(service, tracer, nameof(CaricoMagistratoAssegnazionePlugin), magistratoId, caricoAttuale =>
+            {
+                var nuovoCarico = Math.Max(0m, caricoAttuale - contributo);
+                tracer.Trace($"CaricoMagistratoAssegnazionePlugin: decrementato carico magistrato {magistratoId} da {caricoAttuale} a {nuovoCarico} (contributo rimosso {contributo}).");
+                return nuovoCarico;
+            });
         }
 
         private static decimal IncrementaCarico(IOrganizationService service, ITracingService tracer, Guid magistratoId, decimal peso)
@@ -166,12 +170,12 @@ namespace AgicAspen.Plugins
             var coefficiente = OttieniCoefficienteCarico(service, magistratoId);
             var pesoEffettivo = peso * coefficiente;
 
-            var contact = service.Retrieve("contact", magistratoId, new ColumnSet("agc_caricoattuale"));
-            var caricoAttuale = contact.Contains("agc_caricoattuale") ? contact.GetAttributeValue<decimal>("agc_caricoattuale") : 0m;
-            var nuovoCarico = caricoAttuale + pesoEffettivo;
-
-            service.Update(new Entity("contact", magistratoId) { ["agc_caricoattuale"] = nuovoCarico });
-            tracer.Trace($"CaricoMagistratoAssegnazionePlugin: incrementato carico magistrato {magistratoId} da {caricoAttuale} a {nuovoCarico} (peso {peso} x coefficiente {coefficiente}).");
+            CaricoConcurrencyHelper.AggiornaCaricoConRetry(service, tracer, nameof(CaricoMagistratoAssegnazionePlugin), magistratoId, caricoAttuale =>
+            {
+                var nuovoCarico = caricoAttuale + pesoEffettivo;
+                tracer.Trace($"CaricoMagistratoAssegnazionePlugin: incrementato carico magistrato {magistratoId} da {caricoAttuale} a {nuovoCarico} (peso {peso} x coefficiente {coefficiente}).");
+                return nuovoCarico;
+            });
             return pesoEffettivo;
         }
 

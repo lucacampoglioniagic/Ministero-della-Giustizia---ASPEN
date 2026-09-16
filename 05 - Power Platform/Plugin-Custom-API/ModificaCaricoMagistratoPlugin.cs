@@ -83,18 +83,17 @@ namespace AgicAspen.Plugins
                 throw new InvalidPluginExecutionException("Solo un amministratore di sistema può modificare manualmente il carico del magistrato.");
             }
 
-            var magistrato = service.Retrieve("contact", target.Id, new ColumnSet("agc_caricoattuale", "fullname"));
-            var valorePrecedente = magistrato.Contains("agc_caricoattuale")
-                ? magistrato.GetAttributeValue<decimal>("agc_caricoattuale")
-                : 0m;
-
-            tracer.Trace($"ModificaCaricoMagistratoPlugin: magistrato={target.Id} valorePrecedente={valorePrecedente} nuovoValore={nuovoValore}");
-
-            var contactUpdate = new Entity("contact", target.Id)
+            // Scrittura con retry su concorrenza ottimistica: il valore precedente viene letto
+            // all'interno del retry (non prima), cosi' l'audit riflette sempre il carico
+            // effettivamente sostituito, anche se un'altra scrittura concorrente (assegnazione,
+            // rientro da esonero) e' avvenuta tra l'inizio della Custom API e questo update.
+            var valorePrecedente = 0m;
+            CaricoConcurrencyHelper.AggiornaCaricoConRetry(service, tracer, nameof(ModificaCaricoMagistratoPlugin), target.Id, caricoAttuale =>
             {
-                ["agc_caricoattuale"] = nuovoValore
-            };
-            service.Update(contactUpdate);
+                valorePrecedente = caricoAttuale;
+                tracer.Trace($"ModificaCaricoMagistratoPlugin: magistrato={target.Id} valorePrecedente={caricoAttuale} nuovoValore={nuovoValore}");
+                return nuovoValore;
+            });
 
             // Utente e data della modifica sono tracciati dai campi standard createdby/createdon
             // (il record di audit viene creato una sola volta e non più aggiornato, quindi
