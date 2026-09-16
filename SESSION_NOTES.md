@@ -4,6 +4,45 @@
 
 ---
 
+## Session 2026-09-16 — Bug esoneri disattivati/carico non aggiornato, plugin server-side per il carico, code review "Astra" (6 rilievi Alta risolti)
+
+### Bug #1 — esoneri disattivati (`statecode`) ancora considerati durante l'assegnazione
+Tutte le query di recupero esoneri (client: `agc_assignfascicolo.js`, `agc_assignfascicolodialog.html`; server: `EsoneroRientroPlugin.cs`, `EsoneroOverlapValidationPlugin.cs`) filtravano correttamente lo stato business (`agc_statoesonero eq 1`) ma non lo stato record Dataverse (`statecode`). Aggiunto `statecode eq 0` ovunque. Commit `7b90d2d`.
+
+### Bug #2 — carico del magistrato "Angela Farina" non aumentava con l'assegnazione
+Diagnosi in più iterazioni con l'utente:
+1. Creazione fascicolo da subgrid del contatto: il campo Magistrato è già precompilato al load, quindi `newMagId === origMagId` al salvataggio e il codice di incremento veniva saltato (trattato come "nessun cambiamento"). Fix iniziale: forzare `origMagId = null` per record nuovi; poi reso più robusto controllando `formContext.data.entity.getId()` vuoto anziché il form type.
+2. Anche dopo il fix, il carico restava a 0 in alcuni casi: causa reale, `agc_pesocalcolato` è un campo calcolato cross-entity (dot-walk su Peso1/Peso2), affidabile solo lato server dopo il salvataggio — leggerlo lato client al momento del save può restituire un valore stale/zero per record nuovi.
+3. Emerso anche un bug latente nell'orchestrazione dei bypass (`esoneroTotaleBypass`/`riservaGupBypass`) che causava un errore "Cannot save due to PreventDefault encountered" dopo il resave della verifica riserva GUP.
+4. **Root cause strutturale**: l'associazione di un fascicolo esistente a un magistrato via subgrid "Aggiungi fascicolo esistente" (azione nativa Dataverse) aggiorna il lookup senza mai aprire il form del fascicolo → lo script client (`agc_assignfascicolo.js`, registrato solo su eventi del form) non viene mai eseguito. Nessun plugin server-side toccava il carico.
+
+**Decisione presa con l'utente**: spostare tutta la logica di incremento/decremento carico lato server.
+
+### Fix architetturale — nuovo plugin `CaricoMagistratoAssegnazionePlugin.cs`
+- Nuovo plugin Post-Operation (stage 40) su Create/Update di `agc_fascicolo2`: decrementa il carico del vecchio magistrato (da PreImage) e incrementa quello del nuovo, ricalcolando sempre `agc_pesocalcolato` fresco via `service.Retrieve` (mai fidandosi di Target/Images per un campo calcolato).
+- Rimossa la logica di scrittura diretta del carico da `agc_assignfascicolo.js` (funzioni `aggiornaCaricoRiassegnazione`, `decrementaCaricoRimozione`, `ottieniCoefficienteCarico`) e da `agc_assignfascicolodialog.html` (`incrementaCaricoMagistrato`); mantenute solo le validazioni interattive (blocco esonero Totale, conferma riserva GUP) e, per l'assegnazione massiva, il solo bookkeeping in-memory per scegliere il magistrato con minor carico nella stessa run.
+- Registrazione (assembly, plugin type, step Create/Update, PreImage `agc_magistratocontatto`) effettuata interamente via Web API dirette (stesso pattern `az account get-access-token` + `Invoke-RestMethod`, nessun Plugin Registration Tool).
+- **Bug di privilegi scoperto durante il test**: utenti con ruolo "Operatore ASPEN" (assegnato via team, ereditato da un ruolo radice) non potevano più assegnare fascicoli (`missing prvWriteContact privilege for entity 'contact'`), perché il plugin scrive `agc_caricoattuale` nel contesto dell'utente chiamante (non elevato). Fix: aggiunto `prvWriteContact` (Depth=Local) al **ruolo radice**, ereditato correttamente dal ruolo figlio.
+- Verificato end-to-end con l'utente su tutti i percorsi (form, subgrid create, subgrid "aggiungi esistente", assegnazione massiva, dialog assistito). Commit `bbb068f`.
+
+### Code review approfondita ("Astra") — 6 rilievi di gravità Alta, tutti risolti
+Su richiesta dell'utente, delegata un'analisi approfondita (modello `gpt-6-astra`) su tutti i plugin e le web resource di assegnazione/carico per individuare conflitti, duplicazioni, buchi funzionali e problemi di sicurezza. Rilievi Alta affrontati uno alla volta, con conferma esplicita dell'utente prima di ogni fix:
+
+1. **Esonero Totale non bloccato server-side** (aggirabile da subgrid/import/API dirette) → aggiunto controllo bloccante (`InvalidPluginExecutionException`) in `CaricoMagistratoAssegnazionePlugin`, su Create e Update, prima di qualunque scrittura sul carico. Commit `d043f77`.
+2. **Incremento/decremento asimmetrici per l'esonero Parziale**: l'incremento applica il coefficiente parziale al peso, il decremento sottraeva solo il peso base, lasciando un residuo permanente sul carico a ogni ciclo assegna/rimuovi. Fix: nuova colonna `agc_fascicolo2.agc_contributocaricoassegnato` (Decimal) che salva il contributo esatto applicato a ogni assegnazione (letto dal PreImage per il decremento, azzerato alla rimozione). Aggiunta al PreImage dello step Update. Commit `d67c4f0`.
+3. **Criteri diversi per il "minor carico" tra assegnazione singola (dialog) e massiva** quando un magistrato è in esonero Parziale: allineati sullo stesso criterio di calcolo. Commit `4ea9e96`.
+4. **Concorrenza**: tre processi (`CaricoMagistratoAssegnazionePlugin`, `EsoneroRientroPlugin`, `ModificaCaricoMagistratoPlugin`) scrivevano `contact.agc_caricoattuale` con retrieve-calculate-update senza alcun protocollo di concorrenza (lost update) e con semantiche non commutative (overwrite assoluto vs. incremento relativo). Fix tecnico: nuovo helper condiviso `CaricoConcurrencyHelper.cs`, concorrenza ottimistica basata su `RowVersion`/`ConcurrencyBehavior.IfRowVersionMatches` con retry automatico (max 5 tentativi), adottato da tutti e tre gli scrittori. La componente semantica (ordine di operazioni non commutativo tra overwrite e incremento) resta una decisione di business non affrontata in questo fix. Commit `4a111f9`.
+5. **Errori client interpretati come "nessun esonero" o salvataggio forzato dopo errore**: `getEsoneriAttivi` e altre fetch nel dialog non controllavano `r.ok` (un 403/500 produceva una mappa vuota); nel form, qualunque errore nella catena di `OnSave` (sia di verifica sia di salvataggio) veniva interpretato come giustificazione per forzare comunque il salvataggio, bypassando il blocco esonero Totale. Fix: helper `parseJsonOrThrow` in `agc_assignfascicolodialog.html` su tutte le fetch; in `agc_assignfascicolo.js` separati gli errori di verifica (bloccano il salvataggio con avviso dedicato) dagli errori di salvataggio veri e propri (mostrano il messaggio reale, nessun retry cieco). Commit `e453c81`.
+6. **HTML injection/XSS nel nome magistrato**: `agc_assignfascicolodialog.html` concatenava `fullname` in `innerHTML` nella costruzione dell'elenco magistrati del dialog — un nome contenente markup sarebbe stato interpretato dal browser di chiunque aprisse il dialog. Fix: costruzione dell'elemento via DOM (`createElement`) con il nome assegnato via `textContent`. Commit `d4ccd97`.
+
+**Rilievi Media/Bassa residui** (ottimizzazioni query N+1, paginazione, validazione formato GUID, ruolo admin basato su GUID hardcoded, garanzia dell'autore in audit, edge case su date/valori): **valutati e volutamente non implementati** in questo POC — rischio/impatto basso, nessuna evidenza di sfruttamento nell'uso reale attuale. Chiusi come non-todo.
+
+### Note tecniche ricorrenti
+- Deploy sempre via Web API dirette (`az account get-access-token --resource <org>` + `Invoke-RestMethod`) per assembly/plugin/step/web resource, non tramite `pac solution` (bloccato da tempo da corruzione metadati nota, vedi sessioni precedenti).
+- **Anomalia di piattaforma confermata più volte**: dopo qualunque modifica alla registrazione plugin (redeploy assembly, ricreazione immagini, enable/disable step) segue una finestra temporanea (fino a ~2 minuti) di comportamento inaffidabile (PreImage stale, step che sembrano non scattare). Workaround: disable/enable dello step e attesa prima di fidarsi dei test.
+
+---
+
 ## Session 2026-09-15 — Fix Ribbon Workbench (contact/agc_canestro) e regola 3.11 su rimozione assegnazione
 
 ### Ribbon Workbench non caricava la solution "ASPEN POC Ribbon" (`ASPENPOCRibbon`)
