@@ -463,39 +463,56 @@ AgicAspen.AssegnaFascicolo = (function () {
             var origMagAttr = formContext.getAttribute("agc_magistratocontatto");
             var origMagValue = origMagAttr ? origMagAttr.getValue() : null;
             var origMagId = (!isNewRecord && origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
-            var riservaGupBypass = false; // evita di ri-verificare la riserva sul resave programmatico
-            var esoneroTotaleBypass = false; // evita di ri-verificare l'esonero sul resave programmatico
+            // Unico flag di stato per il magistrato già validato (esonero Totale +
+            // eventuale riserva GUP) in questo giro di salvataggio: evita sia di
+            // ripetere i controlli ad ogni resave programmatico (con conseguente
+            // doppia verifica/loop), sia di leggere il carico prima che il
+            // salvataggio sia realmente completato.
+            var magistratoGiaValidato = null;
 
             function aggiornaCaricoRiassegnazione(newMagId) {
-                var pesoAttr = formContext.getAttribute("agc_pesocalcolato");
-                var peso = pesoAttr ? (pesoAttr.getValue() || 0) : 0;
-                var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
+                // agc_pesocalcolato è un campo calcolato che referenzia un'altra
+                // tabella (Peso 1/Peso 2): per un fascicolo nuovo (o appena
+                // salvato) il valore lato client può non essere ancora allineato
+                // a quello calcolato dal server. Si rilegge quindi il valore
+                // autoritativo via Web API (stesso approccio già usato dal
+                // dialog di assegnazione assistita), a salvataggio completato.
+                var fascicoloIdRaw = formContext.data.entity.getId();
+                var fascicoloId = fascicoloIdRaw ? fascicoloIdRaw.replace(/[{}]/g, "") : null;
                 var vecchioMagId = origMagId; // può essere null (prima assegnazione, nessun decremento)
 
-                // Decremento carico del vecchio magistrato (mai sotto zero), solo se già assegnato
-                var decrementoPromise = vecchioMagId
-                    ? Xrm.WebApi.retrieveRecord("contact", vecchioMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
-                        var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
-                        return Xrm.WebApi.updateRecord("contact", vecchioMagId, { agc_caricoattuale: nuovoCaricoOld });
+                var pesoPromise = fascicoloId
+                    ? Xrm.WebApi.retrieveRecord("agc_fascicolo2", fascicoloId, "?$select=agc_pesocalcolato").then(function (f) {
+                        return f.agc_pesocalcolato || 0;
                     })
-                    : Promise.resolve();
+                    : Promise.resolve(0);
 
-                decrementoPromise.then(function () {
-                    // Incremento del nuovo magistrato: se ha un esonero Parziale attivo, il peso
-                    // del fascicolo viene aumentato proporzionalmente (es. 30% => x1.3)
-                    return Promise.all([
-                        Xrm.WebApi.retrieveRecord("contact", newMagId, "?$select=agc_caricoattuale"),
-                        ottieniCoefficienteCarico(newMagId)
-                    ]);
-                }).then(function (results) {
-                    var newContact = results[0];
-                    var coeff = results[1];
-                    var pesoEffettivo = peso * coeff;
-                    var nuovoCaricoNew = (newContact.agc_caricoattuale || 0) + pesoEffettivo;
-                    return Xrm.WebApi.updateRecord("contact", newMagId, { agc_caricoattuale: nuovoCaricoNew });
-                }).then(function () {
-                    origMagId = newMagId; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
-                    console.log("[ASPEN] Assegnazione fascicolo " + fascicoloId + ": carico spostato da " + (vecchioMagId || "(nessuno)") + " a " + newMagId);
+                pesoPromise.then(function (peso) {
+                    // Decremento carico del vecchio magistrato (mai sotto zero), solo se già assegnato
+                    var decrementoPromise = vecchioMagId
+                        ? Xrm.WebApi.retrieveRecord("contact", vecchioMagId, "?$select=agc_caricoattuale").then(function (oldContact) {
+                            var nuovoCaricoOld = Math.max(0, (oldContact.agc_caricoattuale || 0) - peso);
+                            return Xrm.WebApi.updateRecord("contact", vecchioMagId, { agc_caricoattuale: nuovoCaricoOld });
+                        })
+                        : Promise.resolve();
+
+                    return decrementoPromise.then(function () {
+                        // Incremento del nuovo magistrato: se ha un esonero Parziale attivo, il peso
+                        // del fascicolo viene aumentato proporzionalmente (es. 30% => x1.3)
+                        return Promise.all([
+                            Xrm.WebApi.retrieveRecord("contact", newMagId, "?$select=agc_caricoattuale"),
+                            ottieniCoefficienteCarico(newMagId)
+                        ]);
+                    }).then(function (results) {
+                        var newContact = results[0];
+                        var coeff = results[1];
+                        var pesoEffettivo = peso * coeff;
+                        var nuovoCaricoNew = (newContact.agc_caricoattuale || 0) + pesoEffettivo;
+                        return Xrm.WebApi.updateRecord("contact", newMagId, { agc_caricoattuale: nuovoCaricoNew });
+                    }).then(function () {
+                        origMagId = newMagId; // aggiorna il riferimento per eventuali salvataggi successivi senza refresh form
+                        console.log("[ASPEN] Assegnazione fascicolo " + (fascicoloId || "(nuovo)") + ": carico spostato da " + (vecchioMagId || "(nessuno)") + " a " + newMagId + " (peso=" + peso + ")");
+                    });
                 }).catch(function (e) {
                     console.error("[ASPEN] Errore aggiornamento carico su riassegnazione:", e);
                 });
@@ -528,103 +545,98 @@ AgicAspen.AssegnaFascicolo = (function () {
                     var magValue = magAttr ? magAttr.getValue() : null;
                     var newMagId = (magValue && magValue.length > 0) ? magValue[0].id.replace(/[{}]/g, "") : null;
 
-                    // Esonero Totale (blocco assegnazione manuale): si applica sia alla prima
-                    // assegnazione (origMagId nullo) sia alla riassegnazione, ogni volta che il
-                    // magistrato selezionato cambia rispetto a quello già in salvataggio.
-                    if (newMagId && newMagId !== origMagId && !esoneroTotaleBypass) {
-                        var eventArgsEsonero = saveEventArgs.getEventArgs();
-                        eventArgsEsonero.preventDefault();
-
-                        var candidatoNomeEsonero = magValue[0].name;
-
-                        verificaEsoneroTotale(newMagId).then(function (esito) {
-                            if (esito.bloccato) {
-                                var dataFineTxt = formattaDataIt(esito.datafine);
-                                var dettaglioFine = dataFineTxt
-                                    ? " fino al " + dataFineTxt
-                                    : " a tempo indeterminato";
-                                Xrm.Navigation.openAlertDialog({
-                                    title: "Assegnazione non consentita",
-                                    text: "Impossibile assegnare il fascicolo a " + candidatoNomeEsonero +
-                                        ": il magistrato è attualmente in esonero Totale" + dettaglioFine +
-                                        ". Selezionare un altro magistrato o attendere il rientro dall'esonero."
-                                });
-                                return; // salvataggio resta annullato, form ancora dirty
-                            }
-                            esoneroTotaleBypass = true;
-                            formContext.data.save();
-                        }).catch(function (e) {
-                            console.error("[ASPEN] Errore verifica esonero totale, salvataggio consentito senza controllo:", e);
-                            esoneroTotaleBypass = true;
-                            formContext.data.save();
-                        });
-                        return;
+                    if (newMagId === origMagId) {
+                        magistratoGiaValidato = null;
+                        return; // nessuna modifica al magistrato: nulla da fare
                     }
-                    esoneroTotaleBypass = false;
-
-                    if (newMagId === origMagId) return;
 
                     if (!newMagId) {
                         // Il campo magistrato è stato svuotato: nessuna assegnazione nuova,
                         // ma il carico del magistrato precedente va comunque decrementato.
+                        magistratoGiaValidato = null;
                         decrementaCaricoRimozione(origMagId);
                         return;
                     }
 
-                    if (riservaGupBypass) {
-                        riservaGupBypass = false;
-                        aggiornaCaricoRiassegnazione(newMagId);
-                        return;
-                    }
+                    // Se i controlli (esonero Totale + eventuale riserva GUP) sono già
+                    // stati superati in questo stesso giro di salvataggio (resave
+                    // programmatico da noi stessi innescato), lascia procedere il
+                    // salvataggio nativo senza ripeterli: l'aggiornamento del carico
+                    // avviene nel .then() del salvataggio che ha innescato questo giro,
+                    // quando l'id e il peso calcolato sono ormai definitivi.
+                    if (magistratoGiaValidato === newMagId) return;
 
-                    // Riserva GUP (3.4): verifica prima di lasciar procedere il salvataggio.
-                    // Se applicabile, si interrompe il salvataggio (preventDefault), si mostra
-                    // l'avviso e, solo se l'utente conferma, si ri-esegue il salvataggio.
-                    var rgnrAttr = formContext.getAttribute("agc_rgnr");
-                    var ruoloAttr = formContext.getAttribute("agc_ruoloassegnazione");
-                    var rgnrVal = rgnrAttr ? rgnrAttr.getValue() : null;
-                    var rgnrId = (rgnrVal && rgnrVal.length > 0) ? rgnrVal[0].id.replace(/[{}]/g, "") : null;
-                    var ruolo = ruoloAttr ? ruoloAttr.getValue() : null;
+                    var eventArgsEsonero = saveEventArgs.getEventArgs();
+                    eventArgsEsonero.preventDefault();
 
-                    if (!rgnrId || ruolo !== RUOLO_GIP) {
-                        aggiornaCaricoRiassegnazione(newMagId);
-                        return;
-                    }
+                    var candidatoNomeEsonero = magValue[0].name;
 
-                    var eventArgs = saveEventArgs.getEventArgs();
-                    eventArgs.preventDefault();
+                    verificaEsoneroTotale(newMagId).then(function (esito) {
+                        if (esito.bloccato) {
+                            var dataFineTxt = formattaDataIt(esito.datafine);
+                            var dettaglioFine = dataFineTxt
+                                ? " fino al " + dataFineTxt
+                                : " a tempo indeterminato";
+                            Xrm.Navigation.openAlertDialog({
+                                title: "Assegnazione non consentita",
+                                text: "Impossibile assegnare il fascicolo a " + candidatoNomeEsonero +
+                                    ": il magistrato è attualmente in esonero Totale" + dettaglioFine +
+                                    ". Selezionare un altro magistrato o attendere il rientro dall'esonero."
+                            });
+                            return; // salvataggio resta annullato, form ancora dirty
+                        }
 
-                    var fascicoloId = formContext.data.entity.getId().replace(/[{}]/g, "");
-                    var candidatoNome = magValue[0].name;
+                        // Riserva GUP (3.4): verifica solo se applicabile (ruolo GIP con
+                        // RGNR valorizzato). Se necessario, mostra l'avviso e procede solo
+                        // su conferma dell'utente.
+                        var rgnrAttr = formContext.getAttribute("agc_rgnr");
+                        var ruoloAttr = formContext.getAttribute("agc_ruoloassegnazione");
+                        var rgnrVal = rgnrAttr ? rgnrAttr.getValue() : null;
+                        var rgnrId = (rgnrVal && rgnrVal.length > 0) ? rgnrVal[0].id.replace(/[{}]/g, "") : null;
+                        var ruolo = ruoloAttr ? ruoloAttr.getValue() : null;
 
-                    verificaRiservaGup({
-                        rgnrId: rgnrId,
-                        ruolo: ruolo,
-                        fascicoloId: fascicoloId,
-                        candidatoContactId: newMagId,
-                        candidatoNome: candidatoNome
-                    }).then(function (esito) {
-                        var proceedPromise = esito.warn
-                            ? Xrm.Navigation.openConfirmDialog(
-                                {
-                                    title: "Riserva GUP",
-                                    text: esito.messaggio,
-                                    confirmButtonLabel: "Assegna comunque",
-                                    cancelButtonLabel: "Annulla"
-                                },
-                                { height: 260, width: 540 }
-                            ).then(function (result) { return result.confirmed; })
+                        var rawFascicoloIdRiserva = formContext.data.entity.getId();
+                        var fascicoloIdRiserva = rawFascicoloIdRiserva ? rawFascicoloIdRiserva.replace(/[{}]/g, "") : null;
+                        var candidatoNome = magValue[0].name;
+
+                        var riservaPromise = (rgnrId && ruolo === RUOLO_GIP)
+                            ? verificaRiservaGup({
+                                rgnrId: rgnrId,
+                                ruolo: ruolo,
+                                fascicoloId: fascicoloIdRiserva,
+                                candidatoContactId: newMagId,
+                                candidatoNome: candidatoNome
+                            }).then(function (esitoRiserva) {
+                                return esitoRiserva.warn
+                                    ? Xrm.Navigation.openConfirmDialog(
+                                        {
+                                            title: "Riserva GUP",
+                                            text: esitoRiserva.messaggio,
+                                            confirmButtonLabel: "Assegna comunque",
+                                            cancelButtonLabel: "Annulla"
+                                        },
+                                        { height: 260, width: 540 }
+                                    ).then(function (result) { return result.confirmed; })
+                                    : true;
+                            })
                             : Promise.resolve(true);
 
-                        return proceedPromise.then(function (proceed) {
-                            if (!proceed) return; // salvataggio resta annullato, form ancora dirty
-                            riservaGupBypass = true;
-                            formContext.data.save();
+                        return riservaPromise.then(function (proceed) {
+                            if (!proceed) {
+                                magistratoGiaValidato = null;
+                                return; // salvataggio resta annullato, form ancora dirty
+                            }
+                            magistratoGiaValidato = newMagId;
+                            return formContext.data.save().then(function () {
+                                aggiornaCaricoRiassegnazione(newMagId);
+                            });
                         });
                     }).catch(function (e) {
-                        console.error("[ASPEN] Errore verifica riserva GUP, salvataggio consentito senza controllo:", e);
-                        riservaGupBypass = true;
-                        formContext.data.save();
+                        console.error("[ASPEN] Errore verifica esonero/riserva, salvataggio consentito senza controllo:", e);
+                        magistratoGiaValidato = newMagId;
+                        formContext.data.save().then(function () {
+                            aggiornaCaricoRiassegnazione(newMagId);
+                        });
                     });
                 } catch (e) {
                     console.error("[ASPEN] Errore onSave riassegnazione:", e);
