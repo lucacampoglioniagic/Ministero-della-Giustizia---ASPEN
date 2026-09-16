@@ -447,11 +447,17 @@ AgicAspen.AssegnaFascicolo = (function () {
         /* ── Regola 3.11 "carico monotono": la riassegnazione di un fascicolo da un
            magistrato A ad un magistrato B deve decrementare il carico di A (oltre
            ad incrementare quello di B). Si cattura il magistrato originale al
-           caricamento della form e lo si confronta al salvataggio. ── */
+           caricamento della form e lo si confronta al salvataggio.
+           Caso "Nuovo Fascicolo" da subgrid del Contatto: il campo Magistrato
+           Contatto risulta già precompilato al caricamento (ereditato dal record
+           padre), ma il carico non è mai stato incrementato per questo fascicolo.
+           Su form Create il valore "originale" va quindi considerato nullo, così
+           il salvataggio la tratta come una vera prima assegnazione. ── */
         try {
+            var isCreateForm = formContext.ui.getFormType() === 1;
             var origMagAttr = formContext.getAttribute("agc_magistratocontatto");
             var origMagValue = origMagAttr ? origMagAttr.getValue() : null;
-            var origMagId = (origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
+            var origMagId = (!isCreateForm && origMagValue && origMagValue.length > 0) ? origMagValue[0].id.replace(/[{}]/g, "") : null;
             var riservaGupBypass = false; // evita di ri-verificare la riserva sul resave programmatico
             var esoneroTotaleBypass = false; // evita di ri-verificare l'esonero sul resave programmatico
 
