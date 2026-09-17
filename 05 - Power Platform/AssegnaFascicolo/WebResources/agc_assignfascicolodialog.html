@@ -526,9 +526,18 @@
          Ritorna una mappa contactid -> { tipo, percentuale } (solo esoneri con
          agc_statoesonero = 1/Attivo e la data odierna compresa tra
          agc_datainizio e agc_datafine, quest'ultima opzionale) */
+      /* Data odierna troncata a mezzanotte UTC (vedi commento in
+         agc_assignfascicolo.js#oggiDataIso): confronto a sola data cosi' un
+         esonero resta attivo per l'intera giornata di fine, non solo fino a
+         mezzanotte. */
+      function oggiDataIso() {
+        var oggi = new Date();
+        return new Date(Date.UTC(oggi.getUTCFullYear(), oggi.getUTCMonth(), oggi.getUTCDate())).toISOString();
+      }
+
       function getEsoneriAttivi(contactIds) {
         if (contactIds.length === 0) return Promise.resolve({});
-        var oggiIso = new Date().toISOString();
+        var oggiIso = oggiDataIso();
         var filterEsoneri = contactIds.map(function (id) {
           return "_agc_magistrato_value eq " + id;
         }).join(" or ");

@@ -188,7 +188,11 @@ namespace AgicAspen.Plugins
         /// </summary>
         private static bool HaEsoneroTotaleAttivo(IOrganizationService service, Guid magistratoId)
         {
-            var oggi = DateTime.UtcNow;
+            // Confronto a livello di sola data (non di istante esatto): agc_datainizio/
+            // agc_datafine sono campi Data senza componente ora significativa (mezzanotte).
+            // Usando DateTime.UtcNow "intero" l'esonero risulterebbe scaduto già dalle 00:00 del
+            // giorno di fine, invece di restare attivo per tutta quella giornata.
+            var oggi = DateTime.UtcNow.Date;
 
             var query = new QueryExpression("agc_esonero")
             {
@@ -216,7 +220,10 @@ namespace AgicAspen.Plugins
         /// </summary>
         private static decimal OttieniCoefficienteCarico(IOrganizationService service, Guid magistratoId)
         {
-            var oggi = DateTime.UtcNow;
+            // Stesso confronto a sola data usato in HaEsoneroTotaleAttivo (vedi commento lì) per
+            // considerare attivo l'esonero Parziale per l'intera giornata di fine, non solo fino
+            // a mezzanotte.
+            var oggi = DateTime.UtcNow.Date;
 
             var query = new QueryExpression("agc_esonero")
             {

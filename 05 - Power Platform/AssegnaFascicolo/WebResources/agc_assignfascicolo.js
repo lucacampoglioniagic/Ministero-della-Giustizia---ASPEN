@@ -69,6 +69,16 @@ AgicAspen.AssegnaFascicolo = (function () {
             });
     }
 
+    /* Data odierna troncata a mezzanotte UTC, per confrontare gli intervalli
+       [agc_datainizio, agc_datafine] (campi Data, senza componente ora
+       significativa) a livello di sola data. Usando l'istante esatto
+       (new Date().toISOString()) l'esonero risulterebbe scaduto già dalle 00:00
+       del giorno di fine, invece di restare attivo per tutta quella giornata. */
+    function oggiDataIso() {
+        var oggi = new Date();
+        return new Date(Date.UTC(oggi.getUTCFullYear(), oggi.getUTCMonth(), oggi.getUTCDate())).toISOString();
+    }
+
     /* ── Verifica esonero Totale (blocco assegnazione manuale) ──
        Un magistrato con esonero di tipo Totale (1) attivo alla data odierna non
        può ricevere assegnazioni manuali dirette (modifica del campo Magistrato
@@ -76,7 +86,7 @@ AgicAspen.AssegnaFascicolo = (function () {
        di assegnazione assistita/massiva). A differenza della riserva GUP, qui
        il salvataggio viene sempre bloccato: non esiste un "assegna comunque". */
     function verificaEsoneroTotale(candidatoContactId) {
-        var oggiIso = new Date().toISOString();
+        var oggiIso = oggiDataIso();
         var filtro = "_agc_magistrato_value eq " + candidatoContactId +
             " and statecode eq 0 and agc_statoesonero eq 1 and agc_tipoesonero eq 1" +
             " and agc_datainizio le " + oggiIso +
@@ -180,7 +190,7 @@ AgicAspen.AssegnaFascicolo = (function () {
 
                     /* 0. Esoneri attivi oggi: esclude i magistrati con esonero Totale,
                        calcola il coefficiente di carico equivalente per gli esoneri Parziali */
-                    var oggiIso = new Date().toISOString();
+                    var oggiIso = oggiDataIso();
                     var filterEsoneri = magistrati.map(function (m) {
                         return "_agc_magistrato_value eq " + m.contactid;
                     }).join(" or ");

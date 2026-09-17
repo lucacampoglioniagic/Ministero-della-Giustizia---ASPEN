@@ -4,6 +4,38 @@
 
 ---
 
+## Session 2026-09-17 — Fix "problema dell'orario" sul controllo esonero Totale
+
+### Segnalazione
+Caso reale riportato dall'utente: esonero Totale di Emilio Palmieri dal 15 al 16, un fascicolo era stato assegnato durante la finestra sfruttando il bug, poi analizzato anche il comportamento (corretto per design) del riallineamento carico al rientro (v. discussione, nessuna modifica su questo secondo punto).
+
+### Causa
+`CaricoMagistratoAssegnazionePlugin.HaEsoneroTotaleAttivo`/`OttieniCoefficienteCarico` (server), `agc_assignfascicolo.js#verificaEsoneroTotale` + blocco esoneri nell'assegnazione massiva, `agc_assignfascicolodialog.html#getEsoneriAttivi` (client) confrontavano `agc_datainizio`/`agc_datafine` (campi Data, senza componente ora significativa — memorizzati a mezzanotte) con l'istante esatto corrente (`DateTime.UtcNow` / `new Date().toISOString()`). Risultato: l'esonero Totale risultava scaduto già dalle 00:00 del giorno di fine, invece di restare attivo per l'intera giornata — il magistrato tornava assegnabile un giorno prima del previsto (per l'intera giornata del giorno di fine).
+
+### Fix
+Confronto normalizzato a sola data (mezzanotte UTC) in tutti e 4 i punti:
+- `CaricoMagistratoAssegnazionePlugin.cs`: `var oggi = DateTime.UtcNow.Date;` (in entrambi i metodi).
+- `agc_assignfascicolo.js`: nuovo helper `oggiDataIso()` (tronca a mezzanotte UTC), usato in `verificaEsoneroTotale` e nel blocco esoneri dell'assegnazione massiva.
+- `agc_assignfascicolodialog.html`: stesso helper `oggiDataIso()` duplicato localmente (script standalone, non condivide file con `agc_assignfascicolo.js`), usato in `getEsoneriAttivi`.
+
+### Deploy
+- Build Release (`dotnet build -c Release`, net462) del progetto `Plugin-Custom-API`, nessun errore.
+- Assembly aggiornato via `PATCH pluginassemblies(5cd6cdfb-e163-f111-ab0c-7ced8d72f54e)` (content base64), stesso pattern `az account get-access-token --resource <org>` + `Invoke-RestMethod` delle sessioni precedenti.
+- Web resource `agc_assignfascicolo.js` (`7c6a37dd-7b63-f111-ab0d-7ced8d4550b3`) e `agc_assignfascicolodialog.html` (`bac3c3e4-7b63-f111-ab0c-7ced8d4558ae`) aggiornati via `PATCH webresourceset(...)` + `PublishXml`. Sintassi JS verificata con `node --check` prima del deploy.
+- Verificato post-deploy: contenuto live di entrambi i web resource combacia byte-per-byte col sorgente locale.
+
+### Note
+Non toccato il comportamento del riallineamento carico al rientro da esonero Totale (`EsoneroRientroPlugin.RiallineaCaricoAlRientro`): confermato con l'utente che la sostituzione assoluta (non incrementale, può anche diminuire il carico) è comportamento voluto by design.
+
+### File toccati
+- `05 - Power Platform/Plugin-Custom-API/CaricoMagistratoAssegnazionePlugin.cs`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js`
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolodialog.html`
+- Dataverse live: `pluginassemblies(5cd6cdfb-...)`, `webresourceset` (2 file) — pubblicati
+- `README.md` (voce 41)
+
+---
+
 ## Session 2026-09-16 (bis) — Script voiceover per il video dimostrativo ASPEN
 
 ### What was done
