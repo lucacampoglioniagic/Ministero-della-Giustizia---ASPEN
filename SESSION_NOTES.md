@@ -4,6 +4,43 @@
 
 ---
 
+## Session 2026-09-17 (bis) — Fix bug tester + feature assegnazione batch su AssegnaFascicolo
+
+### What was done
+- Analizzati (via sub-agent) 2 bug segnalati dal tester su `agc_assignfascicolo.js`: dialog "Salvataggio in corso" bloccato con errore `0x83215603`; falso "Verifica non riuscita" su magistrati specifici (Barbara Fabbri, Carla Villa).
+- Fix bug 1: guardia di re-entrancy `salvataggioInCorso` (posizionata dopo il check `magistratoGiaValidato`), skip autosave, re-save differito con `setTimeout`, aggiunto `return` mancante nella catena promise che causava la doppia esecuzione/collisione del salvataggio.
+- Fix bug 2: causa reale non erano i magistrati, ma `verificaRiservaGup` che falliva su fascicoli nuovi non ancora salvati (`fascicoloId` null); aggiunto fallback business unit tramite query su `systemuser` al posto della proprietà inesistente `userSettings.businessUnitId`.
+- Durante il testing sono emersi e risolti altri 2 bug a cascata: `Cannot read properties of undefined (reading 'replace')` e poi `Salvataggio non riuscito... impostazione personalizzata` — entrambi confermati funzionanti dall'utente dopo fix.
+- Nuova feature: assegnazione batch dei fascicoli selezionati in griglia. `openDialogFromGrid` refactored a router: selezione singola non assegnata → dialog singolo invariato (`apriDialogAssegnazioneSingola`); altrimenti (selezione multipla o record già assegnato) → nuova `apriAssegnazioneSelezionati`, con avviso/conferma se alcuni selezionati sono già assegnati.
+- Estratta logica condivisa `eseguiAssegnazioneSequenziale`, riusata anche da `openBulkAssignFromGrid` (prima duplicava tutta la logica inline).
+- Deploy manuale via Maker Portal (clipboard → incolla → salva → pubblica) del web resource; modifica manuale (non versionabile) della formula Power Fx `Visible` del comando "Assegna Fascicolo" in Command Designer, per accettare qualunque selezione ≥ 1.
+- Aggiornato `README.md`: changelog #42 (fix bug tester) e #43 (feature batch assignment, chiusa come risolta), più aggiornamento tabella comandi Command Designer.
+- Tutto testato end-to-end dall'utente e confermato funzionante su tutti gli scenari (singolo, singolo già assegnato, selezione mista con avviso).
+
+### Decisions made
+- Il fix della re-entrancy usa un flag `salvataggioInCorso` posizionato dopo `magistratoGiaValidato` per non alterare il flusso di validazione esistente.
+- Preferito un router in `openDialogFromGrid` (1 record non assegnato = comportamento invariato) invece di riscrivere il dialog singolo, per minimizzare rischio di regressione.
+- Logica di assegnazione sequenziale estratta in una funzione condivisa (`eseguiAssegnazioneSequenziale`) per eliminare duplicazione tra flusso singolo/batch/bulk esistente.
+- Confermato che deploy dei web resource e modifiche Command Designer restano manuali in questo ambiente (vedi nota sotto), nessuna nuova automazione introdotta.
+
+### Current status
+- Fix dei 2 bug segnalati dal tester: funzionanti e confermati dall'utente.
+- Feature di assegnazione batch da griglia: funzionante e confermata dall'utente su tutti gli scenari testati (singolo, singolo già assegnato, selezione mista).
+- README aggiornato e coerente con lo stato deployato.
+
+### Next steps
+- Nessun blocco aperto segnalato a fine sessione; monitorare eventuale ulteriore feedback del tester su altri scenari edge (es. selezioni molto ampie, errori di rete durante assegnazione sequenziale).
+- Valutare se versionare in futuro anche le modifiche Power Fx del Command Designer (attualmente manuali/non tracciate in repo).
+
+### Files changed
+- `05 - Power Platform/AssegnaFascicolo/WebResources/agc_assignfascicolo.js` — fix bug tester (re-entrancy salvataggio, fallback business unit) + refactor per assegnazione batch (`openDialogFromGrid` come router, `apriAssegnazioneSelezionati`, `eseguiAssegnazioneSequenziale` condivisa).
+- `README.md` — changelog #42, #43 e aggiornamento tabella comandi Command Designer.
+
+### Nota operativa (promemoria permanente)
+Il deploy dei web resource in questo ambiente è sempre manuale (copia negli appunti → incolla in Maker Portal → salva → pubblica) a causa di un bug noto di corruzione metadati che blocca `pac solution import`. Anche le modifiche al Command Designer (Power Fx) sono manuali/non versionabili.
+
+---
+
 ## Session 2026-09-17 — Fix "problema dell'orario" sul controllo esonero Totale
 
 ### Segnalazione
