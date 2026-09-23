@@ -11,11 +11,12 @@ var AgicAspen = window.AgicAspen || {};
    client-side, per la visibilità del comando, sia server-side nel plugin, per
    difesa in profondità). */
 AgicAspen.ModificaCarico = (function () {
-    // Ruolo di sicurezza "System Administrator" nell'ambiente lccministerogiustiziademo.
-    var RUOLO_SYSTEM_ADMINISTRATOR = "5eaeacb4-735a-f111-a825-000d3ade6bac";
+    // Nomi dei ruoli di sicurezza abilitati alla modifica manuale del carico
+    // (portabili tra ambienti, non dipendono dal GUID del singolo tenant).
+    var RUOLI_ABILITATI = ["System Administrator", "Amministratore ASPEN"];
 
     /* ── Enable rule per la command bar: true solo se l'utente corrente è
-       membro del ruolo System Administrator ── */
+       membro di uno dei ruoli abilitati ── */
     function isSystemAdministrator() {
         try {
             var roles = Xrm.Utility.getGlobalContext().userSettings.roles;
@@ -23,8 +24,7 @@ AgicAspen.ModificaCarico = (function () {
 
             var isAdmin = false;
             roles.forEach(function (role) {
-                var roleId = (role.id || "").replace(/[{}]/g, "").toLowerCase();
-                if (roleId === RUOLO_SYSTEM_ADMINISTRATOR) isAdmin = true;
+                if (RUOLI_ABILITATI.indexOf(role.name) !== -1) isAdmin = true;
             });
             return isAdmin;
         } catch (e) {
@@ -37,7 +37,7 @@ AgicAspen.ModificaCarico = (function () {
         if (!isSystemAdministrator()) {
             Xrm.Navigation.openAlertDialog({
                 title: "Modifica Carico",
-                text: "Solo un amministratore di sistema può modificare manualmente il carico del magistrato."
+                text: "Solo un amministratore (System Administrator o Amministratore ASPEN) può modificare manualmente il carico del magistrato."
             });
             return;
         }

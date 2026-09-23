@@ -17,15 +17,17 @@ namespace AgicAspen.Plugins
     /// - NuovoValore (Decimal, obbligatorio): il nuovo valore da assegnare a agc_caricoattuale
     /// - Nota (String, obbligatorio): giustificazione della modifica manuale, non può essere vuota
     ///
-    /// Sicurezza: in aggiunta alla visibilità del tasto lato client (riservata al ruolo
-    /// "System Administrator"), il plugin verifica anche lato server che l'utente chiamante sia
-    /// membro dello stesso ruolo, come difesa in profondità nel caso la Custom API venga invocata
-    /// direttamente (es. da Web API/Postman) bypassando la command bar.
+    /// Sicurezza: in aggiunta alla visibilità del tasto lato client (riservata ai ruoli
+    /// "System Administrator" e "Amministratore ASPEN"), il plugin verifica anche lato server che
+    /// l'utente chiamante sia membro di uno di questi ruoli, come difesa in profondità nel caso la
+    /// Custom API venga invocata direttamente (es. da Web API/Postman) bypassando la command bar.
+    /// I ruoli sono risolti per nome (non per GUID hardcoded) per essere portabili tra ambienti.
     /// </summary>
     public class ModificaCaricoMagistratoPlugin : PluginBase
     {
-        // Ruolo di sicurezza "System Administrator" nell'ambiente lccministerogiustiziademo.
-        private static readonly Guid RuoloSystemAdministrator = new Guid("5eaeacb4-735a-f111-a825-000d3ade6bac");
+        // Nomi dei ruoli di sicurezza abilitati alla modifica manuale del carico. Risolti per
+        // nome ad ogni esecuzione per non dipendere dai GUID specifici di un singolo ambiente.
+        private static readonly string[] RuoliAbilitati = { "System Administrator", "Amministratore ASPEN" };
 
         public ModificaCaricoMagistratoPlugin(string unsecureConfiguration, string secureConfiguration)
             : base(typeof(ModificaCaricoMagistratoPlugin))
@@ -59,11 +61,11 @@ namespace AgicAspen.Plugins
             var nota = ((string)context.InputParameters["Nota"]).Trim();
             var nuovoValore = Convert.ToDecimal(context.InputParameters["NuovoValore"]);
 
-            // Difesa in profondità: verifica che il chiamante sia System Administrator, anche se
-            // il tasto lato client è già nascosto ai non amministratori.
+            // Difesa in profondità: verifica che il chiamante appartenga a uno dei ruoli abilitati,
+            // anche se il tasto lato client è già nascosto agli utenti non autorizzati.
             var ruoliUtente = service.RetrieveMultiple(new QueryExpression("role")
             {
-                ColumnSet = new ColumnSet("roleid"),
+                ColumnSet = new ColumnSet("name"),
                 LinkEntities =
                 {
                     new LinkEntity("role", "systemuserroles", "roleid", "roleid", JoinOperator.Inner)
@@ -76,11 +78,11 @@ namespace AgicAspen.Plugins
                 }
             }).Entities;
 
-            var isAdmin = ruoliUtente.Any(r => r.Id == RuoloSystemAdministrator);
+            var isAdmin = ruoliUtente.Any(r => RuoliAbilitati.Contains(r.GetAttributeValue<string>("name")));
             if (!isAdmin)
             {
-                tracer.Trace($"ModificaCaricoMagistratoPlugin: utente {context.InitiatingUserId} non è System Administrator, operazione negata.");
-                throw new InvalidPluginExecutionException("Solo un amministratore di sistema può modificare manualmente il carico del magistrato.");
+                tracer.Trace($"ModificaCaricoMagistratoPlugin: utente {context.InitiatingUserId} non appartiene ai ruoli abilitati ({string.Join(", ", RuoliAbilitati)}), operazione negata.");
+                throw new InvalidPluginExecutionException("Solo un amministratore (System Administrator o Amministratore ASPEN) può modificare manualmente il carico del magistrato.");
             }
 
             // Scrittura con retry su concorrenza ottimistica: il valore precedente viene letto

@@ -34,6 +34,8 @@
     <ExcludeDirectories Include="$(MSBuildThisFileDirectory)\*.pcfproj.user" />
     <ExcludeDirectories Include="$(MSBuildThisFileDirectory)\*.sln" />
     <ExcludeDirectories Include="$(MSBuildThisFileDirectory)\node_modules\**" />
+    <!-- StatoFascicoliChart non e' piu' usato nel cruscotto (vedi piano di migrazione §3.5): tenuto in repo ma escluso dal deploy. -->
+    <ExcludeDirectories Include="$(MSBuildThisFileDirectory)\StatoFascicoliChart\**" />
   </ItemGroup>
 
   <ItemGroup>

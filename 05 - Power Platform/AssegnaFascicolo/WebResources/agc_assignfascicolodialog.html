@@ -318,6 +318,51 @@
     .success-close {
       margin-top: 8px;
     }
+
+    /* ── Confirm overlay (modale custom, sostituisce window.confirm) ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(36, 36, 36, .45);
+      z-index: 120;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-overlay.show {
+      display: flex;
+    }
+
+    .confirm-box {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .3);
+      width: 360px;
+      max-width: calc(100vw - 40px);
+      padding: 18px 20px;
+    }
+
+    .confirm-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #C42B1C;
+      margin-bottom: 10px;
+    }
+
+    .confirm-message {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.5;
+      white-space: pre-line;
+      margin-bottom: 16px;
+    }
+
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
   </style>
 </head>
 
@@ -369,6 +414,18 @@
     <div class="success-title">Fascicolo assegnato!</div>
     <div class="success-subtitle" id="success-sub">La finestra si chiuderà automaticamente.</div>
     <button class="btn btn-secondary success-close" id="btn-close-success">Chiudi</button>
+  </div>
+
+  <!-- Confirm overlay (modale custom, sostituisce window.confirm) -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <div class="confirm-title" id="confirm-title">Conferma richiesta</div>
+      <div class="confirm-message" id="confirm-message"></div>
+      <div class="confirm-actions">
+        <button class="btn btn-secondary" id="confirm-btn-annulla">Annulla</button>
+        <button class="btn btn-primary" id="confirm-btn-procedi">Procedi</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -515,6 +572,32 @@
         err.className = "status err";
         err.textContent = "❌ " + msg;
         list.prepend(err);
+      }
+
+      /* ── Modale di conferma custom (sostituisce window.confirm, mai nativo) ──
+         Ritorna una Promise<boolean> risolta in base al pulsante premuto. */
+      function confirmDialog(message, title) {
+        return new Promise(function (resolve) {
+          var overlay = document.getElementById("confirm-overlay");
+          document.getElementById("confirm-title").textContent = title || "Conferma richiesta";
+          document.getElementById("confirm-message").textContent = message;
+          overlay.classList.add("show");
+
+          var btnAnnulla = document.getElementById("confirm-btn-annulla");
+          var btnProcedi = document.getElementById("confirm-btn-procedi");
+
+          function chiudi(esito) {
+            overlay.classList.remove("show");
+            btnAnnulla.removeEventListener("click", onAnnulla);
+            btnProcedi.removeEventListener("click", onProcedi);
+            resolve(esito);
+          }
+          function onAnnulla() { chiudi(false); }
+          function onProcedi() { chiudi(true); }
+
+          btnAnnulla.addEventListener("click", onAnnulla);
+          btnProcedi.addEventListener("click", onProcedi);
+        });
       }
 
       /* ── Annulla ── */
@@ -753,7 +836,7 @@
             candidatoNome: migliore.fullname
           });
 
-          if (esitoRiserva.warn && !window.confirm(esitoRiserva.messaggio)) {
+          if (esitoRiserva.warn && !(await confirmDialog(esitoRiserva.messaggio, "Riserva GUP"))) {
             document.getElementById("spinner-overlay").classList.remove("show");
             document.getElementById("btn-conferma").disabled = false;
             document.getElementById("btn-annulla").disabled = false;

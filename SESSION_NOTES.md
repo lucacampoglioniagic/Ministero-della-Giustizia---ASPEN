@@ -4,6 +4,35 @@
 
 ---
 
+## Session 2026-09-23 — Migrazione ambiente destinazione: risolto bug persistenza PCF dashboard
+
+### What was done
+- Contesto: migrazione "clean slate" della solution ASPEN verso il nuovo ambiente destinazione `https://org8e819d4a.crm4.dynamics.com/` (Microsoft non ha ancora risolto il bug di corruzione metadati che blocca export/import dalla sorgente). Nella destinazione la dashboard classica "Cruscotto ASPEN" era stata ricreata ma i 4 grafici PCF non venivano mai visualizzati a runtime nonostante salvataggi apparentemente riusciti (via UI, REST PATCH, SOAP `SaveForm`), bloccando la prosecuzione del piano.
+- Con il login manuale dell'utente (MFA), confrontato via Web API il `formxml` della dashboard sorgente (funzionante) con quello della destinazione (non funzionante), individuando la causa reale: le celle destinazione usavano il classid legacy `{E7A81278-...}` (griglia classica, non supporta override PCF) invece di `{F9A8A302-...}` (griglia moderna); inoltre `controlDescriptions` andava costruito con un customControl di default + 3 varianti `formFactor` (Web/Telefono/Tablet), non una sola.
+- Corretto il classid delle 4 celle e ricostruito `controlDescriptions` per i 4 controlli (`CaricoMagistratiChart`, `FascicoliPerCanestroChart`, `EsoneriAttiviChart`, `AndamentoCaricoMensileChart`) via Web API PATCH su `systemforms(...)`.
+- Scoperto un falso negativo di verifica: la GET Web API `systemforms?$select=formxml` restituiva dati stantii/cache anche dopo un salvataggio riuscito; la verifica affidabile è l'editor classico della dashboard ("Modifica componente" → tab "Controlli").
+- Eseguito "Pubblica tutte le personalizzazioni" (passaggio mancante nei tentativi precedenti) → tutti e 4 i grafici PCF ora renderizzano correttamente a runtime nella destinazione (confermato via screenshot; vuoti solo per assenza di dati di test, atteso).
+- Aggiornata la documentazione tecnica (`03 - Documentazione Prodotta/Tecnica/ASPEN - Piano di Migrazione Ambiente Destinazione.md`, nuova §7.1) con la causa radice e la procedura di fix riutilizzabile, e aggiornata la checklist di stato in fondo al documento.
+
+### Decisions made
+- Non modificare l'ambiente sorgente: usato solo come riferimento diagnostico read-only.
+- Procedura standard da riapplicare per qualunque cella dashboard classica con PCF: (a) classid moderno `{F9A8A302-...}`, (b) `controlDescriptions` completo (default + 3 formFactor), (c) salvataggio via Web API PATCH (SOAP `SaveForm` non supportato come Execute raw in questo ambiente), (d) verifica via editor classico (non via GET Web API), (e) "Pubblica tutte le personalizzazioni".
+
+### Current status
+- Bug di persistenza PCF sulla dashboard "Cruscotto ASPEN" nella destinazione: **risolto e verificato**. Era il blocco più grave residuo del piano di migrazione.
+- Dashboard visivamente confermata con tutti e 4 i grafici renderizzati (vuoti in attesa dei dati di test, Fase 10 del piano).
+
+### Next steps
+- Riprendere il piano di migrazione dalla Fase 7 in poi: completamento app model-driven (sitemap, Command Designer), Fase 8 (Custom Page "ASPEN Home"), Fase 9 (Power Automate), Fase 10 (dati di test), Fase 11 (42 test E2E Playwright), Fase 12 (validazione finale).
+- Valutare se altre dashboard/form nella destinazione necessitano dello stesso fix di classid, prima di considerarle definitive.
+
+### Files changed
+- `03 - Documentazione Prodotta/Tecnica/ASPEN - Piano di Migrazione Ambiente Destinazione.md` — nuova sezione §7.1 (nota tecnica fix PCF dashboard) e aggiornamento checklist §7.6.
+- `SESSION_NOTES.md` — questa voce.
+- Nessuna modifica ai file di repository per il fix in sé: tutte le modifiche sono state applicate live su Dataverse (formxml della dashboard "Cruscotto ASPEN" nell'ambiente destinazione) via Web API/Maker Portal.
+
+---
+
 ## Session 2026-09-17 (bis) — Fix bug tester + feature assegnazione batch su AssegnaFascicolo
 
 ### What was done

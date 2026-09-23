@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest>
-  <control namespace="AgicAspen" constructor="EsoneriAttiviChart" version="1.0.0"
+  <control namespace="AgicAspen" constructor="EsoneriAttiviChart" version="1.0.1"
     display-name-key="Esoneri Attivi per Magistrato"
     description-key="Grafico dei magistrati attualmente in esonero (Totale/Parziale)"
     control-type="standard">
@@ -25,6 +25,10 @@
       <type>FP</type>
       <type>Decimal</type>
     </type-group>
+    <type-group name="dateTypes">
+      <type>DateAndTime.DateOnly</type>
+      <type>DateAndTime.DateAndTime</type>
+    </type-group>
     <data-set name="esoneriDataSet" display-name-key="Esoneri">
       <property-set name="magistratoField" display-name-key="Magistrato (lookup)"
         of-type="Lookup.Simple" usage="bound" required="true" />
@@ -35,9 +39,9 @@
       <property-set name="percentualeField" display-name-key="Percentuale esonero"
         of-type-group="percentualeTypes" usage="bound" required="false" />
       <property-set name="dataInizioField" display-name-key="Data inizio"
-        of-type="DateAndTime.DateAndTime" usage="bound" required="true" />
+        of-type-group="dateTypes" usage="bound" required="true" />
       <property-set name="dataFineField" display-name-key="Data fine"
-        of-type="DateAndTime.DateAndTime" usage="bound" required="false" />
+        of-type-group="dateTypes" usage="bound" required="false" />
     </data-set>
     <resources>
       <code path="index.ts" order="1" />

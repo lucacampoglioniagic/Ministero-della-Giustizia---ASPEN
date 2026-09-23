@@ -206,7 +206,7 @@ namespace AgicAspen.Plugins
                 ColumnSet = new ColumnSet("agc_caricoattuale", "fullname")
             };
             candidati.Criteria.AddCondition("statecode", ConditionOperator.Equal, 0);
-            candidati.Criteria.AddCondition("agc_ruolomagistrato", ConditionOperator.NotNull);
+            candidati.Criteria.AddCondition("agc_ismagistrato", ConditionOperator.Equal, true);
             candidati.Criteria.AddCondition("agc_caricoattuale", ConditionOperator.NotNull);
             candidati.Criteria.AddCondition("contactid", ConditionOperator.NotEqual, magistratoId);
 
