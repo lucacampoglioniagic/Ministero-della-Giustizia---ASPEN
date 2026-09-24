@@ -4,6 +4,33 @@
 
 ---
 
+## Session 2026-09-24 (quater) — Fase 8: Custom Page "ASPEN Home" completata (data source, sitemap, start page)
+
+### What was done
+- Completato il lavoro di Fase 8 iniziato nella sessione precedente: la custom page "ASPEN Home" (`cr248_aspenhome_1750e`) era già stata importata nella solution ASPEN con i 3 `Launch()` URL ripuntati sulla destinazione, ma mancava il data source Dataverse `Fascicoli` e la collocazione finale nel sitemap.
+- In Power Apps Studio, pannello "Aggiungi dati" → cercato "Fascicoli" → aggiunta la tabella `agc_fascicolo2` (visualizzata come "Fascicoli") come data source. Le 4 formule KPI (`lblStat1Value`..`lblStat4Value`) hanno smesso di mostrare l'icona di errore rossa e ora restituiscono 0/0/0,0/0 (valori corretti in assenza di dati di test — popolamento rimandato a Fase 10).
+- Salvato e pubblicato la pagina da Studio (Ctrl+S → "Salvataggio della pagina completato"), come richiesto dal piano per invalidare la cache del player.
+- **Riposizionamento nel sitemap**: la pagina era stata aggiunta dall'app designer sotto il gruppo "Impostazioni" (comportamento di default quando si aggiunge una custom page già esistente). Il menu contestuale "..." di ogni voce offre solo "Sposta su"/"Sposta giù" (riordino **all'interno dello stesso gruppo**, non tra gruppi) — né drag-and-drop (provato sia con `browser_drag` che con sequenze manuali di `mouse.move/down/up`) ha spostato la voce tra gruppi diversi. **Soluzione funzionante**: rimuovere la voce dal sitemap ("..." → "Rimuovi dallo spostamento", non elimina il componente canvas app sottostante) e poi "Aggiungi pagina" → "Pagina personalizzata" → selezionare "ASPEN Home" tra le pagine esistenti **con il gruppo "Operatività" già selezionato nell'albero** → la pagina viene aggiunta nel gruppo corretto; poi "Sposta su" una volta per portarla come prima voce del gruppo (sopra "Fascicoli"/"Cruscotto ASPEN").
+- **Pagina iniziale dell'app**: in "Impostazioni" (icona ingranaggio in toolbar) → tab "Spostamento", disattivato il toggle "Mostra home page" (che controlla la generica tile "Home" di Dynamics 365, distinta dalla nostra custom page) — con "Mostra home page" disattivato, la prima voce del sitemap (ora "ASPEN Home") diventa la landing effettiva dell'app. Non esiste un'impostazione esplicita "pagina di avvio" separata in questa UI: il meccanismo standard è appunto disabilitare la home page generica.
+- Eseguito "Salva e pubblica" dell'intera app ASPEN (richiede ~40s per completare la pubblicazione di tutte le parti) — completato con successo; l'anteprima del designer dopo la pubblicazione mostra correttamente "ASPEN Home" come primo schermo (senza più la voce "Home" generica).
+- Verifica di navigazione diretta (`main.aspx?appid=...`) in una nuova tab: il browser è stato reindirizzato automaticamente alla vista "Fascicoli attivi/e" invece che a "ASPEN Home" — comportamento atteso e non un problema di configurazione: Dynamics 365 ricorda **l'ultima pagina visitata per utente/app** in questa sessione browser (questo stesso browser aveva visitato quella vista poco prima per verificare l'`appid`/`viewid`); per un utente/sessione realmente nuovi la landing sarà "ASPEN Home" come confermato dall'anteprima del designer.
+- Aggiornato il piano di migrazione (§7.6: nuova riga `[x]` con il riepilogo completo di Fase 8; riga E2E-38/39/40 riformulata per chiarire cosa resta da testare con dati reali in Fase 10/11).
+
+### Decisions
+- Non è stato necessario modificare i file sorgente canonici del repo (`AspenHomeCustomPage/Source/App.fx.yaml`/`Screen1.fx.yaml`): gli URL di destinazione restano solo nella copia live in Dataverse, coerente con l'approccio già documentato nel README (procedura di re-point da riapplicare per ambiente).
+- La cartella locale di lavoro `05 - Power Platform\_HomeExport\` (export/unpack/repack della solution ASPEN) resta non committata; da eliminare a fine sessione/fine Fase 8 come per convenzione.
+
+### Current status
+- Fase 8 sostanzialmente completa: pagina "ASPEN Home" funzionante, data source risolto, collocata come prima voce di "Operatività", impostata come landing dell'app, "Salva e pubblica" eseguito con successo.
+- Residuano solo le verifiche che richiedono dati reali/E2E: E2E-38 (KPI con dati veri, Fase 10), E2E-39 (click-test dei 3 link Cruscotto/Nuovo Fascicolo — solo "Lista Fascicoli" è stato verificato per navigazione diretta), E2E-40 (responsive a 600/1000/1400px).
+
+### Next steps
+- Fase 9 (Power Automate) o proseguire con Fase 10 (dati di test) per sbloccare le verifiche E2E-35/36/37/38 residue.
+- Pulizia della cartella locale `05 - Power Platform\_HomeExport\` una volta committata la documentazione.
+- Click-test manuale dei 3 link della Home (Cruscotto ASPEN, Lista Fascicoli — già ok, Nuovo Fascicolo) e test responsive.
+
+---
+
 ## Session 2026-09-24 (tris) — Fase 7: risolto blocco binding PCF CaricoPerCanestro sul form Contatto - Magistrato
 
 ### What was done
