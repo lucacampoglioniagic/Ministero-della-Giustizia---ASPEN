@@ -4,6 +4,30 @@
 
 ---
 
+## Session 2026-09-24 (tris) — Fase 7: risolto blocco binding PCF CaricoPerCanestro sul form Contatto - Magistrato
+
+### What was done
+- Riaperto il form "Contatto - Magistrato" (modern form designer, Power Apps Maker Portal) sul campo "Posizione", selezionato "Componente" → il PCF `CaricoPerCanestro` continuava a non comparire nella lista predefinita di "Aggiungi componente" (che mostra solo 6 controlli "in evidenza": Controllo dell'editor RTF, ValidatedField_Control, TalkingPointsControl, Lettore di biglietti da visita, ContactabilityGrid, App canvas).
+- **Root cause trovata**: cliccando "Ottieni altri componenti" si apre un pannello separato con **tutti** i componenti registrati nell'ambiente (tab Tutto/Creato da Microsoft/Creato da altri) — qui il PCF compare come **"Carico per Peso 1"** (proprietario "Autore predefinito per org8e819d4a", ultima modifica 23/09/2026, cioè registrato in una sessione precedente ma mai reso disponibile nella lista breve del designer).
+- Selezionato "Carico per Peso 1" (checkbox) → "Aggiungi" → il controllo compare ora nella lista "Aggiungi componente" standard → selezionato → dialog di configurazione conferma il binding automatico sulla colonna tabella "Posizione" (Campo di ancoraggio, opzioni Web/Cellulare/Tablet tutte spuntate) → "Fatto" → "Salva e pubblica" del form (successo confermato dalla notifica "Publish successful").
+- **Verifica funzionale live**: creato un contatto di test ("TestPCF CheckLoad") sul form "Contatto - Magistrato", salvato → il campo "Posizione" ha mostrato correttamente "Carico per Peso 1" con il messaggio "Nessun fascicolo aperto assegnato a questo magistrato" (nessun errore console riconducibile al PCF). Su record nuovo/non salvato il controllo restava fermo su "Caricamento carico per canestro…" (atteso: il PCF legge `context.page.entityId`, che non esiste finché il record non è salvato — pattern coerente con quanto già osservato per i bottoni RibbonDiff che richiedono un record esistente).
+- Eliminato il record di test dall'ambiente al termine della verifica.
+- Aggiornato il piano di migrazione (§7.5: riga PCF CaricoPerCanestro `[x]`; §7.6: 5° PCF `[x]`; nuova nota tecnica §7.1bis con la procedura di fix da riapplicare in caso di problemi analoghi con altri PCF/controlli custom).
+
+### Decisions
+- Nessuna modifica di codice/manifest necessaria: il PCF era già correttamente registrato e pubblicato nell'ambiente destinazione dalla Fase 6; il blocco era puramente nella UX del picker "Aggiungi componente" del form designer moderno, che non elenca tutti i controlli disponibili per default.
+
+### Current status
+- PCF `CaricoPerCanestro` bindato, pubblicato e verificato funzionante sul form "Contatto - Magistrato" (campo "Posizione"). Verifica E2E-37 con dati reali (3 fascicoli in Peso 1, soglia 30) rimandata a Fase 11/12 come da piano.
+- Fase 7 risulta ora sostanzialmente completa (RibbonDiff, Command Designer, privilege rule su Configurazioni, PCF dashboard, PCF CaricoPerCanestro tutti verificati); residuano solo item marginali (HideCustomAction E2E-41, business rule/viste minori di §7.5) rimandati a Fase 11/12.
+
+### Next steps
+- Fase 8: Custom Page "ASPEN Home" (non ancora iniziata).
+- "Salva e pubblica" finale dell'intera app ASPEN.
+- E2E completa (Fase 11/12) con utenti reali (`op.roma`, un vero System Administrator).
+
+---
+
 ## Session 2026-09-24 (bis) — Fase 7: verifica RibbonDiff classico (Assegna Fascicolo / Chiudi Caso / Modifica Carico)
 
 ### What was done
