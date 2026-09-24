@@ -678,13 +678,13 @@ Spuntare ogni voce con evidenza (screenshot/ID test E2E). La parità è raggiunt
 
 ### 7.4 UI Fascicolo
 - [ ] Una sola main form con `onFormLoad` registrato; autosave non blocca (E2E-42)
-- [ ] Pulsanti form "Assegna Fascicolo" e "Chiudi Caso" (E2E-27, 28)
+- [x] Pulsanti form "Assegna Fascicolo" e "Chiudi Caso" (E2E-27, 28): RibbonDiff `agc_fascicolo2` già presente e pubblicato in ambiente destinazione (CustomAction/CommandDefinition/EnableRule come da §1.7); verificato con record di test — bottoni visibili con icone corrette sul form di un record esistente, non su record nuovo/non salvato (coerente con EnableRule `Mscrm.FormStateExistingOrReadOnly`); record di test creato ed eliminato subito dopo la verifica. Verifica funzionale E2E completa (E2E-27/28) rimandata a Fase 11/12
 - [ ] Comandi griglia moderni: 1 selezionato → dialog (E2E-06); N → sequenziale (E2E-07); 0 → massiva (E2E-08)
 - [ ] Dialog: minor carico (E2E-02), continuità RGNR (E2E-03/04), incompatibilità (E2E-05), riserva GUP in-dialog (E2E-09), filtro BU (E2E-34)
 - [ ] HideCustomAction attive (E2E-41)
 
 ### 7.5 UI Magistrato / Esoneri / RGNR
-- [ ] Form "Contatto - Magistrato" con tab Fascicoli (+PCF CaricoPerCanestro, E2E-37), Esoneri, Storico carico; "Modifica Carico" solo admin
+- [ ] Form "Contatto - Magistrato" con tab Fascicoli (+PCF CaricoPerCanestro, E2E-37), Esoneri, Storico carico; "Modifica Carico" solo admin: RibbonDiff `contact` (Modifica Carico, DisplayRule `AgicAspen.ModificaCarico.isSystemAdministrator`) già presente e pubblicato in ambiente destinazione; verificato che il bottone NON appare per l'utente di sessione corrente (privo del ruolo "System Administrator"/"Amministratore ASPEN" nella lista `Xrm.Utility.getGlobalContext().userSettings.roles`), comportamento coerente con la gate di sicurezza attesa. Verifica positiva con utente realmente System Administrator rimandata a Fase 11/12
 - [ ] Vista "Magistrati attivi"; business rule percentuale (E2E-20); subgrid RGNR (E2E-30)
 
 ### 7.6 Dashboard, Home, app

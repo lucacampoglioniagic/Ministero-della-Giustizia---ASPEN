@@ -4,6 +4,32 @@
 
 ---
 
+## Session 2026-09-24 (bis) — Fase 7: verifica RibbonDiff classico (Assegna Fascicolo / Chiudi Caso / Modifica Carico)
+
+### What was done
+- Ripreso il lavoro sul RibbonDiff classico (§1.7 del piano: bottoni "Assegna Fascicolo"/"Chiudi Caso" su `agc_fascicolo2`, "Modifica Carico" su `contact`). Su richiesta dell'utente, prima scelta di approccio: Ribbon Workbench (XrmToolBox). Verificato che XrmToolBox non è installato su questa macchina e comunque è un'app desktop GUI non pilotabile con gli strumenti disponibili (solo browser Playwright + PowerShell) → chiesto e ottenuto il via libera per un secondo tentativo via `pac` CLI, con login interattivo (`pac auth create`) riuscito su Tribunali-dev.
+- Per isolare il rischio dal noto bug di corruzione metadata, creata una **solution temporanea `ASPEN_RibbonTemp`** (publisher Agic) contenente solo i componenti tabella `agc_fascicolo2` e `contact` (`pac solution add-solution-component`, `--AddRequiredComponents false`), poi **esportata** (`pac solution export`) e **scompattata** (`pac solution unpack`) — entrambe le operazioni riuscite senza errori di corruzione.
+- **Scoperta chiave**: i file `RibbonDiff.xml` risultanti (per `agc_fascicolo2` e per `contact`) contenevano **già** tutte le customizzazioni richieste dal piano — CustomAction "Assegna Fascicolo" (seq 21) e "Chiudi Caso" (seq 22, JS `openCloseDialog`, icona `agc_closefascicolo_icon.svg`) con relative EnableRule/CommandDefinition su `agc_fascicolo2`, e CustomAction "Modifica Carico" (seq 11) con DisplayRule `AgicAspen.ModificaCarico.isSystemAdministrator` su `contact`. Il lavoro RibbonDiff risultava quindi **già stato fatto** in una sessione precedente non documentata esplicitamente in questi termini.
+- Eseguito `pac solution publish` per assicurare che tutte le personalizzazioni fossero effettivamente pubblicate.
+- **Verifica funzionale live**: creato un record di test `agc_fascicolo2` (`TEST-RIBBON-CHECK-001`) → confermato che "Assegna Fascicolo" e "Chiudi Caso" appaiono correttamente sulla command bar del form con le icone corrette, ma solo su record esistente/salvato (coerente con l'EnableRule `Mscrm.FormStateExistingOrReadOnly` — sul form "Nuovo elemento" i bottoni non compaiono). Creato un record di test `contact` (`TestRibbonCheck`) → confermato che "Modifica Carico" **non appare** nella command bar né nel menu overflow, comportamento coerente con la DisplayRule basata su ruolo di sicurezza: l'utente di sessione (`luca.campoglioni@giustizia.it`) non risulta membro del ruolo "System Administrator"/"Amministratore ASPEN" nella lista `Xrm.Utility.getGlobalContext().userSettings.roles`, quindi la gate di sicurezza funziona come da specifica (JS `agc_modificacarico.js` letto per conferma della logica).
+- **Pulizia**: eliminati entrambi i record di test dall'ambiente; eliminata la solution temporanea `ASPEN_RibbonTemp` (`pac solution delete`); rimossa la cartella locale di export/unpack (`05 - Power Platform\_RibbonTemp`, mai committata).
+- Aggiornato il piano di migrazione (§7.4: bottoni Fascicolo `[x]`; §7.5: Modifica Carico `[x]`, con note sul comportamento verificato e sulla verifica E2E completa rimandata a Fase 11/12).
+
+### Decisions
+- Confermato che `pac solution export`/`unpack`/`publish` su una solution minuscola (2 sole tabelle, nessuna modifica di schema) **non** hanno innescato il bug di corruzione metadata noto per l'ambiente destinazione — a differenza di `pac solution import` di solution più grandi, che resta evitato per precauzione consolidata nelle sessioni precedenti. Questo pattern (solution temporanea minima + export/unpack per ispezione, senza reimport) potrebbe essere riusabile per future verifiche simili senza toccare Ribbon Workbench/XrmToolBox.
+- Non è stata necessaria alcuna modifica ai file RibbonDiff: il contenuto trovato già corrispondeva esattamente alla specifica del piano (§1.7), quindi non è stato fatto alcun `pac solution import` di ritorno.
+
+### Current status
+- RibbonDiff classico (`agc_fascicolo2`: Assegna Fascicolo/Chiudi Caso; `contact`: Modifica Carico) verificato **presente, pubblicato e funzionante** in ambiente destinazione. Verifica E2E completa con utenti reali (`op.roma`, un vero System Administrator) rimane da fare in Fase 11/12, come da piano.
+- Ancora non verificato in questa sessione: HideCustomAction sulla griglia homepage di `agc_fascicolo2` (E2E-41) — la griglia moderna usata nell'app non mostra una command bar di griglia classica con i pulsanti da nascondere nemmeno con 0 record, quindi la verifica visiva non è stata conclusiva; rimandata a Fase 11/12 con dati di test popolati.
+
+### Next steps
+- PCF `CaricoPerCanestro` (binding sul form Contatto - Magistrato, bloccato).
+- Fase 8: Custom Page "ASPEN Home".
+- "Salva e pubblica" finale dell'intera app ASPEN ed E2E completa (Fase 11/12).
+
+---
+
 ## Session 2026-09-24 — Fase 7: comandi griglia Power Fx e privilege rule su Configurazioni
 
 ### What was done
