@@ -4,6 +4,40 @@
 
 ---
 
+## Session 2026-09-24 — Fase 7: comandi griglia Power Fx e privilege rule su Configurazioni
+
+### What was done
+- Ripresa Fase 7 nell'app-scoped Command Designer di `agc_fascicolo2` → griglia principale. Abilitato Power Fx cliccando "Crea una libreria dei componenti per abilitare Power Fx" (crea automaticamente `ASPEN_DefaultCommandLibrary`).
+- Comando **"Assegna Fascicolo"**: impostata Visibilità a formula Power Fx `CountRows(Self.Selected.AllItems) >= 1` (editor Monaco, workaround `.focus()` via JS diretto per bypassare overlay ribbon) e icona da risorsa web `agc_assignfascicolo_icon.svg`.
+- Creato nuovo comando **"Assegnazione massiva"**: azione Esegui JavaScript (`agc_assignfascicolo.js` → `AgicAspen.AssegnaFascicolo.openBulkAssignFromGrid`, parametro `SelectedControl`), Visibilità `CountRows(Self.Selected.AllItems) = 0`.
+- Salvato e pubblicato con successo (conferma "ASPEN_DefaultCommandLibrary is now available to everyone").
+- Verificato (falso allarme): le etichette sitemap generiche ("Nuova area secondaria") viste nel preview dell'App Designer erano solo cache stantia dell'iframe — l'app pubblicata mostra correttamente tutte le voci (Fascicoli, Cruscotto ASPEN, Esoneri, Magistrati, Pesi 1, Pesi 2, RGNR, Configurazioni).
+- Risolto il blocco residuo di Fase 7: **privilege rule sulla subarea "Configurazioni"**. Scoperto che, nonostante l'app sia stata creata con il designer moderno a pagine, esiste comunque un componente separato "Mappa Del Sito" (`agc_ASPEN`, tipo Sitemap) editabile tramite il designer classico (accessibile da Soluzioni → oggetto → click sulla riga con tipo "Mappa Del Sito", si apre in una nuova scheda `.../designer/sitemap/...`).
+- Nel designer classico, selezionata la subarea "Configurazioni" → tab Proprietà → sezione "Avanzate" → "Privilegi": aggiunta l'entità `agc_configurazione` (attenzione: nell'elenco compaiono **due** voci "Configurazione" — quella corretta è `agc_configurazione`, riconoscibile solo via attributo `value` nel DOM, l'altra è `msdynmkt_configuration` di sistema), poi deselezionato "Tutto" e selezionato solo **Scrittura**. Salvato ("Salva e chiudi") e pubblicato dalla lista oggetti della soluzione (selezione riga "Mappa Del Sito" → "Pubblica").
+- Aggiornata la checklist §7.6/§7.2 del piano di migrazione e questa voce di sessione.
+
+### Decisions made
+- Per configurare privilege rule su subarea sitemap in un'app "a pagine" moderna, usare il componente Sitemap classico separato (accessibile dalla lista oggetti soluzione, tipo "Mappa Del Sito"), non l'editor moderno delle Pagine (che non espone questa proprietà).
+- La regola scelta per "Configurazioni" segue esattamente §1.4/§7 del piano: visibile solo a chi ha privilegio **Write** su `agc_configurazione` (System Administrator lo ha implicitamente).
+
+### Current status
+- Command Designer con Power Fx: **completato** per `agc_fascicolo2` griglia principale (entrambi i comandi).
+- Privilege rule "Configurazioni": **impostata e pubblicata**; verifica E2E-33 (op.roma non la vede, admin sì) rimandata a Fase 11/12 con utenti di test reali.
+- Ancora aperti: RibbonDiff classico per pulsanti form ("Assegna Fascicolo"/"Chiudi Caso" su `agc_fascicolo2`, "Modifica Carico" su contact) — approccio non ancora deciso; binding PCF `CaricoPerCanestro` sul form Contatto - Magistrato — ancora bloccato da sessioni precedenti.
+
+### Next steps
+- Decidere e implementare l'approccio per i pulsanti RibbonDiff sui form (Ribbon Workbench vs FormXml/RibbonDiff manuale).
+- Sbloccare o documentare come gap il binding del PCF `CaricoPerCanestro`.
+- "Salva e pubblica" finale dell'app ASPEN; verifica end-to-end di avvio app da `op.roma`.
+- Fase 8 (Custom Page "ASPEN Home") non ancora iniziata.
+
+### Files changed
+- `03 - Documentazione Prodotta/Tecnica/ASPEN - Piano di Migrazione Ambiente Destinazione.md` — checklist §7.2 e §7.6 aggiornata (Configurazioni nascoste, app/sitemap, Command Designer).
+- `SESSION_NOTES.md` — questa voce.
+- Nessuna altra modifica ai file di repository: tutte le modifiche sono state applicate live su Dataverse/Maker Portal (Command Designer, Mappa del sito classica) nell'ambiente destinazione.
+
+---
+
 ## Session 2026-09-23 — Migrazione ambiente destinazione: risolto bug persistenza PCF dashboard
 
 ### What was done

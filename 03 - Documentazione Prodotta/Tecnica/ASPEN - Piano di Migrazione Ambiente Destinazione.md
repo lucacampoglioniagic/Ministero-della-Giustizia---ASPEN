@@ -663,7 +663,8 @@ Spuntare ogni voce con evidenza (screenshot/ID test E2E). La parità è raggiunt
 ### 7.2 Sicurezza
 - [ ] BU root rinominata + 3 BU tribunali con default team dotati di "Operatore ASPEN"
 - [ ] Ruolo "Operatore ASPEN" con matrice §1.10; "Amministratore ASPEN" creato
-- [ ] `SetOwnerTeamPlugin` assegna owner al team BU (E2E-31); segregazione BU (E2E-32); Configurazioni nascoste (E2E-33)
+- [ ] `SetOwnerTeamPlugin` assegna owner al team BU (E2E-31); segregazione BU (E2E-32)
+- [x] Configurazioni nascoste (E2E-33): privilege rule Write su `agc_configurazione` impostata sulla subarea "Configurazioni" (Mappa del sito classica, sezione Avanzate > Privilegi), pubblicata — verifica funzionale end-to-end con utenti `op.roma`/admin ancora da eseguire in Fase 11/12
 
 ### 7.3 Motore di carico e plugin
 - [ ] Assembly 2.0.0.0 registrato in sandbox con 9 step + 3 PreImage come §1.5
@@ -688,8 +689,9 @@ Spuntare ogni voce con evidenza (screenshot/ID test E2E). La parità è raggiunt
 
 ### 7.6 Dashboard, Home, app
 - [x] 4 PCF dashboard bindati e renderizzati correttamente su "Cruscotto ASPEN" 2×2 (fix classid + controlDescriptions + publish, vedi §7.1); ancora vuoti in attesa dei dati di test — popolamento e verifica E2E-35/36 da completare in Fase 10
-- [ ] 5° PCF (`CaricoPerCanestro`, field control su form contatto) deployato e verificato (E2E-37)
-- [ ] App `agc_ASPEN` con sitemap §1.9, Home come pagina iniziale
+- [ ] 5° PCF (`CaricoPerCanestro`, field control su form contatto) deployato e verificato (E2E-37) — bloccato: binding del PCF su un attributo composito del form contatto non riuscito finora, vedi note sessione
+- [x] App `agc_ASPEN` con sitemap §1.9 (7 tabelle + Dashboard, 3 gruppi, privilege rule su Configurazioni); Home custom page ancora da aggiungere (rimandata a Fase 8, vedi nota §1.9)
+- [x] Command Designer su `agc_fascicolo2` → griglia principale: comandi "Assegna Fascicolo" (visibilità Power Fx `CountRows(Self.Selected.AllItems) >= 1`, icona web resource) e "Assegnazione massiva" (visibilità `CountRows(Self.Selected.AllItems) = 0`) creati con Power Fx (`ASPEN_DefaultCommandLibrary`), salvati e pubblicati
 - [ ] Home: KPI corretti (E2E-38), navigazione card verso destinazione (E2E-39), responsive (E2E-40)
 
 ### 7.7 Automazioni e configurazione
