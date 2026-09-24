@@ -4,6 +4,30 @@
 
 ---
 
+## Session 2026-09-24 (sexies) — Verifiche post-import dati reali + 2 bug scoperti e corretti
+
+### What was done
+- Su richiesta ("procedi con le verifiche"), verificato l'ambiente destinazione dopo l'import dei dati reali (Fase 10/11/12):
+  - **Bug #1 (Home KPI vuote) — trovato e corretto**: le KPI della pagina custom "ASPEN Home" risultavano vuote nell'app pubblicata nonostante il data source Dataverse "Fascicoli" fosse configurato correttamente in Studio. Causa: **"Salva e pubblica" a livello di app model-driven NON pubblica le modifiche draft di una custom page** — serve il pulsante **"Pubblica" dedicato dentro l'editor Studio della custom page stessa**. La pagina live era ferma a una versione pubblicata prima dell'aggiunta del data source. Corretto pubblicando la pagina dal suo editor Studio; KPI ora corrette: 41 fascicoli attivi, 41 creati ultima settimana, 18,7 peso medio, **381 imputati totali**.
+  - **Cruscotto ASPEN** (dashboard PCF): tutte e 4 le chart verificate con dati reali — Carico per Magistrato, Fascicoli per Peso 1, Esoneri Attivi per Magistrato (correttamente vuota), Andamento Carico Mensile per Magistrato. ✅ PASS.
+  - **CaricoPerCanestro PCF** sul form Contatto-Magistrato (Claudio Bianchi): 3 canestri reali con conteggi/punti corretti. ✅ PASS.
+  - **EsoneroOverlapValidationPlugin**: testato via Web API diretta (POST su `agc_esoneros`) — un secondo esonero Attivo sovrapposto per lo stesso magistrato viene correttamente bloccato con HTTP 400 e messaggio italiano corretto. ✅ PASS.
+  - **AnnoRegistroValidationPlugin**: testato via Web API diretta su `agc_rgnrs` — anno 1899 bloccato (400), anno 2024 accettato (201). ✅ PASS.
+  - **Esclusione magistrato in esonero Totale dall'assegnazione automatica**: creato un esonero Totale Attivo per Claudio Bianchi, poi eseguita l'assegnazione automatica sul fascicolo "11111/2026" tramite il dialog "Assegna Fascicolo" (senza selezionare incompatibilità manuali). Verificato via Web API che il fascicolo è stato assegnato a un altro magistrato (Anna Greco) e non a Claudio Bianchi, confermando che l'algoritmo esclude correttamente i magistrati con esonero Totale attivo. ✅ PASS.
+  - Record di test creati durante le verifiche (esonero temporaneo, RGNR anno 2024) eliminati a fine sessione.
+  - **Bug #2 (form model-driven incompleti) — trovato e corretto**: i form principali di `agc_fascicolo2` e `agc_esonero` mostravano solo 2 campi (Nome/Numero RG + Proprietario) invece dei campi reali attesi. Causa: la FormXml sorgente in repo (`05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Entities/agc_Fascicolo2/FormXml/...`) o non era mai stata importata correttamente, o referenziava attributi ormai rinominati/rimossi dallo schema (`agc_magistratoassegnato`/`agc_peso` non esistono più; i nomi reali sono `agc_magistratocontatto` e `agc_peso2`/`agc_pesocalcolato`). Nessuna FormXml sorgente esisteva per `agc_esonero` nel repo (mai esportata), quindi il form è stato ricostruito dai campi noti dal codice dei plugin (`agc_name`, `agc_magistrato`, `agc_datainizio`, `agc_datafine`, `agc_statoesonero`, `agc_tipoesonero`, `agc_percentualeesonero`, `agc_punteggioalmomentoesonero`, `agc_punteggioalrientro`, `agc_collegariferimento`, `agc_note`). Entrambi i form corretti via `PATCH systemforms` + `PublishXml`, verificati visualmente con successo dopo aver ripulito cache client (service worker + IndexedDB — vedi nota tecnica sotto).
+
+### Technical notes
+- **Custom page publish**: "Salva e pubblica" dell'app NON basta per le custom page — serve sempre il "Pubblica" dedicato dentro l'editor della pagina.
+- **Cache client Dataverse/UCI persistente**: dopo un `PATCH` su `systemforms` + `PublishXml` (entrambi 204), il browser può continuare a mostrare la versione precedente del form per via di un **service worker registrato** + cache IndexedDB del client UCI. Fix: `navigator.serviceWorker.getRegistrations()` → `unregister()`, poi `localStorage.clear()` + cancellazione di tutti i DB IndexedDB dell'origine, poi ricaricare in una tab nuova.
+- **Schema drift tra FormXml esportata e ambiente attuale**: `agc_fascicolo2` ha oggi `agc_magistratocontatto` (non `agc_magistratoassegnato`) e `agc_peso2`/`agc_pesocalcolato` (non `agc_peso`) — probabile rinomina successiva all'export della FormXml. Da tenere presente per qualsiasi futura reimportazione della solution.
+
+### Not yet done
+- Non esiste ancora una FormXml sorgente in repo per `agc_esonero`: quella creata in questa sessione esiste solo nell'ambiente destinazione, andrebbe esportata/salvata nel repo per tracciabilità futura.
+- Non verificato se lo stesso problema di form incompleto affligge altre entità (`agc_rgnr`, `agc_peso1`, `agc_peso2`, `agc_canestrofascicolo`, `agc_configurazione`) — verifica raccomandata come follow-up.
+
+---
+
 ## Session 2026-09-24 (quinques) — Import dati reali dalla sorgente + completamento Fase 2 + attivazione plugin
 
 ### What was done
