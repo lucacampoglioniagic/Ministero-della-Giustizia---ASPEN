@@ -4,6 +4,31 @@
 
 ---
 
+## Session 2026-09-24 (quinques) — Import dati reali dalla sorgente + completamento Fase 2 + attivazione plugin
+
+### What was done
+- Su richiesta esplicita dell'utente ("aggiungiamo ora gli stessi dati che abbiamo nell'ambiente di partenza"), deviato dal dataset sintetico previsto dal piano (§6) verso una **copia reale** dei dati dell'ambiente sorgente `lccministerogiustiziademo.crm4.dynamics.com`, confermata via `ask_user` (scelta: copia_reale, tutte le tabelle in scope, bonifica legacy attiva).
+- Letti i dati sorgente via Web API con token ottenuto da `az account get-access-token --resource https://lccministerogiustiziademo.crm4.dynamics.com` (az cli già loggato nel tenant AGIC coincidente con la sorgente); nessun token diretto disponibile per il tenant `giustizia.it` della destinazione, quindi tutte le scritture in destinazione sono state eseguite via `fetch()` autenticato nel contesto browser (tab Playwright già loggato in UCI), iniettando i dati sorgente come `window.__SEED_DATA__` tramite `page.addScriptTag({ path: ... })` (workaround necessario perché il sandbox `run_code_unsafe` non espone `require`/`fs`/`fetch` nello scope esterno a `page`).
+- **Scoperto un gap rispetto al piano**: la destinazione aveva solo la Business Unit root, senza le 3 BU "Tribunale di..." previste dalla Fase 2. Confermato con l'utente (`ask_user`) di completare prima la Fase 2: create le 3 BU figlie con team di default, rinominata la root in "Ministero della Giustizia", aggiunti 5 privilegi mancanti al ruolo root "Operatore ASPEN" (propagati automaticamente alle copie ereditate nelle BU figlie), ruolo assegnato al team di default di ciascuna BU.
+- Chiesto e ottenuto dall'utente (`ask_user`) le decisioni di scope: tutti i dati reali assegnati alla BU/team **"Tribunale di Roma"**; non escludere fascicoli senza Peso 1; escludere `agc_fotocaricoesonero`/`agc_modificacarico` (generati dai plugin, non importati direttamente); escludere `agc_giudice` (tabella legacy Magistrato, sostituita da `contact`, non usata dall'app corrente).
+- Import eseguito in batch, con adattamenti di schema scoperti durante il lavoro: `agc_configurazione.agc_valore` va inviato come stringa; le date (`agc_datacaso`, `agc_datainizio`, `agc_datafine`) vanno troncate a `YYYY-MM-DD` (rifiutano `DateTimeOffset` con `T...Z`); i nomi delle navigation property per `@odata.bind` sono case-sensitive e diversi dal nome del campo lookup (es. `agc_Canestrofascicolo`, `agc_Peso2`, `agc_RGNR`, `agc_Magistrato` — scoperto ispezionando `$metadata` dopo un errore "undeclared property" fuorviante); `agc_configurazione`/`agc_canestrofascicolo`/`agc_peso2` sono Organization-owned (nessun owner); `agc_rgnr`/`agc_fascicolo2`/`contact`/`agc_esonero` espongono un'unica nav property polimorfica `ownerid`. Risultato: 3 configurazioni, 4 Peso 1, 1 Peso 2, 5 RGNR, 43 magistrati, 41 fascicoli, 14 esoneri creati con successo (0 errori residui).
+- L'assegnazione magistrato→fascicolo è stata fatta con un PATCH separato dal Create (come da design Fase 10), per far scattare `CaricoMagistratoAssegnazionePlugin`. Il primo tentativo non ha prodotto alcun calcolo: verificato che **tutti i 10 step SDK plugin erano registrati ma disabilitati** in destinazione (`CaricoMagistratoAssegnazionePlugin`, `EsoneroOverlapValidationPlugin`, `EsoneroRientroPlugin`, `AnnoRegistroValidationPlugin`, `SetOwnerTeamPlugin` — Create/Update). Confermato con l'utente (`ask_user`, scelta: attiva_tutti) e attivati tutti e 10 gli step via Web API. Ri-eseguito il PATCH di assegnazione: `agc_contributocaricoassegnato` per fascicolo e `agc_caricoattuale` per magistrato ora calcolati correttamente.
+- Aggiornato il piano di migrazione (`ASPEN - Piano di Migrazione Ambiente Destinazione.md`): note di completamento in Fase 2, Fase 4 (attivazione step plugin) e Fase 10 (dettaglio import reale, adattamenti di schema, esclusioni), più una nuova sezione checklist §7.7.
+
+### Decisions
+- Copia reale dei dati sorgente invece del dataset sintetico di §6 (deviazione dal piano, su richiesta esplicita e confermata dell'utente).
+- Tutti i dati importati assegnati alla BU "Tribunale di Roma"; Messina e Milano restano vuote per popolamento futuro.
+- Attivati tutti gli step plugin disabilitati (non solo quello del carico) per allineare il comportamento della destinazione a quello di produzione/sorgente.
+- Non creati utenti di test (`op.roma` ecc.): fuori scope per il solo import dati, i record possono essere di proprietà del team.
+
+### Not yet done
+- Verifica E2E-35/36 (dashboard con dati reali), E2E-37 (CaricoPerCanestro con dati reali), E2E-38 (KPI Home) — rimandate a Fase 11/12.
+- Verifica di `EsoneroOverlapValidationPlugin`/`EsoneroRientroPlugin`/`AnnoRegistroValidationPlugin` con casi limite dopo la riattivazione — non eseguita in questa sessione.
+- Cleanup dei file temporanei (`%TEMP%\src_*.json`, `seed-data.js` nella workspace di sessione) — da fare a fine sessione.
+- Verificare/ripristinare il profilo `pac auth` attivo (era stato selezionato l'indice della sorgente per il trucco del token az cli; verificare che punti a `Tribunali-dev` se serve per lavori futuri).
+
+---
+
 ## Session 2026-09-24 (quater) — Fase 8: Custom Page "ASPEN Home" completata (data source, sitemap, start page)
 
 ### What was done
