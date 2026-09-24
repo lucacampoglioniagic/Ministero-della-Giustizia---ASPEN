@@ -4,6 +4,59 @@
 
 ---
 
+## Da fare / Prossimi passi (aggiornato al 24/09/2026, fine sessione "septies")
+
+Elenco consolidato degli item ancora aperti, raccolti da tutte le sezioni "Not yet done"/"Next steps" precedenti ancora rilevanti. Da qui riprendere la prossima sessione.
+
+**Priorità alta (follow-up diretto dei bug corretti oggi):**
+- **Verificare il bug delle Label `StyleName: "defaultLabelStyle"` (box nero opaco, Bug #3) su altre canvas app/custom page della solution ASPEN**, oltre "ASPEN Home" — non ancora controllato. Se presente altrove, riapplicare lo stesso fix (patch diretta del JSON grezzo `Controls/*.json` dentro il `.msapp`, `StyleName` → `""`, reimport `pac solution import --publish-changes`).
+- **Riportare nei sorgenti FormXml del repo i fix del Bug #2 e Bug #4** (form `agc_fascicolo2`, `agc_esonero`, `agc_rgnr`, `agc_peso2`, `agc_canestrofascicolo`, `agc_configurazione`): oggi i fix esistono solo nell'ambiente destinazione live (applicati via `PATCH systemforms` + `PublishXml`), non nei file XML del repo — a rischio di essere persi/sovrascritti in un futuro `pac solution import` dai sorgenti repo. In particolare `agc_esonero` non ha mai avuto una FormXml sorgente tracciata nel repo.
+- Investigare perché la navigazione diretta via URL (`main.aspx?appid=...&pagetype=entityrecord`) è rimasta bloccata a lungo su "Caricamento in corso..." dopo il recente `pac solution import`/publish — possibile side-effect da monitorare prima di ulteriori reimport di massa.
+
+**Verifiche E2E ancora residue (da Fase 8/10, rimandate a Fase 11/12 ma non ancora eseguite):**
+- E2E-39 (Home): click-test dei link "Cruscotto ASPEN" e "Nuovo Fascicolo" (solo "Lista Fascicoli" verificato finora).
+- E2E-40 (Home): layout responsive a viewport 600/1000/1400px, non ancora testato.
+- E2E-41: `HideCustomAction` sulla griglia moderna di `agc_fascicolo2` — verifica non conclusiva finora (la griglia moderna non mostra una command bar classica nemmeno con record presenti).
+- `EsoneroRientroPlugin` — non ancora testato con un caso limite dedicato via Web API (a differenza di `EsoneroOverlapValidationPlugin`/`AnnoRegistroValidationPlugin`, già verificati).
+
+**Governance/ambiente:**
+- Verificare/ripristinare il profilo `pac auth` attivo puntato su `Tribunali-dev` (era stato temporaneamente selezionato l'indice del profilo sorgente per un workaround di token az cli in una sessione precedente).
+- Fase 9 (Power Automate), Fase 11 (42 test E2E Playwright) e Fase 12 (validazione finale/parità funzionale) del piano di migrazione restano da avviare/completare — vedi `03 - Documentazione Prodotta/Tecnica/ASPEN - Piano di Migrazione Ambiente Destinazione.md` per il dettaglio della checklist di fase.
+
+---
+
+## Session 2026-09-24 (septies) — Bug box neri su "ASPEN Home" e form incompleti su 4 entità: entrambi risolti e verificati
+
+### What was done
+- **Bug #3 (label con sfondo nero opaco su "ASPEN Home") — trovato e corretto**: tutte le 19 Label della custom page "ASPEN Home" (titolo/sottotitolo hero, icone, titoli/corpi card, titoli/valori statistiche) mostravano un box nero opaco dietro il testo invece dello sfondo trasparente/colorato previsto.
+  - Causa root: le Label avevano `StyleName: "defaultLabelStyle"` (riferimento al tema), il cui valore di default per `Fill` (`RGBA(0,0,0,0)`) viene renderizzato in modo errato come nero opaco dal runtime — **indipendentemente** dal valore di `Fill`/`DisabledFill` impostato esplicitamente sul controllo (verificato: né trasparente né opaco esplicito risolvevano il problema finché `StyleName` restava `defaultLabelStyle`).
+  - Confermato confrontando il JSON grezzo (`Controls/*.json` dentro il `.msapp`) di una Label creata nativamente in Studio (che non ha il bug, `StyleName: ""`) contro una Label esistente/importata (bug, `StyleName: "defaultLabelStyle"`).
+  - Fix applicato: esportata la solution ASPEN via `pac solution export`, estratto il `.msapp` della custom page, patchato `StyleName` a `""` per tutte le 19 Label via script Python sul JSON grezzo (non esprimibile tramite il formato YAML di `pac canvas pack`, che non espone `StyleName`), ripacchettizzato l'`.msapp` e reimportato con `pac solution import --publish-changes`.
+  - Verificato via query DOM su `.appmagic-borderfill-container` (dopo pulizia service worker/IndexedDB e reload pulito): tutte le 29 aree di sfondo (label + pulsanti/rettangoli) mostrano ora il colore corretto, nessuna più nera.
+- **Bug #4 (form incompleti su altre entità) — trovato e corretto**: audit read-only (schema Dataverse vs FormXml del main form) confermato lo stesso pattern del Bug #2 su altre 4 entità (`agc_peso1` e `agc_magistrato` non esistono come entità separate — sono gestite rispettivamente da `agc_canestrofascicolo` e `contact`):
+  - `agc_rgnr`: mostrava solo `agc_name` → aggiunti `agc_annoregistro`, `agc_note`.
+  - `agc_peso2`: mostrava solo `agc_name` → aggiunto `agc_peso`.
+  - `agc_canestrofascicolo` (display name "Peso 1"): mostrava solo `agc_name` → aggiunti `agc_descrizione`, `agc_peso`.
+  - `agc_configurazione`: mostrava solo `agc_nome` → aggiunti `agc_descrizione`, `agc_valore`.
+  - Tutte corrette con lo stesso metodo del Bug #2: `PATCH systemforms(<id>)` su `formxml` + `PublishXml`, tutte le chiamate con esito 204.
+
+### Technical notes
+- **`StyleName` non è esposto nel formato YAML "Experimental" di `pac canvas pack`/`unpack`** — è un attributo a livello di JSON grezzo dei controlli (`Controls/*.json` dentro il `.msapp`, che è uno zip). Qualsiasi Label ricreata in futuro tramite `pac canvas pack` da un `Screen1.fx.yaml` erediterà automaticamente `StyleName: "defaultLabelStyle"` e quindi il bug — il fix richiede una patch diretta del JSON grezzo del `.msapp`, non riproducibile tramite il roundtrip YAML standard.
+- **Import/reimport rapido di una singola canvas app in una solution**: esportare la solution (`pac solution export`), sostituire il file `.msapp` in `CanvasApps\` dentro lo zip estratto, ricomprimere la cartella con `Compress-Archive`, poi `pac solution import --path ... --publish-changes --async false`. Più veloce e affidabile della modifica manuale via Studio per fix strutturali/di massa.
+- File temporanei (`_tmp_export\`) creati per l'indagine e ripuliti a fine sessione.
+
+### Verifica visiva (aggiornamento)
+- Verificati in browser tutti e 4 i form corretti (Bug #4), tramite `Xrm.Navigation.openForm` da una tab già autenticata (i tentativi di navigazione diretta via `main.aspx?...` sono rimasti bloccati a lungo su "Caricamento in corso..." dopo il recente `pac solution import`/publish; `Xrm.Navigation.openForm` da una tab già caricata ha aperto i record istantaneamente senza reload completo):
+  - `agc_rgnr` ("77744/2026"): visibili "Numero RGNR", "Anno registro" (2026), "Note". ✅ PASS.
+  - `agc_peso2` ("Intercettazione"): visibili "Nome", "Peso" (3). ✅ PASS.
+  - `agc_canestrofascicolo`/"Peso 1" ("Abbreviati e richieste di rinvio a giudizio"): visibili "Nome", "Descrizione", "Peso" (1). ✅ PASS.
+  - `agc_configurazione` ("PesoLimite"): visibili "Nome", "Descrizione", "Valore" (48). ✅ PASS.
+
+### Not yet done
+- Verificare se il bug delle Label con `StyleName: "defaultLabelStyle"` è presente anche in altre canvas app/custom page della solution ASPEN (es. eventuali altre pagine oltre "ASPEN Home").
+
+---
+
 ## Session 2026-09-24 (sexies) — Verifiche post-import dati reali + 2 bug scoperti e corretti
 
 ### What was done
