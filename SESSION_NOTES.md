@@ -2147,13 +2147,28 @@ preparare/verificare i dati e interazione UI reale per i dialog di assegnazione.
   (es. un vero `op.roma`, mai creato in questo ambiente). Da pianificare con un utente di test
   dedicato in una sessione futura.
 
-### Gap confermato (non una regressione di questa sessione)
-- **E2E-20** (business rule "Nascondi Percentuale Esonero se Totale"): verificato che **non esiste
-  alcuna business rule** per l'entità `agc_esonero` nell'ambiente destinazione (query su
+### Gap E2E-20 risolto in questa sessione
+- **E2E-20** (regola "Nascondi Percentuale Esonero se Totale"): verificato inizialmente che **non
+  esiste alcuna business rule** per l'entità `agc_esonero` nell'ambiente destinazione (query su
   `workflows` con `primaryentity eq 'agc_esonero'` vuota). Il piano di migrazione
-  (`ASPEN - Piano di Migrazione Ambiente Destinazione.md`, riga ~694) la segnala già come item
-  pendente/non implementato, non come regressione introdotta in questa sessione. Decisione
-  rimandata all'utente se crearla ora (l'ambiente ha i permessi admin necessari).
+  (`ASPEN - Piano di Migrazione Ambiente Destinazione.md`, riga ~694) la segnalava già come item
+  pendente/non implementato, non come regressione introdotta in questa sessione.
+  Su richiesta esplicita dell'utente è stata implementata la regola come **web resource JS**
+  (`agc_esoneroform.js`, namespace `AgicAspen.EsoneroForm`), non come classica Business Rule:
+  le pagine classiche di gestione business rule (`tools/BusinessRule(s)/manageRulesForEntity.aspx`)
+  restituiscono 404 in questo ambiente/versione, ed `Tribunali-dev` (org8e819d4a) non compare
+  nell'elenco ambienti di `make.powerapps.com` per l'utenza corrente, quindi il designer grafico
+  non è raggiungibile. Comportamento implementato (equivalente funzionale a una business rule):
+  - `onLoad` + `onChange(agc_tipoesonero)` nascondono il controllo `agc_percentualeesonero` quando
+    `agc_tipoesonero` = Totale (1), e lo mostrano quando = Parziale (2);
+  - se il campo era popolato e si passa a Totale, il valore viene anche azzerato
+    (`setValue(null)`), sia in memoria sia dopo il salvataggio (verificato via Web API).
+  Registrata su form "Informazioni" (`formid` `{eb0078f0-cd8d-406a-8b17-7499e3fff2ad}`) di
+  `agc_esonero`: aggiunta `<formLibraries>`/`<events>` (onload + onchange su `agc_tipoesonero`).
+  Testato con un record temporaneo (Parziale 50% → Totale → percentuale nascosta e azzerata anche
+  post-save → Totale → Parziale → campo ricompare vuoto), poi eliminato. FormXml sincronizzato nel
+  repo (`05 - Power Platform/AssegnaFascicolo/AgicAspenRibbon_unpacked/Entities/agc_Esonero/FormXml/main/{eb0078f0-cd8d-406a-8b17-7499e3fff2ad}.xml`)
+  e nuovo file sorgente aggiunto (`05 - Power Platform/AssegnaFascicolo/WebResources/agc_esoneroform.js`).
 
 ### Note tecniche
 - Cache di ruolo lato client: dopo un cambio di ruolo via Web API

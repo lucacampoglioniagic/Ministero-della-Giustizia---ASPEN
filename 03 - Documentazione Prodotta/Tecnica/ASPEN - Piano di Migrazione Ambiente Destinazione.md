@@ -691,7 +691,8 @@ Spuntare ogni voce con evidenza (screenshot/ID test E2E). La parità è raggiunt
 
 ### 7.5 UI Magistrato / Esoneri / RGNR
 - [x] Form "Contatto - Magistrato" con tab Fascicoli (+PCF CaricoPerCanestro, E2E-37 — vedi nota §7.1bis: binding risolto 24/09/2026 tramite "Ottieni altri componenti" → il controllo compare come "Carico per Peso 1", ancorato a "Posizione"; verificato con record di test: renderizza "Nessun fascicolo aperto assegnato a questo magistrato"), Esoneri, Storico carico; "Modifica Carico" solo admin: RibbonDiff `contact` (Modifica Carico, DisplayRule `AgicAspen.ModificaCarico.isSystemAdministrator`) già presente e pubblicato in ambiente destinazione; verificato che il bottone NON appare per l'utente di sessione corrente (privo del ruolo "System Administrator"/"Amministratore ASPEN" nella lista `Xrm.Utility.getGlobalContext().userSettings.roles`), comportamento coerente con la gate di sicurezza attesa. Verifica positiva con utente realmente System Administrator rimandata a Fase 11/12; test E2E-37 con dati veri (3 fascicoli in Peso 1, soglia 30) rimandato a Fase 11/12
-- [ ] Vista "Magistrati attivi"; business rule percentuale (E2E-20); subgrid RGNR (E2E-30)
+- [ ] Vista "Magistrati attivi"; subgrid RGNR (E2E-30)
+- [x] Regola "Nascondi Percentuale Esonero se Totale" (E2E-20): implementata come web resource JS (`agc_esoneroform.js`, non come classica business rule — designer non raggiungibile in questo ambiente, vedi SESSION_NOTES 25/09/2026) su `onLoad`/`onChange(agc_tipoesonero)` del form "Informazioni" di `agc_esonero`: nasconde `agc_percentualeesonero` quando Tipo Esonero = Totale e ne azzera il valore se già popolato; verificato anche il ripristino della visibilità tornando a Parziale. Testato con record temporaneo poi eliminato.
 
 #### 7.1bis — Nota tecnica: binding PCF field-control non appare nel picker "Aggiungi componente" (RISOLTO 24/09/2026)
 

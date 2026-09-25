@@ -6,7 +6,7 @@ App As appinfo:
         HomeGap = 16;
         HomeNumCols = If(App.Width < 700, 1, If(App.Width < 1150, 2, 3));
         HomeCardWidth = (App.Width - 2*HomeMargin - (HomeNumCols-1)*HomeGap) / HomeNumCols;
-        HomeCardHeight = 340;
+        HomeCardHeight = 310;
         HomeHeroBottom = 148;
         HomeCardsRows = RoundDown(2 / HomeNumCols, 0) + 1;
         HomeStatsY = HomeHeroBottom + HomeCardsRows * (HomeCardHeight + HomeGap);

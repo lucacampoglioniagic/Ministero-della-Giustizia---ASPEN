@@ -1,23 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <systemform>
-    <formid>{a1b2c3d4-e5f6-7890-abcd-ef1234567890}</formid>
+    <formid>{70bd3733-da02-4c26-a1a6-c2e0b5341046}</formid>
     <IntroducedVersion>1.0</IntroducedVersion>
     <FormPresentation>1</FormPresentation>
     <FormActivationState>1</FormActivationState>
-    <form headerdensity="HighWithControls">
+    <form>
+      <formLibraries>
+        <Library name="agc_assignfascicolo.js" libraryUniqueId="{8a1b6e10-59b7-4a11-9c3f-000d3a697f24}" />
+      </formLibraries>
       <events>
-        <event name="onload" application="false" active="false">
+        <event name="onload" application="false" active="true">
           <Handlers>
             <Handler functionName="AgicAspen.AssegnaFascicolo.onFormLoad"
               libraryName="agc_assignfascicolo.js"
-              handlerUniqueId="{a1b2c3d4-e5f6-4a7b-8c9d-e0f1a2b3c4d5}" enabled="true"
-              passExecutionContext="true" />
+              handlerUniqueId="{8a1b6e11-59b7-4a11-9c3f-000d3a697f24}" enabled="true"
+              parameters="" passExecutionContext="true" />
           </Handlers>
         </event>
       </events>
       <tabs>
-        <tab verticallayout="true" id="{62ede4f4-d407-42d4-958c-a35824bcb82c}" IsUserDefined="1">
+        <tab verticallayout="true" id="{2e961b11-6f1b-4bea-a41b-80379d0fe954}" IsUserDefined="1">
           <labels>
             <label description="Generale" languagecode="1040" />
           </labels>
@@ -25,15 +28,15 @@
             <column width="100%">
               <sections>
                 <section showlabel="false" showbar="false" IsUserDefined="0"
-                  id="{2c6d3cec-cf69-4667-87aa-7894994da234}">
+                  id="{fc13cbe6-b26b-4ed2-868e-225d848a221e}">
                   <labels>
                     <label description="Generale" languagecode="1040" />
                   </labels>
                   <rows>
                     <row>
-                      <cell id="{8de86fd8-f958-43b3-baf0-26bd025a2bc0}">
+                      <cell id="{cb4aa63c-82e4-4522-8a78-12bf7a0d4ead}">
                         <labels>
-                          <label description="Numero RG" languagecode="1040" />
+                          <label description="Numero Registro Generale" languagecode="1040" />
                         </labels>
                         <control id="agc_numeroregistrogenerale"
                           classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}"
@@ -41,7 +44,7 @@
                       </cell>
                     </row>
                     <row>
-                      <cell id="{dca77d01-e3b0-4331-bf11-c2307c28d0c6}" visible="false">
+                      <cell id="{f8423d89-6141-47ca-8765-211cb56d1c23}">
                         <labels>
                           <label description="Proprietario" languagecode="1040" />
                         </labels>
@@ -85,9 +88,9 @@
                         <labels>
                           <label description="Magistrato assegnato" languagecode="1040" />
                         </labels>
-                        <control id="agc_magistratoassegnato"
+                        <control id="agc_magistratocontatto"
                           classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
-                          datafieldname="agc_magistratoassegnato" disabled="false" />
+                          datafieldname="agc_magistratocontatto" disabled="false" />
                       </cell>
                     </row>
                     <row>
@@ -96,8 +99,18 @@
                         <labels>
                           <label description="Peso" languagecode="1040" />
                         </labels>
-                        <control id="agc_peso" classid="{C3EFE0C3-0EC6-42BE-8349-CBD9079DFD8E}"
-                          datafieldname="agc_peso" disabled="false" />
+                        <control id="agc_peso2" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
+                          datafieldname="agc_peso2" disabled="false" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{f1e2b20d-d312-4e57-bb2b-4326bbb99491}" locklevel="0" colspan="1"
+                        rowspan="1">
+                        <labels>
+                          <label description="Peso calcolato" languagecode="1040" />
+                        </labels>
+                        <control id="agc_pesocalcolato" classid="{C3EFE0C3-0EC6-42BE-8349-CBD9079DFD8E}"
+                          datafieldname="agc_pesocalcolato" disabled="true" />
                       </cell>
                     </row>
                     <row>
@@ -125,50 +138,6 @@
           </columns>
         </tab>
       </tabs>
-      <header id="{9ec6943b-d7ad-42ec-a555-dedf3a342e00}" celllabelposition="Top" columns="111"
-        labelwidth="115" celllabelalignment="Left">
-        <rows>
-          <row>
-            <cell id="{d1268cd8-9ccd-4732-bad0-0a73752923b5}" showlabel="false">
-              <labels>
-                <label description="" languagecode="1040" />
-              </labels>
-            </cell>
-            <cell id="{cf38300c-74e0-4558-a29a-b39e6d904ec2}" showlabel="false">
-              <labels>
-                <label description="" languagecode="1040" />
-              </labels>
-            </cell>
-            <cell id="{c549384f-a171-4e8f-9dca-b0e107724a8e}" showlabel="false">
-              <labels>
-                <label description="" languagecode="1040" />
-              </labels>
-            </cell>
-          </row>
-        </rows>
-      </header>
-      <footer id="{5f6b1629-cd1e-4ba3-998e-6a53ec306f7c}" celllabelposition="Top" columns="111"
-        labelwidth="115" celllabelalignment="Left">
-        <rows>
-          <row>
-            <cell id="{be0e455b-fc11-48b1-8f53-1c83cbf17947}" showlabel="false">
-              <labels>
-                <label description="" languagecode="1040" />
-              </labels>
-            </cell>
-            <cell id="{b82f1cc3-a5f4-4139-a5b8-a08c15033d9b}" showlabel="false">
-              <labels>
-                <label description="" languagecode="1040" />
-              </labels>
-            </cell>
-            <cell id="{2f78e3f7-6cf3-4fba-97e3-08b702250fc7}" showlabel="false">
-              <labels>
-                <label description="" languagecode="1040" />
-              </labels>
-            </cell>
-          </row>
-        </rows>
-      </footer>
       <DisplayConditions Order="0" FallbackForm="true">
         <Everyone />
       </DisplayConditions>

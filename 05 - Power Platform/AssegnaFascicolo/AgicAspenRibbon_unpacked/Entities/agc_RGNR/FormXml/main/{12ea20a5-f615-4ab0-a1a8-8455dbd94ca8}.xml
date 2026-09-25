@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{12ea20a5-f615-4ab0-a1a8-8455dbd94ca8}</formid>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form>
+      <tabs>
+        <tab verticallayout="true" id="{362dc99e-1abd-46a1-b8d3-7049d7085614}" IsUserDefined="1">
+          <labels>
+            <label description="Generale" languagecode="1040" />
+          </labels>
+          <columns>
+            <column width="100%">
+              <sections>
+                <section showlabel="false" showbar="false" IsUserDefined="0"
+                  id="{f235cbeb-35db-415d-9af6-371c1c363a8b}">
+                  <labels>
+                    <label description="Generale" languagecode="1040" />
+                  </labels>
+                  <rows>
+                    <row>
+                      <cell id="{508619a1-330f-460d-a28e-a2b9ca435baa}">
+                        <labels>
+                          <label description="Numero RGNR" languagecode="1040" />
+                        </labels>
+                        <control id="agc_name" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}"
+                          datafieldname="agc_name" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{0d67286e-e6a0-4899-b919-fae5d5596bfe}">
+                        <labels>
+                          <label description="Anno registro" languagecode="1040" />
+                        </labels>
+                        <control id="agc_annoregistro" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}"
+                          datafieldname="agc_annoregistro" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{d7619501-d5d2-445a-82ee-064a6c42cb01}">
+                        <labels>
+                          <label description="Note" languagecode="1040" />
+                        </labels>
+                        <control id="agc_note" classid="{E0DECE4B-6FC8-4a8f-A065-082708572369}"
+                          datafieldname="agc_note" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{bbefb483-f372-4b05-9ae4-90edeceb0646}">
+                        <labels>
+                          <label description="Proprietario" languagecode="1040" />
+                        </labels>
+                        <control id="ownerid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
+                          datafieldname="ownerid" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+              </sections>
+            </column>
+          </columns>
+        </tab>
+      </tabs>
+      <DisplayConditions Order="0" FallbackForm="true">
+        <Everyone />
+      </DisplayConditions>
+    </form>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>1</CanBeDeleted>
+    <LocalizedNames>
+      <LocalizedName description="Informazioni" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Modulo per questa entità." languagecode="1040" />
+    </Descriptions>
+  </systemform>
+</forms>

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{7ab57895-d775-4798-ae36-ee5fc61891fe}</formid>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form>
+      <tabs>
+        <tab verticallayout="true" id="{55a9b63e-07fa-4253-8469-66952ccb6c45}" IsUserDefined="1">
+          <labels>
+            <label description="Generale" languagecode="1040" />
+          </labels>
+          <columns>
+            <column width="100%">
+              <sections>
+                <section showlabel="false" showbar="false" IsUserDefined="0"
+                  id="{d056c6aa-f7e8-4656-911e-725005cc938d}">
+                  <labels>
+                    <label description="Generale" languagecode="1040" />
+                  </labels>
+                  <rows>
+                    <row>
+                      <cell id="{06783a90-cd56-44ff-908c-f5d62d4b0490}">
+                        <labels>
+                          <label description="Nome" languagecode="1040" />
+                        </labels>
+                        <control id="agc_nome" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}"
+                          datafieldname="agc_nome" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{3432956e-e593-44f7-a93f-feacfda0def3}">
+                        <labels>
+                          <label description="Descrizione" languagecode="1040" />
+                        </labels>
+                        <control id="agc_descrizione" classid="{E0DECE4B-6FC8-4a8f-A065-082708572369}"
+                          datafieldname="agc_descrizione" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{ff86488e-2e50-492f-af3a-9a287fb36815}">
+                        <labels>
+                          <label description="Valore" languagecode="1040" />
+                        </labels>
+                        <control id="agc_valore" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}"
+                          datafieldname="agc_valore" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+              </sections>
+            </column>
+          </columns>
+        </tab>
+      </tabs>
+      <DisplayConditions Order="0" FallbackForm="true">
+        <Everyone />
+      </DisplayConditions>
+    </form>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>1</CanBeDeleted>
+    <LocalizedNames>
+      <LocalizedName description="Informazioni" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Modulo per questa entità." languagecode="1040" />
+    </Descriptions>
+  </systemform>
+</forms>
