@@ -2086,3 +2086,85 @@ Da qui la regola di continuità di assegnazione: fascicoli figli con lo stesso R
 possibile, essere assegnati allo stesso magistrato. Nessun impatto sul codice in questa sessione.
 
 ---
+
+## Session 2026-09-25 — Fase 11 E2E, round 2 (ambiente destinazione Tribunali-dev)
+
+Proseguimento dei test E2E-01/../42 sull'ambiente destinazione `org8e819d4a.crm4.dynamics.com`
+(Tribunali-dev), dopo il fix del bug di concorrenza E2E-24 (commit `ce7631c`, sessione precedente).
+Test eseguiti via sessione browser Playwright autenticata, con chiamate dirette Web API per
+preparare/verificare i dati e interazione UI reale per i dialog di assegnazione.
+
+### Risultati PASS
+- **E2E-10** (blocco client su assegnazione manuale esonero Totale): verificato che il salvataggio
+  lancia l'errore custom `addOnSave` e che `agc_magistratocontatto` non viene persistito.
+- **E2E-28** (pulsanti "Assegna Fascicolo"/"Chiudi Caso" nascosti su record nuovo non salvato):
+  confermato.
+- **E2E-22** (Modifica Carico da admin): funziona solo assegnando il ruolo custom
+  **"Amministratore ASPEN"** (non il ruolo builtin "Amministratore di sistema", il cui nome
+  localizzato non combacia con la stringa inglese `"System Administrator"` hardcoded in
+  `agc_modificacarico.js`/`ModificaCaricoMagistratoPlugin.cs`) — comportamento per design, non bug.
+  Verificato aggiornamento `agc_caricoattuale` e creazione corretta del record di audit
+  `agc_modificacarico`.
+- **E2E-23** (operatore non può usare Modifica Carico): confermato sia da UI (pulsante assente) sia
+  chiamando direttamente la Custom API bound `contacts(id)/Microsoft.Dynamics.CRM.agc_ModificaCaricoMagistrato`
+  (HTTP 400, errore di autorizzazione atteso).
+- **E2E-42** (autosave/salvataggio su campo non correlato non attiva il blocco esonero): creato un
+  fascicolo con magistrato esonerato pre-legato via Web API, poi salvato un campo non correlato
+  senza toccare il blocco.
+- **E2E-01/02/04** (dialog di assegnazione singolo fascicolo non assegnato): aperto il dialog reale
+  da form (pulsante ribbon "Assegna Fascicolo"), marcate come incompatibili tutte le magistrate
+  reali tranne 3 contatti di test con carichi noti (36/50/100); il sistema ha proposto
+  correttamente il magistrato **non incompatibile con il carico minore** (36) e aggiornato
+  `agc_caricoattuale` (+peso calcolato). Stato record → "Proposto".
+- **E2E-03** (continuità RGNR): creati 2 fascicoli sullo stesso RGNR; il primo assegnato
+  manualmente a un magistrato con carico alto (200); il dialog sul secondo fascicolo ha proposto
+  **lo stesso magistrato** nonostante il carico elevato, confermando che la continuità RGNR ha
+  priorità sul criterio del carico minimo.
+- **E2E-06/07/08/09** (selezione multipla in griglia): selezionati 2 fascicoli in griglia (uno già
+  assegnato) e cliccato "Assegna Fascicolo" → il codice esegue `apriAssegnazioneSelezionati` (non
+  il dialog interattivo, riservato alla selezione singola non assegnata): mostrato correttamente
+  l'avviso "Fascicoli già assegnati" prima di procedere (E2E-08/09), poi eseguita l'assegnazione
+  automatica sequenziale (`eseguiAssegnazioneSequenziale`) che ha assegnato i 2 fascicoli a **due
+  magistrati reali diversi** (i due con carico più basso in sistema), confermando che il carico
+  viene aggiornato in memoria tra un'assegnazione e la successiva nello stesso batch (nessun
+  overload dello stesso magistrato). Messaggio finale: "Assegnati 2 fascicoli su 2."
+
+### Non testabili in questa sessione
+- **E2E-21** (flow "Chiusura esoneri giornaliera" chiude esoneri scaduti): flow con trigger a
+  ricorrenza giornaliera (prossima esecuzione schedulata: 2026-09-26T00:00:00Z), non forzabile via
+  Web API (nessun `ExecuteWorkflowRequest`-equivalente per cloud flow su trigger Recurrence).
+  Dati di test preparati e poi puliti; da verificare in una sessione futura osservando un run
+  naturale, oppure valutando un trigger on-demand aggiuntivo per i test.
+- **E2E-05** (riserva GUP): richiede che *tutti* i magistrati della business unit risultino già
+  assegnati come GIP sullo stesso RGNR — scenario impraticabile da simulare senza alterare
+  pesantemente i dati reali dei ~40 magistrati esistenti. Logica (`verificaRiservaGup` in
+  `agc_assignfascicolo.js`) revisionata a codice e appare corretta, ma non verificata a runtime.
+- **E2E-32/33/34** (segregazione per business unit / visibilità "Configurazioni" per operatore
+  puro): l'unico utente disponibile in sessione (`Luca Campoglioni`) possiede anche il ruolo
+  builtin **"Amministratore di sistema"**, che bypassa qualsiasi controllo di privilegio/BU a
+  livello di piattaforma Dataverse indipendentemente dagli altri ruoli assegnati. Non è quindi
+  possibile testare la segregazione pura senza un utente realmente privo di privilegi di sistema
+  (es. un vero `op.roma`, mai creato in questo ambiente). Da pianificare con un utente di test
+  dedicato in una sessione futura.
+
+### Gap confermato (non una regressione di questa sessione)
+- **E2E-20** (business rule "Nascondi Percentuale Esonero se Totale"): verificato che **non esiste
+  alcuna business rule** per l'entità `agc_esonero` nell'ambiente destinazione (query su
+  `workflows` con `primaryentity eq 'agc_esonero'` vuota). Il piano di migrazione
+  (`ASPEN - Piano di Migrazione Ambiente Destinazione.md`, riga ~694) la segnala già come item
+  pendente/non implementato, non come regressione introdotta in questa sessione. Decisione
+  rimandata all'utente se crearla ora (l'ambiente ha i permessi admin necessari).
+
+### Note tecniche
+- Cache di ruolo lato client: dopo un cambio di ruolo via Web API
+  (`systemuserroles_association`), il client Xrm non riflette il cambiamento anche dopo un reload
+  completo, per via di service worker + localStorage/IndexedDB. Fix: unregister di tutte le
+  `navigator.serviceWorker.getRegistrations()`, `localStorage.clear()`/`sessionStorage.clear()`,
+  poi navigazione fresca alla stessa URL.
+- Custom API `agc_ModificaCaricoMagistrato` è **bound** all'entità `contact`
+  (`POST contacts(id)/Microsoft.Dynamics.CRM.agc_ModificaCaricoMagistrato`, body
+  `{NuovoValore, Nota}`), non invocabile come azione unbound.
+- Tutti i dati di test creati (magistrati/fascicoli/RGNR fittizi, ruoli temporaneamente
+  rimossi/riassegnati) sono stati ripuliti/ripristinati al termine di ciascun test.
+
+---
