@@ -2183,3 +2183,47 @@ preparare/verificare i dati e interazione UI reale per i dialog di assegnazione.
   rimossi/riassegnati) sono stati ripuliti/ripristinati al termine di ciascun test.
 
 ---
+
+## Session 2026-09-25 (cont.) — PCF `CaricoPerCanestro`: aggiunta ripartizione per Peso 2
+
+### Richiesta
+Il controllo PCF `CaricoPerCanestro` (tab "Fascicoli" del Contatto/Magistrato, sezione "Posizione",
+bound a `jobtitle` come `dummyBind`) mostrava il carico raggruppato solo per "Peso 1"
+(`agc_canestrofascicolo`). Richiesto di aggiungere anche il raggruppamento per "Peso 2"
+(`agc_peso2`).
+
+### Analisi
+Il campo calcolato `agc_pesocalcolato` su `agc_fascicolo2` include già entrambi i contributi
+(`agc_numeroimputati + agc_numeroimputazioni + agc_Canestrofascicolo.agc_peso + If(IsBlank(agc_Peso2), 0, agc_Peso2.agc_peso) + 1`),
+quindi i totali di carico complessivo non erano mai errati: mancava solo la ripartizione/vista per
+categoria di Peso 2 nel PCF. Nessuna soglia di configurazione dedicata a Peso 2 esiste in
+`agc_configurazione` (solo `PesoLimite` per `CaricoMagistratiChart` e `PesoLimiteCanestro` per
+`CaricoPerCanestro`): riutilizzata `PesoLimiteCanestro` anche per la colorazione della sezione
+Peso 2.
+
+### Implementazione
+File modificato: `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts`.
+- Interfaccia `CaricoCanestro` generalizzata in `CaricoGruppo` (`id`, `nome`, `pesoTotale`,
+  `numFascicoli`).
+- `_loadData` recupera ora anche `_agc_peso2_value` (oltre a `_agc_canestrofascicolo_value`),
+  filtra i fascicoli chiusi una sola volta, poi raggruppa con un nuovo helper generico
+  `_raggruppa(entities, lookupField, etichettaVuota)` chiamato due volte (Peso 1 e Peso 2,
+  quest'ultimo con etichetta "Senza Peso 2" per i fascicoli non valorizzati).
+- `_render` mostra il messaggio "nessun dato" solo se entrambe le liste sono vuote, e delega il
+  rendering di ciascuna sezione a un nuovo helper `_renderSezione(titolo, rows)` (estratto dalla
+  logica di rendering barre già esistente), seguito da un'unica legenda condivisa.
+
+### Verifica
+- `npx tsc --noEmit -p tsconfig.json` in `05 - Power Platform/PCF/CaricoPerCanestro/`: nessun
+  errore (confermato che `index.ts` è effettivamente incluso via `--listFiles`, il progetto non ha
+  la trappola "solution style" `files: []`).
+- `npm run build`: bundle generato senza errori/warning ESLint (`out/controls/.../bundle.js`).
+- Deploy in `Tribunali-dev` via `pac pcf push --publisher-prefix agc` (richiesta nuova
+  autenticazione interattiva `pac auth create`, il token precedente era scaduto per conditional
+  access/sign-in frequency).
+- Verifica visiva sul record Contatto "Marco Bianchi" (tab Fascicoli): entrambe le sezioni "Carico
+  per Peso 1" e "Carico per Peso 2" renderizzate correttamente con barre, colori (verde/arancio/
+  rosso in base a `PesoLimiteCanestro`) e legenda condivisa; il caso "Senza Peso 2" è gestito
+  correttamente per i fascicoli privi di valore.
+
+---

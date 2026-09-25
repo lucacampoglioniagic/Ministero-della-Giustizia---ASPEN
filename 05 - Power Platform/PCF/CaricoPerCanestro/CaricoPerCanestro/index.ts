@@ -6,9 +6,9 @@ const COLOR_RED = "#D13438";
 const CLOSED_STATUS_LABEL = "chiuso";
 const CLOSED_STATUS_VALUE = 2;
 
-interface CaricoCanestro {
-  canestroId: string;
-  canestroName: string;
+interface CaricoGruppo {
+  id: string;
+  nome: string;
   pesoTotale: number;
   numFascicoli: number;
 }
@@ -74,38 +74,50 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
     this._context.webAPI
       .retrieveMultipleRecords(
         "agc_fascicolo2",
-        `?$select=agc_fascicolo2id,agc_pesocalcolato,agc_statocaso,_agc_canestrofascicolo_value` +
+        `?$select=agc_fascicolo2id,agc_pesocalcolato,agc_statocaso,` +
+          `_agc_canestrofascicolo_value,_agc_peso2_value` +
           `&$filter=_agc_magistratocontatto_value eq ${magistratoId} and agc_pesocalcolato ne null`,
       )
       .then((res) => {
-        const map: Record<string, CaricoCanestro> = {};
-        for (const f of res.entities) {
-          if (this._isClosedFascicolo(f as Record<string, unknown>)) continue;
-
-          const cId =
-            (f["_agc_canestrofascicolo_value"] as string) ?? "__nessuno__";
-          const cName =
-            (f[
-              "_agc_canestrofascicolo_value@OData.Community.Display.V1.FormattedValue"
-            ] as string) ?? "Senza canestro";
-          const peso = (f["agc_pesocalcolato"] as number) ?? 0;
-          if (!map[cId])
-            map[cId] = {
-              canestroId: cId,
-              canestroName: cName,
-              pesoTotale: 0,
-              numFascicoli: 0,
-            };
-          map[cId].pesoTotale += peso;
-          map[cId].numFascicoli += 1;
-        }
-        const rows = Object.values(map).sort(
-          (a, b) => b.pesoTotale - a.pesoTotale,
+        const entities = (res.entities as Record<string, unknown>[]).filter(
+          (f) => !this._isClosedFascicolo(f),
         );
-        this._render(rows);
-        return rows;
+        const rowsPeso1 = this._raggruppa(
+          entities,
+          "_agc_canestrofascicolo_value",
+          "Senza canestro",
+        );
+        const rowsPeso2 = this._raggruppa(
+          entities,
+          "_agc_peso2_value",
+          "Senza Peso 2",
+        );
+        this._render(rowsPeso1, rowsPeso2);
+        return { rowsPeso1, rowsPeso2 };
       })
       .catch((err) => this._renderError(String(err)));
+  }
+
+  /* Raggruppa i fascicoli per il valore di un campo lookup (Peso 1 = canestro,
+     Peso 2 = agc_peso2), sommando il peso calcolato totale per ciascun gruppo. */
+  private _raggruppa(
+    entities: Record<string, unknown>[],
+    lookupField: string,
+    etichettaVuota: string,
+  ): CaricoGruppo[] {
+    const map: Record<string, CaricoGruppo> = {};
+    for (const f of entities) {
+      const id = (f[lookupField] as string) ?? "__nessuno__";
+      const nome =
+        (f[`${lookupField}@OData.Community.Display.V1.FormattedValue`] as string) ??
+        etichettaVuota;
+      const peso = (f["agc_pesocalcolato"] as number) ?? 0;
+      if (!map[id])
+        map[id] = { id, nome, pesoTotale: 0, numFascicoli: 0 };
+      map[id].pesoTotale += peso;
+      map[id].numFascicoli += 1;
+    }
+    return Object.values(map).sort((a, b) => b.pesoTotale - a.pesoTotale);
   }
 
   private _isClosedFascicolo(entity: Record<string, unknown>): boolean {
@@ -131,21 +143,44 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
     return COLOR_GREEN;
   }
 
-  private _render(rows: CaricoCanestro[]): void {
+  private _render(rowsPeso1: CaricoGruppo[], rowsPeso2: CaricoGruppo[]): void {
     this._container.innerHTML = "";
 
-    /* ── Titolo ── */
+    const nessunDato = rowsPeso1.length === 0 && rowsPeso2.length === 0;
+    if (nessunDato) {
+      const empty = document.createElement("p");
+      empty.textContent =
+        "Nessun fascicolo aperto assegnato a questo magistrato.";
+      empty.style.cssText = "color:#666;font-size:13px;";
+      this._container.appendChild(empty);
+      return;
+    }
+
+    this._renderSezione("Carico per Peso 1", rowsPeso1);
+    this._renderSezione("Carico per Peso 2", rowsPeso2);
+
+    /* ── Legenda (comune a entrambe le sezioni) ── */
+    const legend = document.createElement("div");
+    legend.style.cssText =
+      "margin-top:14px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:#555;";
+    legend.innerHTML =
+      `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COLOR_GREEN};margin-right:4px;"></span>Scarico</span>` +
+      `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COLOR_YELLOW};margin-right:4px;"></span>Attenzione (≥80%)</span>` +
+      `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COLOR_RED};margin-right:4px;"></span>Oberato (≥soglia)</span>`;
+    this._container.appendChild(legend);
+  }
+
+  private _renderSezione(titolo: string, rows: CaricoGruppo[]): void {
     const title = document.createElement("h3");
-    title.textContent = "Carico per Peso 1";
+    title.textContent = titolo;
     title.style.cssText =
       "margin:0 0 12px;font-size:14px;font-weight:600;color:#242424;";
     this._container.appendChild(title);
 
     if (rows.length === 0) {
       const empty = document.createElement("p");
-      empty.textContent =
-        "Nessun fascicolo aperto assegnato a questo magistrato.";
-      empty.style.cssText = "color:#666;font-size:13px;";
+      empty.textContent = "Nessun fascicolo aperto in questa categoria.";
+      empty.style.cssText = "color:#666;font-size:13px;margin-bottom:14px;";
       this._container.appendChild(empty);
       return;
     }
@@ -165,7 +200,7 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
       label.style.cssText =
         "display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;";
       label.innerHTML =
-        `<span style="color:#242424;font-weight:500;">${this._esc(row.canestroName)}</span>` +
+        `<span style="color:#242424;font-weight:500;">${this._esc(row.nome)}</span>` +
         `<span style="color:#555;">${row.pesoTotale.toFixed(1)} pt &nbsp;·&nbsp; ${row.numFascicoli} fasc.</span>`;
 
       /* Track barra */
@@ -184,16 +219,6 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
       item.appendChild(track);
       this._container.appendChild(item);
     }
-
-    /* ── Legenda ── */
-    const legend = document.createElement("div");
-    legend.style.cssText =
-      "margin-top:14px;display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:#555;";
-    legend.innerHTML =
-      `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COLOR_GREEN};margin-right:4px;"></span>Scarico</span>` +
-      `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COLOR_YELLOW};margin-right:4px;"></span>Attenzione (≥80%)</span>` +
-      `<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${COLOR_RED};margin-right:4px;"></span>Oberato (≥soglia)</span>`;
-    this._container.appendChild(legend);
   }
 
   private _renderLoading(): void {
