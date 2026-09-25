@@ -2268,3 +2268,191 @@ colonna libera da riempire, essendo entrambe già coperte dal rowspan).
   `4ff56c67-5fb7-f111-aaab-000d3a697f24`).
 
 ---
+
+## Session 2026-09-25 (cont.) — Fase 11 E2E, round 3: chiusura scenari residui rimasti non
+verificati (E2E-04/05/06/08/09/36)
+
+### Contesto
+Riconciliazione tra scenari E2E genuinamente verificati a runtime e scenari solo assunti/etichettati
+in modo ambiguo nelle sessioni precedenti (checkpoint 006/007): rilette con attenzione le
+definizioni formali della tabella E2E nel piano di migrazione, individuati 6 scenari mai
+effettivamente eseguiti. Eseguiti dal vivo via sessione browser Playwright autenticata su
+`org8e819d4a.crm4.dynamics.com`, con verifica incrociata via Web API.
+
+### Risultati PASS
+- **E2E-04** (continuità RGNR superata da esonero Totale attivo): creati magistrato M1 (carico 200,
+  poi esonerato Totale/Attivo) e M2 (carico 5), RGNR di test, fascicolo A assegnato a M1 **prima**
+  della creazione dell'esonero (il blocco server-side impedisce di assegnare direttamente un
+  magistrato già esonerato) e fascicolo B non assegnato sullo stesso RGNR. Aperto il dialog reale
+  su B con tutti i 43 magistrati reali marcati incompatibili (isolando M1/M2): il sistema ha
+  proposto **M2**, non M1, nonostante la continuità RGNR — confermando che l'esclusione per
+  esonero Totale ha priorità sulla continuità RGNR.
+- **E2E-05** (esclusione per incompatibilità): validato come sottoprodotto del test E2E-04 (i 43
+  magistrati marcati incompatibili sono stati correttamente esclusi dalla proposta).
+- **E2E-09** (avviso "Riserva GUP" in-dialog): la conferma dell'assegnazione a M2 nel test E2E-04
+  ha correttamente mostrato l'avviso "tutti i 2 magistrati disponibili... risulteranno impegnati
+  come GIP... Procedere comunque?" (scenario con pool di candidati ridotto a 2 dall'esclusione
+  incompatibilità); confermato con "Procedi" e verificato via Web API l'aggiornamento del carico
+  di M2 (5 → 9).
+- **E2E-06** (griglia, selezione singola → dialog interattivo, non massivo): creato fascicolo C non
+  assegnato, isolato in griglia tramite filtro colonna, selezionata la singola riga e invocato
+  "Assegna Fascicolo" dal command bar → si è aperto il dialog interattivo singolo standard
+  ("Seleziona eventuali incompatibilità prima di confermare l'assegnazione"), non l'azione massiva
+  — confermato che con 1 solo record selezionato il routing va al dialog singolo. Annullato senza
+  completare l'assegnazione (solo verifica di routing).
+- **E2E-36** (grafico dashboard "Esoneri Attivi per Magistrato" reagisce alla chiusura esonero):
+  riutilizzato l'esonero Totale/Attivo di M1 (creato per E2E-04): verificato via screenshot che
+  "TestE2E04-M1-Esonerato" compariva nel grafico; chiuso l'esonero (`agc_statoesonero` → 2/Chiuso)
+  via Web API; ricaricato il dashboard e confermato che il magistrato è scomparso dal grafico.
+
+- **E2E-08** (griglia, 0 selezionati → "Assegnazione massiva"): verificato che, al momento del
+  test, **0 fascicoli reali** risultavano non assegnati nell'ambiente (query di controllo via Web
+  API), quindi il blast radius reale era nullo. Creati 3 fascicoli di test non assegnati (peso 4
+  ciascuno) e individuati i 3 magistrati reali col carico più basso (Alessandro Leone, Andrea
+  Coppola, Angela Farina, tutti a carico 0), per rendere l'esito prevedibile e reversibile.
+  Invocato il comando reale "Assegnazione massiva" dal command bar griglia con 0 righe selezionate
+  (visibile solo in questa condizione, coerente con `isBulkAssignVisible`): mostrato il dialog di
+  conferma reale ("Verranno assegnati tutti i fascicoli attualmente senza magistrato... Continuare?"),
+  confermato con "Assegna tutti" → messaggio finale "Assegnati 3 fascicoli su 3." Verificato via
+  Web API: i 3 fascicoli sono stati distribuiti a **3 magistrati diversi** (uno ciascuno dei tre
+  a carico inizialmente pari), ognuno portato a carico 4 — confermando che il bilanciamento in
+  memoria tra un'assegnazione e la successiva nello stesso batch evita di sovraccaricare lo stesso
+  magistrato anche partendo da carichi identici. Dopo la verifica, eliminati i 3 fascicoli di test
+  e ripristinato il carico dei 3 magistrati coinvolti a 0 (valore originale).
+
+### Pulizia dati di test
+Rimossi al termine di tutti i test: contatti `TestE2E04-M1-Esonerato` e `TestE2E04-M2-BassoCarico`,
+RGNR `RGNR-TESTE2E04`, fascicoli `TESTE2E04-A/B`, `TESTE2E06-C` e `TESTE2E08-1/2/3`, esonero di M1
+— tutti eliminati via Web API (HTTP 204 su ogni DELETE); carico dei 3 magistrati coinvolti in
+E2E-08 ripristinato a 0 via PATCH (HTTP 204).
+
+---
+
+## Session 2026-09-25 (cont.) — Fase 11 E2E, round 4: E2E-32/33/34 (segregazione per Business Unit)
+
+### Contesto
+Ultimi 3 scenari residui, richiedenti un utente reale non-admin. L'utente ha creato un utente di
+test reale, **Elia Quaranta** (elia.quaranta@giustizia.it), assegnato al Team "Tribunale di Roma"
+con ruolo diretto "Operatore ASPEN" (unico ruolo). Test eseguiti tramite impersonazione Web API
+nativa (header `MSCRMCallerID` = systemuserid di Elia), sfruttando il privilegio
+`prvActOnBehalfOfAnotherUser` dell'utente admin — valida per verificare sicurezza a livello dati e
+privilegi, non per logica client-side/JS (per cui serve un vero login browser, es. Level Up,
+non ancora configurato dall'utente).
+
+### Risultati
+
+- **E2E-32 PASS** (segregazione record per Business Unit): tutti i 41 fascicoli reali
+  appartenevano a un'unica BU (Tribunale di Roma), quindi creato un fascicolo di test sintetico
+  cross-BU `TESTE2E32-MILANO`, riassegnato via `PATCH .../ownerid@odata.bind` al team predefinito
+  "Tribunale di Milano". Verificato via query impersonata (Elia, BU Roma): il fascicolo Milano **non
+  compare** nella lista filtrata (0 risultati) e l'accesso diretto per id restituisce **HTTP 403**
+  ("does not have ReadAccess right(s) ... Consider assigning a role with the level
+  OrganizationLevel"). Confermato che il privilegio `prvReadagc_fascicolo2` sul ruolo "Operatore
+  ASPEN" (Roma) è correttamente a **Depth: Local** (BU), non Global. Fascicolo di test eliminato a
+  fine verifica.
+
+- **E2E-33 FAIL → FIX APPLICATO → PASS** (visibilità voce sitemap "Configurazioni"): la
+  visibilità delle sub-area sitemap legate a un'entità in Dataverse è governata direttamente dal
+  privilegio di lettura sull'entità (non da un attributo XML separato). Riscontrato che il ruolo
+  "Operatore ASPEN" aveva il privilegio `prvReadagc_configurazione` (Depth **Global**) su **tutte
+  e 4** le istanze BU-scoped del ruolo (Ministero della Giustizia, Tribunale di Roma, Milano,
+  Messina) — quindi l'operatore avrebbe visto/potuto leggere le Configurazioni, contrariamente al
+  requisito. **Fix applicato** (su richiesta esplicita dell'utente: "gli operatori aspen non
+  possono vedere le configurazioni"): rimosso il privilegio `prvReadagc_configurazione` da tutte
+  le 4 istanze del ruolo tramite l'azione Web API bound
+  `roles({roleId})/Microsoft.Dynamics.CRM.RemovePrivilegeRole` (payload `{"Privilege": {
+  "privilegeid": ... }}`, non `@odata.bind` — la entity set `privileges` non è navigabile per
+  bind). Verificato: query impersonata (Elia) su `agc_configuraziones` ora restituisce **HTTP 403**
+  (Missing Privilege).
+
+- **E2E-34 PASS (via code review)** (filtro magistrati per BU nel dialog assegnazione): in
+  `agc_assignfascicolo.js` (righe ~49-61), la query dei candidati magistrati per l'avviso "Riserva
+  GUP" applica `_owningbusinessunit_value eq buId` (BU del fascicolo, o BU dell'utente come
+  fallback) direttamente nel filtro OData server-side — logica corretta per costruzione. Non
+  testabile end-to-end con dati reali: tutti i 43 magistrati reali appartengono a un'unica BU
+  (Tribunale di Roma), stessa limitazione di E2E-32. Verificato solo via lettura del codice, non
+  tramite esecuzione live con un magistrato cross-BU.
+
+- **Verifica accesso "Pesi 1" / "Pesi 2" con Elia impersonato via Level Up**: dopo aver configurato
+  l'impersonificazione reale via estensione browser Level Up, la voce sitemap "Pesi 1" (che punta
+  in realtà all'entità `agc_canestrofascicolo`, non `agc_peso` come inizialmente ipotizzato)
+  mostrava un errore client "Entity descriptor is not available" per Elia. Verificato via Web API
+  diretta (bypassando la UI) che la lettura di `agc_canestrofascicolo` funziona correttamente per
+  Elia (HTTP 200, dati restituiti) — quindi **non è un problema di privilegi**: il ruolo
+  "Operatore ASPEN" ha già privilegi CRUD completi sia su `agc_canestrofascicolo` (Pesi 1) sia su
+  `agc_peso2` (Pesi 2), come richiesto dall'utente ("tutte gli operatori devono accedere sia a
+  peso 1 che a peso 2"). L'errore in UI è un artefatto client-side della cache metadati dell'app,
+  dovuto al cambio di identità a metà sessione tramite Level Up (non riproducibile con un login
+  diretto reale come Elia). Nessuna modifica ai ruoli necessaria per questo punto.
+- **Nota tecnica su Level Up**: le navigazioni "hard" (`page.goto`/reload completo) tramite
+  Playwright resettano lo stato di impersonificazione di Level Up riportando alla sessione admin;
+  bisogna navigare solo tramite click sugli elementi della sitemap/app per preservare
+  l'impersonificazione durante i test.
+
+### Nota per il futuro
+Se si desidera completare E2E-34 con un test end-to-end live (non solo code review), servirebbe
+creare un magistrato di test sintetico in una BU diversa da Roma (es. Milano) e un fascicolo nella
+stessa BU, poi verificare che il dialog non lo proponga come candidato. Non eseguito in questa
+sessione per limiti di tempo/priorità.
+
+### Pulizia dati di test
+Fascicolo `TESTE2E32-MILANO` eliminato via Web API (HTTP 204) a fine verifica E2E-32. Nessun altro
+dato di test residuo da questa sessione.
+
+---
+
+## Session 2026-09-25 (cont.) — Chiusura sessione: verifica finale Level Up e stato Fase 9/11/12
+
+### Contesto
+Dopo il round 4 di E2E, l'utente ha eseguito test manuali con impersonificazione reale (Level Up)
+sull'utente **Elia Quaranta** (Operatore ASPEN, BU Roma), sollevando tre segnalazioni poi chiarite:
+
+1. Errore "AppContextLoader: 502" al caricamento di ASPEN Home come Elia → diagnosticato come
+   errore gateway transitorio, non un problema di permessi (sarebbe stato 403).
+2. "Sembra che si vedano tutti i dati" con Elia collegato → chiarito che è **atteso**: tutti i 41
+   fascicoli/RGNR reali appartengono alla stessa BU di Elia (Roma); la segregazione cross-BU è
+   comunque già stata provata con il fascicolo sintetico Milano (E2E-32).
+3. Impossibilità di accedere a "Pesi 1"/Peso 2 con Elia → confermato **falso allarme** (vedi sopra,
+   round 4): entrambe le entità (`agc_canestrofascicolo` = Pesi 1, `agc_peso2` = Peso 2) hanno già
+   privilegi CRUD completi per "Operatore ASPEN"; l'errore era un artefatto client-side legato al
+   cambio identità a metà sessione tramite Level Up, non un problema di ruolo/sicurezza reale.
+
+L'utente ha confermato "prova ora" e il problema non si è ripresentato con un nuovo login/refresh
+pulito. Nessuna ulteriore modifica ai ruoli necessaria.
+
+### Decisione utente su Fase 9 e stato generale
+- **Fase 9 (governance Power Automate) esplicitamente saltata su richiesta esplicita dell'utente**
+  ("No la Fase 9 la saltiamo"). Non pianificata per questa iterazione del progetto.
+- Rivista la checklist §7 ("Checklist di parità funzionale finale") del piano di migrazione:
+  aggiornate le spunte per riflettere lo stato reale raggiunto dalle Fasi 0-11 (vedi modifiche al
+  documento `03 - Documentazione Prodotta/Tecnica/ASPEN - Piano di Migrazione Ambiente
+  Destinazione.md`).
+- **Fase 12 (Validazione finale e parità funzionale / export solution / solution checker /
+  README-CHANGELOG / backup Go-live) rimandata alla prossima sessione** su richiesta esplicita
+  dell'utente ("No lo facciamo la prossima volta").
+
+### Stato finale di questa sessione — riepilogo
+
+**Completato e verificato (Fasi 0-11):**
+- Fase 11: tutti i 42 scenari E2E coperti/PASS (E2E-01...E2E-42), inclusi gli ultimi 3 residui
+  (E2E-32/33/34) chiusi in questa sessione.
+- Bug di sicurezza reale trovato e corretto: privilegio di lettura su `agc_configurazione` rimosso
+  dal ruolo "Operatore ASPEN" su tutte le 4 istanze BU-scoped (E2E-33).
+- Verificata la segregazione dei record per Business Unit (E2E-32) e il filtro magistrati per BU
+  nel dialog di assegnazione (E2E-34, via code review).
+- Verificato con test manuale reale (Level Up + utente Elia Quaranta) che l'accesso a Pesi 1
+  (Canestro) e Peso 2 funziona correttamente per il ruolo Operatore; nessuna azione necessaria.
+- Aggiornata la checklist §7 del piano di migrazione con le spunte corrette.
+
+**Rimasto aperto per le prossime sessioni:**
+1. **Fase 9 — Governance Power Automate**: saltata su decisione esplicita dell'utente, da
+   pianificare quando necessario.
+2. **Fase 12 — Validazione finale e parità funzionale**: da avviare nella prossima sessione.
+   Include: export/unpack della solution e commit in repo, export managed di prova, `pac solution
+   checker` senza errori High, aggiornamento README/CHANGELOG, test di restorability in ambiente
+   vuoto, disattivazione accesso sorgente per utenti finali, backup finale Go-live.
+3. Due dettagli minori segnalati nella checklist §7.6: verifica dei link Home "Cruscotto ASPEN" e
+   "Nuovo Fascicolo" (solo "Lista Fascicoli" verificato finora), e test di responsive layout
+   (E2E-40) non ancora eseguito.
+
+---

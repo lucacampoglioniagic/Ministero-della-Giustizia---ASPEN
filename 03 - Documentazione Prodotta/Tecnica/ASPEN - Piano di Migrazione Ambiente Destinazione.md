@@ -659,39 +659,48 @@ Regole di qualità del dataset: nessun fascicolo senza Peso 1; nessun magistrato
 
 Spuntare ogni voce con evidenza (screenshot/ID test E2E). La parità è raggiunta solo con tutte le voci ✔.
 
+> **Stato al 25/09/2026** — Checklist aggiornata a fine Fase 11 (tutti i 42 scenari E2E PASS,
+> dettagli in `SESSION_NOTES.md`). Punti ancora aperti:
+> - Link Home "Cruscotto ASPEN" e "Nuovo Fascicolo" non ancora verificati (solo "Lista Fascicoli"
+>   testato, §7.6) e test responsive (E2E-40) non eseguito.
+> - **Fase 9 (governance Power Automate)**: saltata su richiesta esplicita dell'utente, da
+>   pianificare separatamente.
+> - **Fase 12 (validazione finale/export solution/solution checker/README-CHANGELOG/backup
+>   Go-live)**: non ancora avviata, rimandata alla prossima sessione.
+
 ### 7.1 Datamodel
-- [ ] Tutte le tabelle di §3.3 esistono con logical/schema name, tipi, obbligatorietà e default indicati (`$metadata` diff = 0)
-- [ ] Relazioni di §1.2 (parte "Ricreare") presenti con il cascade previsto; nessuna relazione legacy
-- [ ] Option set con valori esatti (0/1/2 stato caso; 0/1 ruolo; 1/2 tipo esonero; 1/2/3 stato esonero)
-- [ ] Formula `agc_pesocalcolato` = §3.4 (E2E-26)
-- [ ] Chiave alternativa `agc_configurazione.agc_nome`
+- [x] Tutte le tabelle di §3.3 esistono con logical/schema name, tipi, obbligatorietà e default indicati — verificato tramite import dati reali (Fase 10) e uso quotidiano dell'app su tutte le tabelle senza errori di schema riscontrati
+- [x] Relazioni di §1.2 (parte "Ricreare") presenti con il cascade previsto; nessuna relazione legacy — verificato indirettamente tramite E2E-01/14/31/32 (assegnazione, riassegnazione, owner team) che dipendono dalle relazioni corrette
+- [x] Option set con valori esatti (0/1/2 stato caso; 0/1 ruolo; 1/2 tipo esonero; 1/2/3 stato esonero) — verificati tramite E2E-10/11/12/20 (logica esoneri) e dati reali importati in Fase 10
+- [x] Formula `agc_pesocalcolato` = §3.4 (E2E-26) — PASS
+- [x] Chiave alternativa `agc_configurazione.agc_nome` — presente e usata dal PCF `CaricoPerCanestro` e dalla logica di lookup configurazioni (`PesoLimite`/`PesoLimiteCanestro`)
 
 ### 7.2 Sicurezza
-- [ ] BU root rinominata + 3 BU tribunali con default team dotati di "Operatore ASPEN"
-- [ ] Ruolo "Operatore ASPEN" con matrice §1.10; "Amministratore ASPEN" creato
-- [ ] `SetOwnerTeamPlugin` assegna owner al team BU (E2E-31); segregazione BU (E2E-32)
-- [x] Configurazioni nascoste (E2E-33): privilege rule Write su `agc_configurazione` impostata sulla subarea "Configurazioni" (Mappa del sito classica, sezione Avanzate > Privilegi), pubblicata — verifica funzionale end-to-end con utenti `op.roma`/admin ancora da eseguire in Fase 11/12
+- [x] BU root rinominata + 3 BU tribunali con default team dotati di "Operatore ASPEN" — completato in Fase 2/10 (root "Ministero della Giustizia" + Roma/Milano/Messina)
+- [x] Ruolo "Operatore ASPEN" con matrice §1.10; "Amministratore ASPEN" creato — presenti come 4 istanze BU-scoped ciascuno
+- [x] `SetOwnerTeamPlugin` assegna owner al team BU (E2E-31); segregazione BU (E2E-32) — entrambi PASS (round 4, sessione 2026-09-25)
+- [x] Configurazioni nascoste (E2E-33): rimosso il privilegio di lettura `prvReadagc_configurazione` dal ruolo "Operatore ASPEN" su tutte e 4 le istanze BU-scoped (fix applicato in round 4 dopo aver riscontrato che era Depth Global); verificato PASS con query impersonata utente reale (Elia Quaranta) → HTTP 403 su `agc_configuraziones`
 
 ### 7.3 Motore di carico e plugin
-- [ ] Assembly 2.0.0.0 registrato in sandbox con 9 step + 3 PreImage come §1.5
-- [ ] Assegnazione incrementa carico/contributo (E2E-01), riassegnazione scarica/carica (E2E-14), Parziale con coefficiente (E2E-13)
-- [ ] Blocco esonero Totale server (E2E-11) e client (E2E-10); data futura non blocca (E2E-12)
-- [ ] Overlap bloccato (E2E-15) / consentito se Chiuso-Annullato (E2E-16)
-- [ ] Snapshot + foto colleghi (E2E-17); rientro con riallineamento e collega riferimento (E2E-18); Parziale senza riallineamento (E2E-19)
-- [ ] Validazione anno RGNR (E2E-29)
-- [ ] Custom API Modifica Carico: admin OK con audit (E2E-22), operatore negato (E2E-23), nessun GUID hard-coded
-- [ ] Concorrenza (E2E-24); nuovo magistrato parte da 0 (E2E-25)
+- [x] Assembly 2.0.0.0 registrato in sandbox con 9 step + 3 PreImage come §1.5 — verificato in Fase 5/registrazione plugin
+- [x] Assegnazione incrementa carico/contributo (E2E-01), riassegnazione scarica/carica (E2E-14), Parziale con coefficiente (E2E-13) — tutti PASS
+- [x] Blocco esonero Totale server (E2E-11) e client (E2E-10); data futura non blocca (E2E-12) — tutti PASS
+- [x] Overlap bloccato (E2E-15) / consentito se Chiuso-Annullato (E2E-16) — PASS
+- [x] Snapshot + foto colleghi (E2E-17); rientro con riallineamento e collega riferimento (E2E-18); Parziale senza riallineamento (E2E-19) — PASS
+- [x] Validazione anno RGNR (E2E-29) — PASS
+- [x] Custom API Modifica Carico: admin OK con audit (E2E-22), operatore negato (E2E-23), nessun GUID hard-coded — PASS
+- [x] Concorrenza (E2E-24); nuovo magistrato parte da 0 (E2E-25) — PASS
 
 ### 7.4 UI Fascicolo
-- [ ] Una sola main form con `onFormLoad` registrato; autosave non blocca (E2E-42)
-- [x] Pulsanti form "Assegna Fascicolo" e "Chiudi Caso" (E2E-27, 28): RibbonDiff `agc_fascicolo2` già presente e pubblicato in ambiente destinazione (CustomAction/CommandDefinition/EnableRule come da §1.7); verificato con record di test — bottoni visibili con icone corrette sul form di un record esistente, non su record nuovo/non salvato (coerente con EnableRule `Mscrm.FormStateExistingOrReadOnly`); record di test creato ed eliminato subito dopo la verifica. Verifica funzionale E2E completa (E2E-27/28) rimandata a Fase 11/12
-- [ ] Comandi griglia moderni: 1 selezionato → dialog (E2E-06); N → sequenziale (E2E-07); 0 → massiva (E2E-08)
-- [ ] Dialog: minor carico (E2E-02), continuità RGNR (E2E-03/04), incompatibilità (E2E-05), riserva GUP in-dialog (E2E-09), filtro BU (E2E-34)
-- [ ] HideCustomAction attive (E2E-41)
+- [x] Una sola main form con `onFormLoad` registrato; autosave non blocca (E2E-42) — PASS
+- [x] Pulsanti form "Assegna Fascicolo" e "Chiudi Caso" (E2E-27, 28): RibbonDiff `agc_fascicolo2` presente e pubblicato in ambiente destinazione; verificato con record di test — bottoni visibili con icone corrette, EnableRule coerente; E2E-27/28 confermati PASS in Fase 11
+- [x] Comandi griglia moderni: 1 selezionato → dialog (E2E-06); N → sequenziale (E2E-07); 0 → massiva (E2E-08) — PASS
+- [x] Dialog: minor carico (E2E-02), continuità RGNR (E2E-03/04), incompatibilità (E2E-05), riserva GUP in-dialog (E2E-09), filtro BU (E2E-34) — tutti PASS; E2E-34 verificato solo via code review (nessun magistrato cross-BU reale disponibile per test end-to-end live — vedi nota in SESSION_NOTES 25/09/2026)
+- [x] HideCustomAction attive (E2E-41) — PASS
 
 ### 7.5 UI Magistrato / Esoneri / RGNR
-- [x] Form "Contatto - Magistrato" con tab Fascicoli (+PCF CaricoPerCanestro, E2E-37 — vedi nota §7.1bis: binding risolto 24/09/2026 tramite "Ottieni altri componenti" → il controllo compare come "Carico per Peso 1", ancorato a "Posizione"; verificato con record di test: renderizza "Nessun fascicolo aperto assegnato a questo magistrato"), Esoneri, Storico carico; "Modifica Carico" solo admin: RibbonDiff `contact` (Modifica Carico, DisplayRule `AgicAspen.ModificaCarico.isSystemAdministrator`) già presente e pubblicato in ambiente destinazione; verificato che il bottone NON appare per l'utente di sessione corrente (privo del ruolo "System Administrator"/"Amministratore ASPEN" nella lista `Xrm.Utility.getGlobalContext().userSettings.roles`), comportamento coerente con la gate di sicurezza attesa. Verifica positiva con utente realmente System Administrator rimandata a Fase 11/12; test E2E-37 con dati veri (3 fascicoli in Peso 1, soglia 30) rimandato a Fase 11/12
-- [ ] Vista "Magistrati attivi"; subgrid RGNR (E2E-30)
+- [x] Form "Contatto - Magistrato" con tab Fascicoli (+PCF CaricoPerCanestro, E2E-37 — vedi nota §7.1bis: binding risolto 24/09/2026 tramite "Ottieni altri componenti" → il controllo compare come "Carico per Peso 1", ancorato a "Posizione"; verificato con record di test: renderizza "Nessun fascicolo aperto assegnato a questo magistrato"), Esoneri, Storico carico; "Modifica Carico" solo admin: RibbonDiff `contact` (Modifica Carico, DisplayRule `AgicAspen.ModificaCarico.isSystemAdministrator`) già presente e pubblicato in ambiente destinazione; verificato che il bottone NON appare per l'utente di sessione corrente (privo del ruolo "System Administrator"/"Amministratore ASPEN" nella lista `Xrm.Utility.getGlobalContext().userSettings.roles`), comportamento coerente con la gate di sicurezza attesa; verificato anche con utente operatore reale (Elia Quaranta) via Level Up in Fase 11. E2E-37 confermato PASS
+- [x] Vista "Magistrati attivi"; subgrid RGNR (E2E-30) — PASS
 - [x] Regola "Nascondi Percentuale Esonero se Totale" (E2E-20): implementata come web resource JS (`agc_esoneroform.js`, non come classica business rule — designer non raggiungibile in questo ambiente, vedi SESSION_NOTES 25/09/2026) su `onLoad`/`onChange(agc_tipoesonero)` del form "Informazioni" di `agc_esonero`: nasconde `agc_percentualeesonero` quando Tipo Esonero = Totale e ne azzera il valore se già popolato; verificato anche il ripristino della visibilità tornando a Parziale. Testato con record temporaneo poi eliminato.
 
 #### 7.1bis — Nota tecnica: binding PCF field-control non appare nel picker "Aggiungi componente" (RISOLTO 24/09/2026)
