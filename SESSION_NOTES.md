@@ -2227,3 +2227,44 @@ File modificato: `05 - Power Platform/PCF/CaricoPerCanestro/CaricoPerCanestro/in
   correttamente per i fascicoli privi di valore.
 
 ---
+
+## Session 2026-09-25 (cont.) — Dashboard "Cruscotto ASPEN": layout in 2 colonne
+
+### Richiesta
+"Cruscotto ASPEN, i grafici possiamo metterli su due colonne?" — il layout reale non era mai
+stato un vero 2×2 (nonostante la descrizione nel piano di migrazione): erano 3 grafici affiancati
+in riga 1 ("Carico per Magistrato", "Fascicoli per Peso 1", "Esoneri Attivi per Magistrato") e il
+4° ("Andamento Carico Mensile per Magistrato") da solo in riga 2, in una singola sezione a 4
+colonne con rowspan.
+
+### Blocco iniziale
+L'editor classico ("Impostazioni → Personalizza il sistema → Dashboard") mostra la griglia
+componenti sempre vuota in questo ambiente (0 risultati sia con vista "Personalizzabili" sia
+"Tutti", anche dopo refresh) — non utilizzabile per la modifica via GUI. Pivotato su modifica
+diretta del `formxml` via Web API (stesso approccio già usato per Bug #2/#4), preservando intatti
+i 4 `<control>`/`controlDescriptions` esistenti (solo riposizionati, nessun binding toccato).
+
+### Implementazione e problema intermedio
+Prima iterazione: sezione riscritta a 2 colonne (`columns="11"`), 2 righe, celle con
+`rowspan="1"` → risultato: pannelli visivamente schiacciati (solo la barra del titolo, altezza
+pochi px). Causa identificata: il renderer del dashboard classico calcola l'altezza contando il
+**numero di elementi XML `<row>`** nella section (come il `rowspan` HTML), non il solo valore
+dell'attributo — impostare `rowspan="12"` con un'unica riga XML non ha effetto se non ci sono
+altre 11 righe a "riservare" lo spazio. Corretto costruendo 2 gruppi da 12 elementi `<row>`
+ciascuno (stessa unità di altezza usata nel layout originale a colonna singola): il primo `<row>`
+di ogni gruppo contiene le 2 celle con `rowspan="12"`, i successivi 11 sono `<row>` vuoti (nessuna
+colonna libera da riempire, essendo entrambe già coperte dal rowspan).
+
+### Verifica
+- `PATCH systemforms(4ff56c67-5fb7-f111-aaab-000d3a697f24)` (204) + `POST PublishAllXml` (204).
+- Verifica visiva via `Xrm.Navigation.navigateTo({pageType:"dashboard", dashboardId:...})`
+  (navigazione diretta via URL resta soggetta al blocco "Caricamento in corso..." già noto in
+  questo ambiente dopo operazioni di publish): tutti e 4 i grafici renderizzati correttamente a
+  piena dimensione, disposti 2×2 ("Carico per Magistrato" + "Fascicoli per Peso 1" in riga 1,
+  "Esoneri Attivi per Magistrato" + "Andamento Carico Mensile per Magistrato" in riga 2).
+- Nessun dato di test creato/da ripulire (modifica solo di layout, nessun record).
+- FormXml del dashboard non versionato in repo (come il form "Contatto - Magistrato"): il fix
+  esiste solo nell'ambiente destinazione (`Tribunali-dev`, formid
+  `4ff56c67-5fb7-f111-aaab-000d3a697f24`).
+
+---
