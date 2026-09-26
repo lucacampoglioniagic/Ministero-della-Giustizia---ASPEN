@@ -48,6 +48,20 @@ Elenco consolidato degli item ancora aperti, raccolti da tutte le sezioni "Not y
 
 ---
 
+## Session 2026-09-26/27 (cont. 3) — Tentativo eliminazione vecchie tabelle Peso1/Peso2 (§10): parziale, fermato su decisione committente
+
+Autorizzato dal committente ("vai, cancella le tabelle non più usate") a procedere con l'eliminazione di `agc_canestrofascicolo`/`agc_peso2` (§10 del piano). Esecuzione:
+
+- `RetrieveDependenciesForDelete` iniziale su entrambe le entità → non vuoto: rivelato che i **lookup originali erano ancora fisicamente presenti** su `agc_fascicolo2` (`agc_canestrofascicolo`, `agc_peso2`), non rimossi dal rename di §14.2 come si credeva — solo aggiunti i nuovi `agc_pesouno`/`agc_pesodue` accanto ai vecchi.
+- Confermato zero riferimenti residui nei form/viste di `agc_fascicolo2` per i vecchi lookup → **eliminati con successo** (`DELETE .../Attributes(...)` → 204 per entrambi).
+- Verifica incrociata importante: confermato che `agc_pesouno`/`agc_pesodue` puntano (`Targets`) a **entità realmente nuove e distinte**, non alle vecchie tabelle — la migrazione dati/schema di fondo resta corretta, il problema era solo pulizia incompleta dei lookup.
+- Trovata e rimossa (via azione Web API `RemoveAppComponents` su `appmodule`) l'inclusione delle due vecchie tabelle nell'app model-driven "ASPEN" (individuate in App Designer sotto "Tutte le altre pagine" con nome legacy "Peso 1"/"Peso 2", 4+1 record residui, distinte dalle voci sitemap attuali "Pesi 1"/"Pesi 2" che sono le tabelle nuove).
+- Nonostante questa pulizia, la `DELETE` diretta dell'entità fallisce ancora: `RetrieveDependentComponents` (elenco completo, non solo "eliminabile") rivela **~12 dipendenze residue di tipo Attributo + 1 AppModule**, chiaramente accumulate su più "layer" storici di soluzione da import ripetuti nel tempo (stesso fenomeno visto con `appmodulecomponents`, di cui 30 righe storiche trovate per le stesse 2 entità).
+- **Decisione col committente**: risolvere questi layer richiederebbe un intervento più invasivo (`pac solution` export/unpack, non fattibile in sicurezza via sole chiamate Web API dal browser). Si è scelto di **fermarsi qui**: le vecchie tabelle restano nello schema ma sono ormai completamente inerti (nessun lookup vivo, nessuna inclusione app, dati già migrati/verificati al 100%). L'eliminazione fisica resta un'attività futura opzionale.
+- Documentazione aggiornata: §10 e nuovo §14.7 del piano di migrazione con il dettaglio tecnico completo del tentativo.
+
+---
+
 ## Session 2026-09-26/27 (cont.) — Fix bug dashboard/sitemap residui + esecuzione E2E-26/31/37/43/45/48/49/51
 
 Continuazione della migrazione Peso1/Peso2 a UserOwned. Trovati e corretti **2 bug residui non ancora scoperti** (config live, mai pacchettizzati nel repo):

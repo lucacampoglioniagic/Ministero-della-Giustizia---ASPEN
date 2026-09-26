@@ -171,7 +171,7 @@ Tutte le chiamate con header `MSCRM.SolutionUniqueName: <ASPEN>`, `Content-Type:
 
 ---
 
-## 10. Eliminazione vecchie tabelle (fase finale, condizionata)
+## 10. Eliminazione vecchie tabelle (fase finale, condizionata) — **TENTATA 26/09/2026, NON completata: vedi §14.7**
 
 Precondizioni: §5.7 completato (nessun lookup residuo), §8 completato (app/sitemap/dashboard/viste non referenziano), §11 tutti PASS, backup dati §3.1 archiviato, via libera del committente (D8).
 
@@ -179,6 +179,8 @@ Precondizioni: §5.7 completato (nessun lookup residuo), §8 completato (app/sit
 2. `DELETE EntityDefinitions(LogicalName='agc_canestrofascicolo')`, poi `agc_peso2` (una alla volta; la delete è irreversibile — nessun cestino per i metadati).
 3. `PublishAllXml`; verificare `EntityDefinitions?$filter=LogicalName eq 'agc_canestrofascicolo'` → 404; console browser dell'app senza errori 404 su `agc_canestrofascicolos`/`agc_peso2s` (caccia a codice non aggiornato).
 4. Non confondere con la tabella orfana **`agc_canestro`** (README #34): NON toccarla.
+
+> **Esito reale**: precondizioni soddisfatte e via libera ricevuto (26/09/2026), ma il passo 1 ha rivelato che `RetrieveDependenciesForDelete` NON tornava vuoto: erano rimasti residui non previsti dal piano (lookup non rimossi in §14.2, componenti AppModule duplicati su più layer di soluzione). Si è tentata la pulizia (vedi §14.7) ma la DELETE finale delle due entità resta bloccata da dipendenze di soluzione più profonde (~12 componenti Attributo su più layer storici). **Deciso con il committente di fermarsi qui**: le tabelle restano presenti ma completamente inerti/deprecate, nessun impatto funzionale residuo.
 
 ---
 
@@ -339,7 +341,22 @@ Nessuna modifica necessaria: i privilegi erano già stati correttamente provisio
 
 **Record di test creati e rimossi durante la verifica**: `TEST-E2E45-DELETE-ME` (fascicolo, admin), `TEST-E2E46-MILANO-DELETE-ME` (Peso 1), `TEST-E2E46-MILANO-P2-DELETE-ME` (Peso 2), `TEST-E2E46-MILANO-FASC-DELETE-ME` (fascicolo, owner team Milano) — tutti creati, verificati e poi eliminati con `DELETE` (204 confermato su tutti). Nessun residuo di test rimasto in `agc_pesounos`/`agc_pesodues`/`agc_fascicolo2s`.
 
+### 14.7 Tentativo di eliminazione vecchie tabelle (§10, sessione 26/09/2026) — parzialmente eseguito, poi fermato su decisione del committente
+
+Via libera ricevuto dal committente ("vai, cancella le tabelle non più usate"). Precondizioni di §10 risultavano soddisfatte sulla carta, ma l'esecuzione ha rivelato una realtà più complessa:
+
+1. **Verifica iniziale dipendenze** (`RetrieveDependenciesForDelete`, ComponentType=1) su entrambe le entità → **non vuoto come previsto**: 1 dipendenza AppModule (tipo 80) + 1 dipendenza Attributo (tipo 10) per ciascuna. La dipendenza Attributo ha rivelato che **i lookup originali `agc_canestrofascicolo` e `agc_peso2` erano ancora fisicamente presenti su `agc_fascicolo2`**, accanto ai nuovi `agc_pesouno`/`agc_pesodue` — il rename descritto in §14.2 aveva in realtà solo *aggiunto* i nuovi lookup, senza rimuovere i vecchi.
+2. Confermato (via ricerca in `systemforms`/`savedqueries`) che i vecchi lookup non erano più referenziati in nessun form o vista di `agc_fascicolo2` → **eliminati con successo** (`DELETE .../Attributes(...)` → 204 per entrambi).
+3. **Verifica incrociata critica**: confermato via metadata (`Targets` dell'attributo lookup) che `agc_pesouno`/`agc_pesodue` puntano a **entità realmente nuove e distinte** (Targets=se stesse), non alle vecchie tabelle — quindi la migrazione dati/schema di fondo (§3-§6) è corretta e genuina, il problema era solo la mancata pulizia dei lookup residui.
+4. Ripetuto `RetrieveDependenciesForDelete` dopo la rimozione → restava solo la dipendenza AppModule (tipo 80) per entrambe: le tabelle risultavano ancora incluse come componenti nell'app model-driven "ASPEN", con **~15 righe storiche di `appmodulecomponent` per entità** (residuo di importazioni/pubblicazioni ripetute nel tempo, stesso fenomeno di duplicazione a "layer" già visto altrove).
+5. Individuata e usata l'azione Web API `RemoveAppComponents` (bound su `appmodule`, payload `Components: [{'@odata.type':'#Microsoft.Dynamics.CRM.appmodulecomponent', appmodulecomponentid, objectid, componenttype:1}]`) per rimuovere l'inclusione delle due tabelle dall'app → **204 OK**, ma il conteggio delle righe `appmodulecomponents` non è diminuito (restano storicizzate nei layer di soluzione precedenti) e `RetrieveDependenciesForDelete` continuava a mostrare la stessa dipendenza AppModule.
+6. Tentata comunque la `DELETE EntityDefinitions(LogicalName='agc_canestrofascicolo')` diretta → **HTTP 400**: *"The Entity(...) component cannot be deleted because it is referenced by 6 other components."* — un numero superiore a quanto mostrato da `RetrieveDependenciesForDelete`.
+7. Interrogato `RetrieveDependentComponents` (senza filtro "eliminabile", elenco completo) → rivelate **~12 dipendenze di tipo Attributo** (oltre a quella AppModule), tutte con lo stesso `_requiredcomponentnodeid_value`, chiaramente residui di più layer storici di soluzione (stessa dinamica di `appmodulecomponents`) e non singoli attributi vivi (già eliminati al punto 2).
+8. **Decisione**: risolvere questi residui richiederebbe un intervento più invasivo sui layer di soluzione (es. `pac solution` export/unpack e pulizia manuale), non eseguibile in sicurezza con sole chiamate Web API dal browser senza rischio di corrompere lo stato di pubblicazione dell'app. Presentata la situazione al committente, che ha scelto di **fermarsi qui**: le vecchie tabelle restano presenti nello schema ma **completamente inerti** (nessun lookup vivo, nessun riferimento UI, dati già migrati e verificati al 100% in §14.6).
+
+**Stato finale delle vecchie tabelle**: `agc_canestrofascicolo` e `agc_peso2` esistono ancora come EntityDefinitions ma senza alcun lookup attivo da `agc_fascicolo2` e senza inclusione nell'app model-driven ASPEN (rimossa via `RemoveAppComponents`). Zero impatto funzionale residuo confermato. La loro eliminazione fisica resta un'attività futura opzionale, da eseguire con `pac solution` (fuori sessione corrente).
+
 ### Da fare (vedi anche §10, §11)
 - Valutare/pianificare separatamente (fuori scope migrazione Peso1/Peso2) l'assenza di privilegi `systemuser` nel ruolo "Operatore ASPEN" (trovata in E2E-45) — impedisce a un operatore di creare un fascicolo in prima persona via API/plugin (owner=impersonato).
-- Eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10) — **tutti gli E2E eseguibili sono ora PASS**; resta solo da ottenere il via libera esplicito dell'utente per procedere (non ancora dato).
-- E2E-50 da eseguire dopo l'eliminazione delle vecchie tabelle.
+- **Eliminazione fisica delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2`** (§10/§14.7): bloccata da residui di solution-layering non risolvibili in sicurezza via Web API diretta; richiede intervento futuro con `pac solution` export/unpack. Le tabelle sono nel frattempo completamente inerti (lookup e inclusione app già rimossi), nessun rischio residuo per l'uso quotidiano del sistema.
+- E2E-50 (regressione post-eliminazione) resta deferito, condizionato al completamento dell'eliminazione fisica di cui sopra.
