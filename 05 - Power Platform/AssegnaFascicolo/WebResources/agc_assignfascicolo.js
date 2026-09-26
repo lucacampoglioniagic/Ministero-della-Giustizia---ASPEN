@@ -212,7 +212,7 @@ AgicAspen.AssegnaFascicolo = (function () {
 
         return Xrm.WebApi.retrieveMultipleRecords(
             "agc_fascicolo2",
-            "?$select=agc_fascicolo2id,agc_pesocalcolato,_agc_rgnr_value,agc_ruoloassegnazione,_owningbusinessunit_value,_agc_magistratocontatto_value&$filter=" + filtroIds
+            "?$select=agc_fascicolo2id,agc_pesocalcolato2,_agc_rgnr_value,agc_ruoloassegnazione,_owningbusinessunit_value,_agc_magistratocontatto_value&$filter=" + filtroIds
         ).then(function (result) {
             Xrm.Utility.closeProgressIndicator();
             var fascicoli = result.entities || [];
@@ -365,7 +365,7 @@ AgicAspen.AssegnaFascicolo = (function () {
                                     });
                                     scelto = migliore.contactid;
                                 }
-                                var peso = f.agc_pesocalcolato || 0;
+                                var peso = f.agc_pesocalcolato2 || 0;
 
                                 var checkPromise = continuitaOk
                                     ? Promise.resolve({ warn: false })
@@ -446,7 +446,7 @@ AgicAspen.AssegnaFascicolo = (function () {
             /* Fascicoli attualmente non assegnati e non chiusi */
             return Xrm.WebApi.retrieveMultipleRecords(
                 "agc_fascicolo2",
-                "?$select=agc_fascicolo2id,agc_pesocalcolato,_agc_rgnr_value,agc_ruoloassegnazione,_owningbusinessunit_value&$filter=_agc_magistratocontatto_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
+                "?$select=agc_fascicolo2id,agc_pesocalcolato2,_agc_rgnr_value,agc_ruoloassegnazione,_owningbusinessunit_value&$filter=_agc_magistratocontatto_value eq null and (agc_statocaso ne 2 or agc_statocaso eq null)"
             ).then(function (unassignedResult) {
                 var fascicoli = unassignedResult.entities || [];
                 if (fascicoli.length === 0) {

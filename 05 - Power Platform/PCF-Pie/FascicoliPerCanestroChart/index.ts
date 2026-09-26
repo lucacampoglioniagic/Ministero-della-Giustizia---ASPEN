@@ -125,7 +125,7 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
           record.getFormattedValue("agc_statocaso") ||
           record.getFormattedValue("agc_statocasoname") ||
           "—",
-        peso: Number(record.getValue("agc_pesocalcolato")) || 0,
+        peso: Number(record.getValue("agc_pesocalcolato2")) || 0,
         data: record.getFormattedValue("agc_datacaso") || "—",
       };
       if (!this._fascicoliPerCanestro[canestro]) {

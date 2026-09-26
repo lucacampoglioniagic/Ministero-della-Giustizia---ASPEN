@@ -48,6 +48,29 @@ Elenco consolidato degli item ancora aperti, raccolti da tutte le sezioni "Not y
 
 ---
 
+## Session 2026-09-26 — Migrazione Peso 1/Peso 2 a UserOwned (BU visibility): dati/relazioni/formula migrati, bug piattaforma su campo calcolato risolto con rename
+
+Contesto: le tabelle "Peso 1" (`agc_canestrofascicolo`) e "Peso 2" (`agc_peso2`) erano `OrganizationOwned`, incompatibile con la segregazione per BU (i pesi sono configurati per tribunale). Piano completo in `03 - Documentazione Prodotta/Tecnica/Piano Migrazione Peso1-Peso2 UserOwned.md`.
+
+**Fatto:**
+- Create le nuove tabelle `agc_pesouno`/`agc_pesodue` (UserOwned, schema identico alle vecchie), migrati i 5 record esistenti (stessi GUID, owner Team "Tribunale di Roma").
+- Create le nuove relazioni N:1 verso `agc_fascicolo2` (`agc_PesoUno`/`agc_PesoDue`), popolati i nuovi lookup su tutti i 41 fascicoli.
+- Aggiornata la formula del campo calcolato "Peso calcolato" per puntare ai nuovi lookup.
+- **Incidente**: l'update della formula ha attivato un bug di piattaforma Dataverse — il campo calcolato `agc_pesocalcolato` è rimasto bloccato a 0 per tutti i record, in modo permanente e irreversibile con lo stesso nome logico (confermato: la cache del motore di calcolo sembra chiavata su nome logico, non su MetadataId — delete+ricrea con lo stesso nome NON risolve). **Rimedio**: rinominato permanentemente il campo in **`agc_pesocalcolato2`** (nuovo nome logico, stessa formula) — funzionante da subito. Dettagli completi in `Piano Migrazione Peso1-Peso2 UserOwned.md` §14.1.
+- Aggiornati tutti i riferimenti di codice da `agc_pesocalcolato` a `agc_pesocalcolato2`: 4 PCF (`CaricoPerCanestro`, `FascicoliPerCanestroChart`, `StatoFascicoliChart`, `CaricoMagistratiChart`/`AndamentoCaricoMensileChart` solo commenti), `agc_assignfascicolo.js`, `CaricoMagistratoAssegnazionePlugin.cs`.
+- Plugin ricompilato (`dotnet build -c Release`, 0 errori) e assembly registrato (`Plugin-Custom-API`, id `63e5f64b-58b7-f111-aaab-7ced8d763868`) ridistribuito in Dataverse: DLL caricato nel browser tramite `<input type=file>` + `FileReader.arrayBuffer()` → base64 → `PATCH pluginassemblies(...)` — tecnica scelta per evitare sia la corruzione di una trascrizione manuale del base64 sia il blocco Private Network Access di Chrome che impediva a un server HTTP locale di essere raggiunto dal contesto della pagina Dataverse.
+- Ripristinata la colonna `agc_pesocalcolato2` nelle 5 viste (fetchxml/layoutxml) e nel form "Informazioni" (rimossa prima per sbloccare il `DELETE` del vecchio attributo).
+- **Verifica finale**: tutti i 41 fascicoli — `agc_pesocalcolato2` coincide esattamente con la baseline pre-migrazione `agc_pesocalcolato` (0 discrepanze).
+
+**Da fare (prossima sessione):**
+- Rinominare nel codice i vecchi lookup `agc_canestrofascicolo`/`agc_peso2` in `agc_pesouno`/`agc_pesodue` (PCF, JS, FormXml/ribbon legacy) — non ancora fatto.
+- Sitemap/dashboard "Cruscotto ASPEN" da aggiornare per i nuovi lookup.
+- Rieseguire la regressione E2E completa + nuovi scenari E2E-43…51 (piano §11).
+- Eliminare le vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` — solo dopo che tutti gli E2E sono PASS.
+- **Nessuna modifica di questa sessione né della precedente è stata ancora committata/pushata** — da fare a fine lavoro completo.
+
+---
+
 ## Session 2026-09-24 (septies) — Bug box neri su "ASPEN Home" e form incompleti su 4 entità: entrambi risolti e verificati
 
 ### What was done

@@ -22,7 +22,7 @@ namespace AgicAspen.Plugins
     /// aprono mai il form del fascicolo (subgrid "Aggiungi esistente", bulk edit, import, Web
     /// API dirette), dove la validazione client non verrebbe mai eseguita.
     ///
-    /// Il peso del fascicolo (<c>agc_pesocalcolato</c>) viene sempre riletto fresco dal server
+    /// Il peso del fascicolo (<c>agc_pesocalcolato2</c>) viene sempre riletto fresco dal server
     /// dopo l'operazione (Post-Operation), perché è un campo calcolato che referenzia un'altra
     /// tabella (Peso 1/Peso 2 tramite agc_Canestrofascicolo) e non è quindi presente/affidabile
     /// nel Target o nelle Image.
@@ -119,8 +119,8 @@ namespace AgicAspen.Plugins
                     "Impossibile assegnare il fascicolo: il magistrato selezionato è attualmente in esonero Totale e non può ricevere nuove assegnazioni.");
             }
 
-            var fascicolo = service.Retrieve("agc_fascicolo2", target.Id, new ColumnSet("agc_pesocalcolato"));
-            var peso = fascicolo.Contains("agc_pesocalcolato") ? fascicolo.GetAttributeValue<decimal>("agc_pesocalcolato") : 0m;
+            var fascicolo = service.Retrieve("agc_fascicolo2", target.Id, new ColumnSet("agc_pesocalcolato2"));
+            var peso = fascicolo.Contains("agc_pesocalcolato2") ? fascicolo.GetAttributeValue<decimal>("agc_pesocalcolato2") : 0m;
 
             tracer.Trace($"CaricoMagistratoAssegnazionePlugin: fascicolo={target.Id} peso={peso} vecchioMagistrato={oldMagId} nuovoMagistrato={newMagId}");
 

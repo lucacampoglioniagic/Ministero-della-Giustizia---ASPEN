@@ -74,9 +74,9 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
     this._context.webAPI
       .retrieveMultipleRecords(
         "agc_fascicolo2",
-        `?$select=agc_fascicolo2id,agc_pesocalcolato,agc_statocaso,` +
+        `?$select=agc_fascicolo2id,agc_pesocalcolato2,agc_statocaso,` +
           `_agc_canestrofascicolo_value,_agc_peso2_value` +
-          `&$filter=_agc_magistratocontatto_value eq ${magistratoId} and agc_pesocalcolato ne null`,
+          `&$filter=_agc_magistratocontatto_value eq ${magistratoId} and agc_pesocalcolato2 ne null`,
       )
       .then((res) => {
         const entities = (res.entities as Record<string, unknown>[]).filter(
@@ -111,7 +111,7 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
       const nome =
         (f[`${lookupField}@OData.Community.Display.V1.FormattedValue`] as string) ??
         etichettaVuota;
-      const peso = (f["agc_pesocalcolato"] as number) ?? 0;
+      const peso = (f["agc_pesocalcolato2"] as number) ?? 0;
       if (!map[id])
         map[id] = { id, nome, pesoTotale: 0, numFascicoli: 0 };
       map[id].pesoTotale += peso;

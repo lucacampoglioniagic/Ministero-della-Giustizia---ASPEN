@@ -9,7 +9,7 @@
       Tabella sorgente: agc_fascicolo2
       Mapping consigliato:
         magistratoField  →  agc_magistratocontatto     (Lookup → contact [display: Magistrato])
-        pesoField        →  agc_pesocalcolato         (Decimal, campo calcolato — sostituisce agc_peso dal 07/07/2026)
+        pesoField        →  agc_pesocalcolato2        (Decimal, campo calcolato — sostituisce agc_pesocalcolato dal 26/09/2026 per bug piattaforma su rinomina campo calcolato)
     -->
     <type-group name="pesoTypes">
       <type>Whole.None</type>
