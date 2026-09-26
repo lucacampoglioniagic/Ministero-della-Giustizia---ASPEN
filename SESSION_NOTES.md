@@ -60,14 +60,22 @@ Eseguiti gli E2E del piano (§11, dettaglio in §14.6 del piano):
 - **E2E-26/49 (integrità migrazione)**: confronto automatico baseline (41 record) vs dati correnti — **0 mismatch**, PASS pieno.
 - **E2E-31**: step `SetOwnerTeamPlugin` attivi su `agc_fascicolo2`/`agc_rgnr` — PASS.
 - **E2E-37**: PCF `CaricoPerCanestro` sul contatto Claudio Bianchi — etichette e valori Peso1/Peso2 corretti — PASS.
-- **E2E-43** (cono di visibilità BU): PASS con riserva — nell'ambiente esiste solo la BU Roma con dati di test, non verificabile l'esclusione cross-BU.
-- **E2E-44/46/47**: non eseguibili per lo stesso motivo (mancano dati di test su una seconda BU).
 - **E2E-45/48** (creazione da operatore): **scoperto un problema preesistente non correlato alla migrazione** — il ruolo "Operatore ASPEN" non ha nessun privilegio sull'entità `systemuser`, causando un errore 400 (`prvReadUser` mancante) quando si tenta di creare un fascicolo impersonando un operatore via Web API. Segnalato come item separato, da pianificare a parte.
 - **E2E-51**: colonne Peso1/Peso2/Peso calcolato popolate in viste/dashboard — PASS (verificato insieme a E2E-37).
 
 Nota tecnica: il file baseline `05 - Power Platform/Migrazione-Pesi/baseline-fascicoli-pre-migrazione.json` conteneva per errore l'intero output markdown del tool invece del solo JSON — estratto il contenuto reale in un file pulito per eseguire il confronto.
 
-**Ancora aperto**: E2E-44/46/47 (serve BU Milano di test), E2E-50 (dopo eliminazione vecchie tabelle), il gap privilegi `systemuser` sul ruolo Operatore ASPEN, e l'eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10, non ancora autorizzata dall'utente).
+## Session 2026-09-26/27 (cont. 2) — Completati E2E-43/44/46/47 (segregazione BU) con dati di test su Milano
+
+Creati temporaneamente Peso 1/Peso 2/fascicolo di proprietà del team "Tribunale di Milano" (BU `191509db-...`, mai avuta dati prima) per completare i test di segregazione BU rimasti in sospeso:
+- **E2E-43** (cono di visibilità liste): operatore Roma (Elia Quaranta) continua a vedere solo le 4/1 voci Roma anche con dati Milano presenti — PASS.
+- **E2E-44** (filtro lookup): stesso meccanismo di sicurezza, confermato — PASS.
+- **E2E-46** (flusso cross-BU): fascicolo Milano con peso calcolato corretto (14); operatore Roma non lo trova via query filtrata e riceve **HTTP 403** provando ad accedervi direttamente per GUID — PASS.
+- **E2E-47** (amministratore): admin vede 5 Peso1 (Roma+Milano) e accede al fascicolo Milano (200); riassegnazione (`Assign`) di un Peso1 Milano→Roma→Milano funzionante (204/204) — PASS.
+
+Tutti i record di test creati per queste verifiche sono stati eliminati subito dopo (confermato con `DELETE` → 204 su tutti).
+
+**Con questo, tutti gli E2E eseguibili del piano di migrazione Peso1/Peso2 sono PASS.** Restano aperti solo: il gap privilegi `systemuser` sul ruolo Operatore ASPEN (fuori scope, da pianificare separatamente) e la decisione sull'eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10) — in attesa del via libera esplicito dell'utente, E2E-50 da eseguire dopo.
 
 ---
 
