@@ -308,8 +308,16 @@ Verificando il sitemap dell'app model-driven "ASPEN" (`sitemaps(227e3036-f2b7-f1
 
 **Verificato**: cliccando "Pesi 1"/"Pesi 2" dal menu, l'app ora naviga correttamente su `agc_pesouno` (etn nell'URL, vista "Pesi 1 attivi/e", 4 record) e `agc_pesodue` (vista "Pesi 2 attivi/e"). Non è stato necessario registrare le nuove tabelle come "componenti app" (`appmodulecomponents`) espliciti: la navigazione tramite sitemap funziona anche senza, in questo ambiente.
 
-### Da fare (vedi anche §9, §10, §11)
-- Conferma ruoli di sicurezza (§9) — non ancora eseguita.
+### 14.5 Verifica ruoli di sicurezza (§9, completata 26/09/2026 — nessuna azione necessaria)
+
+Confrontati i privilegi sui ruoli root "Operatore ASPEN" (`b7b3ed9e-...`) e "Amministratore ASPEN" (`9fb62eb8-...`) tra le vecchie tabelle (`agc_canestrofascicolo`/`agc_peso2`) e le nuove (`agc_pesouno`/`agc_pesodue`):
+- **Operatore ASPEN**: CRUD equivalente su vecchie e nuove (Read/Write/Create/Append/AppendTo), con `Assign` aggiuntivo sulle nuove (coerente con il passaggio a UserOwned, che richiede `Assign` per la riassegnazione proprietario — le vecchie erano Organization-owned e non lo richiedevano).
+- **Amministratore ASPEN**: parità completa (Read/Write/Create/Delete/Share/Append/AppendTo/Assign) su vecchie e nuove.
+- Le 3 istanze BU-scoped di ciascun ruolo (Roma + altri 2 tribunali) sono `isinherited=1` dal ruolo root: i privilegi si propagano automaticamente, non serve replicarli manualmente per BU (comportamento già noto e verificato in una sessione precedente).
+
+Nessuna modifica necessaria: i privilegi erano già stati correttamente provisionati alla creazione delle tabelle (§3).
+
+### Da fare (vedi anche §10, §11)
 - Regressione E2E completa + nuovi scenari E2E-43…51 (§11) — non ancora eseguita.
 - Eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10) — **solo dopo** che tutti gli E2E sono PASS (D8).
 - Commit e push di tutte le modifiche di questa sessione.
