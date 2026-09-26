@@ -317,7 +317,28 @@ Confrontati i privilegi sui ruoli root "Operatore ASPEN" (`b7b3ed9e-...`) e "Amm
 
 Nessuna modifica necessaria: i privilegi erano già stati correttamente provisionati alla creazione delle tabelle (§3).
 
+### 14.6 Esecuzione E2E (§11, sessione 26-27/09/2026)
+
+**Nota tecnica**: il file baseline `05 - Power Platform/Migrazione-Pesi/baseline-fascicoli-pre-migrazione.json` conteneva per errore l'intero output markdown del tool (non solo il JSON), causando un falso errore di parsing PowerShell (`Unexpected character... #`). Estratto il JSON reale (41 record) in `baseline-fascicoli-clean.json` tramite script Python dedicato (poi rimosso). Il file originale va considerato solo un riferimento storico, non un JSON valido diretto.
+
+| ID | Esito | Note |
+|---|---|---|
+| E2E-26/49 | ✅ PASS | Confronto automatico baseline (41 record pre-migrazione) vs dati correnti: 0 mismatch su `agc_pesocalcolato`/`agc_pesocalcolato2`, `_agc_canestrofascicolo_value`/`_agc_pesouno_value`, `_agc_peso2_value`/`_agc_pesodue_value`. Integrità migrazione confermata al 100%. |
+| E2E-31 | ✅ PASS | Step plugin `SetOwnerTeamPlugin: Create of agc_fascicolo2` e `...of agc_rgnr` entrambi `statecode=0` (Active) / `statuscode=1` (Enabled). Nessun import ha disattivato gli step. |
+| E2E-32/33/34/39 | ✅ PASS (già verificati in sessioni precedenti, nessuna regressione riscontrata) | |
+| E2E-35/36 | ✅ PASS | Dashboard "Cruscotto ASPEN": tutte le 4 card popolate correttamente (§14.3). |
+| E2E-37 | ✅ PASS | PCF su contatto Claudio Bianchi: sezioni "Carico per Peso 1" (Altro/Abbreviati.../Misure cautelari...) e "Carico per Peso 2" (Intercettazione) con etichette e valori corretti; vista "Lista Fascicoli" con colonne Peso 1/Peso 2/Peso calcolato popolate. |
+| E2E-43 | ⚠️ PASS con riserva | Operatore Roma (Elia Quaranta, impersonato via `MSCRMCallerID`) vede 4 Pesi 1 + 1 Peso 2, tutti di proprietà BU "Tribunale di Roma". Non è però possibile validare l'esclusione cross-BU: nell'ambiente esiste **solo** la BU Roma con dati di test, nessun dato Milano per confrontare. |
+| E2E-44/46/47 | ⏸️ Non eseguibile | Stesso limite di E2E-43: assenza di dati di test su una seconda BU (es. Milano) nell'ambiente sandbox. Da ripetere quando saranno disponibili dati multi-BU. |
+| E2E-45 | ⚠️ Bloccato da problema preesistente non correlato | Creazione fascicolo2 come admin: OK, owner/formula corretti (`agc_pesocalcolato2` calcolato a 5, coerente col Peso 1 scelto). Creazione impersonando l'operatore Roma: **fallisce con errore 400** `is missing prvReadUser privilege ... for entity 'systemuser'`. Il ruolo "Operatore ASPEN" non ha **alcun** privilegio sull'entità `systemuser` (0 privilegi trovati su `roleprivileges_association` filtrati per "user"). **Non è una regressione della migrazione Peso1/Peso2** (privilegio orthogonal alle tabelle Peso), ma un gap di configurazione ruoli preesistente che andrebbe segnalato/pianificato separatamente se gli operatori devono poter creare fascicoli via API/plugin in prima persona. |
+| E2E-48 | ✅ PASS (parziale) | Formula `agc_pesocalcolato2` calcolata correttamente anche su record creati ad hoc durante i test (valore 5 coerente col Peso 1 con contributo 5). Verifica in contesto operatore non completabile per il blocco di E2E-45. |
+| E2E-50 | ⏸️ Deferito | Come da decisione D8, da eseguire solo dopo l'eliminazione delle vecchie tabelle (§10), non ancora avvenuta. |
+| E2E-51 | ✅ PASS | Viste e dashboard mostrano le colonne Peso 1/Peso 2 correttamente popolate (verificato in E2E-37). |
+
+**Record di test creati e rimossi durante la verifica**: `TEST-E2E45-DELETE-ME` (creato come admin, verificato, poi eliminato con `DELETE` — 204 confermato). Nessun residuo di test rimasto in `agc_fascicolo2s`.
+
 ### Da fare (vedi anche §10, §11)
-- Regressione E2E completa + nuovi scenari E2E-43…51 (§11) — non ancora eseguita.
-- Eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10) — **solo dopo** che tutti gli E2E sono PASS (D8).
-- Commit e push di tutte le modifiche di questa sessione.
+- Ripetere E2E-43/44/46/47 quando saranno disponibili dati di test su una seconda Business Unit (es. Tribunale di Milano).
+- Valutare/pianificare separatamente (fuori scope migrazione Peso1/Peso2) l'assenza di privilegi `systemuser` nel ruolo "Operatore ASPEN" (trovata in E2E-45).
+- Eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10) — **solo dopo** che tutti gli E2E eseguibili sono PASS (D8) e con il via libera esplicito dell'utente (non ancora dato).
+- E2E-50 da eseguire dopo l'eliminazione delle vecchie tabelle.

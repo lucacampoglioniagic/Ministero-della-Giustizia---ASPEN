@@ -48,6 +48,29 @@ Elenco consolidato degli item ancora aperti, raccolti da tutte le sezioni "Not y
 
 ---
 
+## Session 2026-09-26/27 (cont.) — Fix bug dashboard/sitemap residui + esecuzione E2E-26/31/37/43/45/48/49/51
+
+Continuazione della migrazione Peso1/Peso2 a UserOwned. Trovati e corretti **2 bug residui non ancora scoperti** (config live, mai pacchettizzati nel repo):
+- **Dashboard "Cruscotto ASPEN"**: `<pesoField>`/`<canestroField>` nelle formxml dei PCF ancora sui vecchi nomi campo (`agc_pesocalcolato`, `agc_canestrofascicolo`) — patchati a `agc_pesocalcolato2`/`agc_pesouno`, pubblicati, verificati (0 errori residui).
+- **Sitemap app "ASPEN"**: voci menu "Pesi 1"/"Pesi 2" puntavano ancora a `agc_canestrofascicolo`/`agc_peso2` — patchate a `agc_pesouno`/`agc_pesodue`, pubblicate (richiesta pulizia cache client per vedere l'effetto).
+
+Verificata parità ruoli di sicurezza (§9): "Operatore ASPEN"/"Amministratore ASPEN" hanno CRUD equivalente su vecchie/nuove tabelle (+ `Assign` atteso per UserOwned), propagato automaticamente alle copie BU-scoped.
+
+Eseguiti gli E2E del piano (§11, dettaglio in §14.6 del piano):
+- **E2E-26/49 (integrità migrazione)**: confronto automatico baseline (41 record) vs dati correnti — **0 mismatch**, PASS pieno.
+- **E2E-31**: step `SetOwnerTeamPlugin` attivi su `agc_fascicolo2`/`agc_rgnr` — PASS.
+- **E2E-37**: PCF `CaricoPerCanestro` sul contatto Claudio Bianchi — etichette e valori Peso1/Peso2 corretti — PASS.
+- **E2E-43** (cono di visibilità BU): PASS con riserva — nell'ambiente esiste solo la BU Roma con dati di test, non verificabile l'esclusione cross-BU.
+- **E2E-44/46/47**: non eseguibili per lo stesso motivo (mancano dati di test su una seconda BU).
+- **E2E-45/48** (creazione da operatore): **scoperto un problema preesistente non correlato alla migrazione** — il ruolo "Operatore ASPEN" non ha nessun privilegio sull'entità `systemuser`, causando un errore 400 (`prvReadUser` mancante) quando si tenta di creare un fascicolo impersonando un operatore via Web API. Segnalato come item separato, da pianificare a parte.
+- **E2E-51**: colonne Peso1/Peso2/Peso calcolato popolate in viste/dashboard — PASS (verificato insieme a E2E-37).
+
+Nota tecnica: il file baseline `05 - Power Platform/Migrazione-Pesi/baseline-fascicoli-pre-migrazione.json` conteneva per errore l'intero output markdown del tool invece del solo JSON — estratto il contenuto reale in un file pulito per eseguire il confronto.
+
+**Ancora aperto**: E2E-44/46/47 (serve BU Milano di test), E2E-50 (dopo eliminazione vecchie tabelle), il gap privilegi `systemuser` sul ruolo Operatore ASPEN, e l'eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10, non ancora autorizzata dall'utente).
+
+---
+
 ## Session 2026-09-26 — Migrazione Peso 1/Peso 2 a UserOwned (BU visibility): dati/relazioni/formula migrati, bug piattaforma su campo calcolato risolto con rename
 
 Contesto: le tabelle "Peso 1" (`agc_canestrofascicolo`) e "Peso 2" (`agc_peso2`) erano `OrganizationOwned`, incompatibile con la segregazione per BU (i pesi sono configurati per tribunale). Piano completo in `03 - Documentazione Prodotta/Tecnica/Piano Migrazione Peso1-Peso2 UserOwned.md`.
