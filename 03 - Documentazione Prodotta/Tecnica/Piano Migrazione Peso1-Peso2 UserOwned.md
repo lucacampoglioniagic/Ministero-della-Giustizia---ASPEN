@@ -300,8 +300,15 @@ Durante la verifica visiva del dashboard è emerso che il formxml del dashboard 
 
 **Lezione per il futuro**: ogni volta che si rinomina/elimina un attributo o lookup referenziato da un PCF dataset-bound in un dashboard, **verificare anche il formxml del dashboard stesso** (non solo viste/form), perché i parametri dei customControl sono uno snapshot indipendente.
 
-### Da fare (vedi anche §8, §9, §10, §11)
-- Sitemap — verificare che non ci siano altri riferimenti stale ai vecchi campi/lookup (non ancora controllato).
+### 14.4 Bug scoperto: sitemap dell'app "ASPEN" puntava ancora alle vecchie tabelle (corretto 26/09/2026)
+
+Verificando il sitemap dell'app model-driven "ASPEN" (`sitemaps(227e3036-f2b7-f111-aaab-7ced8d763868)`) è emerso che le voci di menu **"Pesi 1"** e **"Pesi 2"** (gruppo "Assegnazione") avevano ancora `<SubArea Entity="agc_canestrofascicolo">` e `<SubArea Entity="agc_peso2">` — puntavano cioè alle **vecchie tabelle**, non alle nuove `agc_pesouno`/`agc_pesodue`. Un operatore che avesse cliccato quelle voci di menu avrebbe visto/modificato i dati delle vecchie tabelle anziché quelle correnti. Questo sitemap **non è mai stato esportato/pacchettizzato nel repo** (nessun file `AppSiteMap`/`customizations.xml` presente), quindi il fix è stato applicato solo live.
+
+**Fix applicato**: PATCH diretto del `sitemapxml` (1 occorrenza `agc_canestrofascicolo`→`agc_pesouno`, 1 `agc_peso2`→`agc_pesodue`), seguito da `PublishXml` mirato sul componente sitemap. **Nota tecnica**: dopo il publish, il cambiamento non si è visto subito nel client aperto — necessaria la stessa procedura di pulizia cache già nota (unregister service worker + clear localStorage/IndexedDB + reload in tab pulita) prima che la nuova navigazione fosse effettiva.
+
+**Verificato**: cliccando "Pesi 1"/"Pesi 2" dal menu, l'app ora naviga correttamente su `agc_pesouno` (etn nell'URL, vista "Pesi 1 attivi/e", 4 record) e `agc_pesodue` (vista "Pesi 2 attivi/e"). Non è stato necessario registrare le nuove tabelle come "componenti app" (`appmodulecomponents`) espliciti: la navigazione tramite sitemap funziona anche senza, in questo ambiente.
+
+### Da fare (vedi anche §9, §10, §11)
 - Conferma ruoli di sicurezza (§9) — non ancora eseguita.
 - Regressione E2E completa + nuovi scenari E2E-43…51 (§11) — non ancora eseguita.
 - Eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10) — **solo dopo** che tutti gli E2E sono PASS (D8).
