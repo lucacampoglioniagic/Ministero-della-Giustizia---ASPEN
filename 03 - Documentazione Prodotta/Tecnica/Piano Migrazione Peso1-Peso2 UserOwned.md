@@ -283,9 +283,26 @@ Durante l'esecuzione di §6 (aggiornamento della `FormulaDefinition` di `agc_pes
 
 **Nota per letture future del repo**: qualunque riferimento storico a `agc_pesocalcolato` (incluso questo stesso piano, `baseline-pre-migrazione.md`, `baseline-fascicoli-pre-migrazione.json`) descrive lo **stato pre-incidente**; il campo live in produzione si chiama **`agc_pesocalcolato2`**.
 
-### Da fare (vedi anche §7, §8, §10, §11)
-- Aggiornare i riferimenti a `agc_canestrofascicolo`/`agc_peso2` (vecchi nomi) nei PCF/JS/FormXml/ribbon legacy con `agc_pesouno`/`agc_pesodue` (nuovi lookup) — non ancora eseguito.
-- Sitemap/dashboard "Cruscotto ASPEN" (§8) — non ancora eseguito.
+### 14.2 Rename lookup `agc_canestrofascicolo`→`agc_pesouno` e `agc_peso2`→`agc_pesodue` (completato 26/09/2026)
+
+Completati i riferimenti di codice e live rimasti in sospeso dal §7:
+- Repo: `PCF-Pie/FascicoliPerCanestroChart` e `PCF-Pie/StatoFascicoliChart` (doc comment + `index.ts`), `PCF/CaricoMagistratiChart/index.ts`, `PCF/CaricoPerCanestro/CaricoPerCanestro/index.ts` (Web API `$select` + property access), `AssegnaFascicolo/WebResources/agc_assignfascicolo.js` (`getControl`), FormXml documentale in `AgicAspenRibbon_unpacked`.
+- Live: form "Informazioni" (`systemforms 70bd3733-...`), le 5 viste (fetchxml/layoutxml), webresource `agc_assignfascicolo.js` e i 3 bundle.js PCF (`CaricoMagistratiChart`, `StatoFascicoliChart`, `CaricoPerCanestro`) ricompilati (`npm run build` in `PCF/` e `PCF-Pie/`, builda tutti i controlli fratelli in un unico passaggio) e ridistribuiti via PATCH + Publish.
+- Verifica: 5 fascicoli campione con `$expand=agc_PesoUno,agc_PesoDue` → nomi e `agc_pesocalcolato2` coerenti con baseline.
+
+### 14.3 Bug scoperto: dashboard "Cruscotto ASPEN" con binding PCF non sincronizzati (regressione dell'incidente §14.1, corretto 26/09/2026)
+
+Durante la verifica visiva del dashboard è emerso che il formxml del dashboard (`systemforms 4ff56c67-5fb7-f111-aaab-000d3a697f24`) **incorpora una copia separata** dei parametri `<pesoField>`/`<canestroField>` per ogni customControl PCF (3 varianti per formFactor 0/1/2), **non sincronizzata automaticamente** né con le viste sottostanti né con i rename di attributo/lookup. Il rename `agc_pesocalcolato`→`agc_pesocalcolato2` (§14.1, sessione precedente) non aveva aggiornato questi parametri nel dashboard, causando:
+- **"Carico per Magistrato" (CaricoMagistratiChart)**: grafico vuoto, errore console `'agc_fascicolo2' entity doesn't contain attribute with Name = 'agc_pesocalcolato'` — 3 occorrenze di `<pesoField>agc_pesocalcolato</pesoField>`.
+- **"Fascicoli per Peso 1" (FascicoliPerCanestroChart)**: 3 occorrenze di `<canestroField>agc_canestrofascicolo</canestroField>` stale, ma il grafico renderizzava comunque correttamente (comportamento asimmetrico non del tutto chiarito, possibile fallback grazioso per i lookup rispetto ai campi numerici).
+
+**Fix applicato**: PATCH diretto del formxml del dashboard sostituendo tutte le 6 occorrenze di `agc_pesocalcolato`→`agc_pesocalcolato2` e le 3 di `agc_canestrofascicolo`→`agc_pesouno`, seguito da `PublishAllXml`. Verificato visivamente: tutti e 4 i pannelli ("Carico per Magistrato", "Fascicoli per Peso 1", "Esoneri Attivi per Magistrato", "Andamento Carico Mensile per Magistrato") renderizzano dati corretti, 0 errori console residui (i 2 errori osservati sono innocui: foto profilo utente 404, telemetria Aria bloccata — non collegati).
+
+**Lezione per il futuro**: ogni volta che si rinomina/elimina un attributo o lookup referenziato da un PCF dataset-bound in un dashboard, **verificare anche il formxml del dashboard stesso** (non solo viste/form), perché i parametri dei customControl sono uno snapshot indipendente.
+
+### Da fare (vedi anche §8, §9, §10, §11)
+- Sitemap — verificare che non ci siano altri riferimenti stale ai vecchi campi/lookup (non ancora controllato).
+- Conferma ruoli di sicurezza (§9) — non ancora eseguita.
 - Regressione E2E completa + nuovi scenari E2E-43…51 (§11) — non ancora eseguita.
 - Eliminazione delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` (§10) — **solo dopo** che tutti gli E2E sono PASS (D8).
-- Commit e push di tutte le modifiche di questa sessione (nulla è stato ancora committato).
+- Commit e push di tutte le modifiche di questa sessione.

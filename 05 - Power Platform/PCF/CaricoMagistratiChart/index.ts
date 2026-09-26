@@ -166,8 +166,8 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
       const row: FascicoloRow = {
         rg: (record.getValue("agc_numeroregistrogenerale") as string) || "—",
         canestro:
-          record.getFormattedValue("agc_canestrofascicolo") ||
-          record.getFormattedValue("agc_canestrofascicoloname") ||
+          record.getFormattedValue("agc_pesouno") ||
+          record.getFormattedValue("agc_pesounoname") ||
           "—",
         peso,
         stato: stato || "—",

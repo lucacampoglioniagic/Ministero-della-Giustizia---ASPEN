@@ -78,8 +78,8 @@
                         <labels>
                           <label description="Canestro fascicolo" languagecode="1040" />
                         </labels>
-                        <control id="agc_canestrofascicolo" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
-                          datafieldname="agc_canestrofascicolo" disabled="false" />
+                        <control id="agc_pesouno" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
+                          datafieldname="agc_pesouno" disabled="false" />
                       </cell>
                     </row>
                     <row>
@@ -99,8 +99,8 @@
                         <labels>
                           <label description="Peso" languagecode="1040" />
                         </labels>
-                        <control id="agc_peso2" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
-                          datafieldname="agc_peso2" disabled="false" />
+                        <control id="agc_pesodue" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}"
+                          datafieldname="agc_pesodue" disabled="false" />
                       </cell>
                     </row>
                     <row>

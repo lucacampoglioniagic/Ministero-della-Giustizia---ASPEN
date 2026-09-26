@@ -2479,3 +2479,45 @@ pulito. Nessuna ulteriore modifica ai ruoli necessaria.
    (E2E-40) non ancora eseguito.
 
 ---
+
+## Session 2026-09-26 — Migrazione Peso1/Peso2 a tabelle UserOwned dedicate
+
+### Contesto
+L'utente ha segnalato che "Peso 1" e "Peso 2" erano modellati come proprietà del record
+"Organizzazione" (BU), mentre i pesi sono configurati per tribunale e vanno assegnati alle BU per
+avere i giusti coni di visibilità. Individuate anche altre tabelle con lo stesso problema
+strutturale (screenshot fornito dall'utente). Concordato un piano di migrazione (con supporto
+Fable) documentato in `03 - Documentazione Prodotta/Tecnica/Piano Migrazione Peso1-Peso2
+UserOwned.md`: creare nuove tabelle `agc_pesouno`/`agc_pesodue` (UserOwned, BU-scoped), migrare i
+5 record esistenti, ripuntare le relazioni sui 41 fascicoli, aggiornare `agc_pesocalcolato`
+(formula), aggiornare tutto il codice repo (PCF, JS, FormXml, dashboard) e ripetere gli E2E
+collegati. Le vecchie tabelle `agc_canestrofascicolo`/`agc_peso2` restano finché non tutti gli E2E
+sono PASS (decisione D8, nessuna eliminazione prematura).
+
+### Incidente rilevante: `agc_pesocalcolato` → `agc_pesocalcolato2`
+Durante l'aggiornamento della formula del campo calcolato per puntare ai nuovi lookup, il campo è
+rimasto bloccato a 0 per un bug di cache del motore di calcolo Dataverse (chiave su nome logico,
+non su MetadataId) — eliminare/ricreare l'attributo con lo stesso nome non risolve. Rimedio:
+rinominato permanentemente in `agc_pesocalcolato2` (nuovo nome logico), aggiornati tutti i
+riferimenti nel repo (PCF, JS, plugin `CaricoMagistratoAssegnazionePlugin.cs`) e ridistribuito il
+plugin. Verificato: 0 discrepanze su 41 fascicoli vs baseline. Dettagli completi in §14.1 del piano.
+
+### Rename lookup vecchi→nuovi e bug scoperto nel dashboard
+Completato il rename di `agc_canestrofascicolo`→`agc_pesouno` e `agc_peso2`→`agc_pesodue` in
+tutto il codice repo (PCF-Pie, PCF, WebResources JS, FormXml) e live (form, viste, webresource
+ridistribuite). Durante la verifica visiva del dashboard "Cruscotto ASPEN" è emersa una
+**regressione non rilevata nella sessione precedente**: il formxml del dashboard incorpora una
+copia indipendente dei parametri PCF (`<pesoField>`/`<canestroField>`) per ogni customControl, non
+sincronizzata con i rename di attributo/lookup. Il grafico "Carico per Magistrato" era vuoto per
+via del riferimento stale ad `agc_pesocalcolato` (mai aggiornato a `agc_pesocalcolato2` nel
+dashboard). Corretto via PATCH diretto del formxml (6 occorrenze `pesoField`, 3 `canestroField`) +
+`PublishAllXml`. Verificato: tutti e 4 i pannelli del dashboard renderizzano dati corretti, 0 errori
+console residui. Dettagli completi in §14.2/§14.3 del piano.
+
+### Stato e prossimi passi
+- Completato: rename lookup (repo + live), fix dashboard, verifica visiva end-to-end.
+- Da fare: verifica sitemap per altri riferimenti stale, conferma ruoli sicurezza (§9),
+  regressione E2E completa + nuovi scenari E2E-43…51 (§11), eliminazione vecchie tabelle solo dopo
+  E2E PASS (§10). Commit e push di questa sessione da eseguire.
+
+---

@@ -12,7 +12,8 @@
       significativa dal punto di vista del carico di lavoro. Raggruppa invece per Canestro
       (categoria del fascicolo), utile per capire la composizione del lavoro in ingresso.
       Mapping consigliato:
-        canestroField  →  agc_canestrofascicolo  (Lookup → agc_canestro)
+        canestroField  →  agc_pesouno  (Lookup → agc_pesouno, ex agc_canestrofascicolo → agc_canestro,
+                           rinominato durante la migrazione UserOwned del 26/09/2026)
       Colonne aggiuntive lette dal dataset (non dichiarate come property-set, richiedono
       che la view Dataverse bindata al dashboard le includa): agc_numeroregistrogenerale,
       agc_magistratocontatto/name, agc_statocaso, agc_pesocalcolato2, agc_datacaso.

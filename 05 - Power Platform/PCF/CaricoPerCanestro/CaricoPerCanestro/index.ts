@@ -75,7 +75,7 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
       .retrieveMultipleRecords(
         "agc_fascicolo2",
         `?$select=agc_fascicolo2id,agc_pesocalcolato2,agc_statocaso,` +
-          `_agc_canestrofascicolo_value,_agc_peso2_value` +
+          `_agc_pesouno_value,_agc_pesodue_value` +
           `&$filter=_agc_magistratocontatto_value eq ${magistratoId} and agc_pesocalcolato2 ne null`,
       )
       .then((res) => {
@@ -84,12 +84,12 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
         );
         const rowsPeso1 = this._raggruppa(
           entities,
-          "_agc_canestrofascicolo_value",
+          "_agc_pesouno_value",
           "Senza canestro",
         );
         const rowsPeso2 = this._raggruppa(
           entities,
-          "_agc_peso2_value",
+          "_agc_pesodue_value",
           "Senza Peso 2",
         );
         this._render(rowsPeso1, rowsPeso2);
@@ -98,8 +98,8 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
       .catch((err) => this._renderError(String(err)));
   }
 
-  /* Raggruppa i fascicoli per il valore di un campo lookup (Peso 1 = canestro,
-     Peso 2 = agc_peso2), sommando il peso calcolato totale per ciascun gruppo. */
+  /* Raggruppa i fascicoli per il valore di un campo lookup (Peso 1 = agc_pesouno,
+     Peso 2 = agc_pesodue), sommando il peso calcolato totale per ciascun gruppo. */
   private _raggruppa(
     entities: Record<string, unknown>[],
     lookupField: string,
