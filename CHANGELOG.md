@@ -13,10 +13,14 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 - Checklist §7 del piano di migrazione aggiornata: E2E-39 (link Home "Cruscotto ASPEN"/"Nuovo Fascicolo") ed E2E-40 (layout responsive a 1400/1000/600px) confermati eseguiti e chiusi.
 - Export managed di prova: nessun errore bloccante; presenti 142 `MissingDependencies` attese/note (form OOB `contact` su app Microsoft non incluse; tabelle legacy `agc_canestrofascicolo`/`agc_peso2`), non bloccanti per il go-live.
 - `pac solution checker`: 0 Critical, 0 High, 39 Medium, 0 Low — criterio di Fase 12 "nessun errore High" soddisfatto.
+- Audit di completezza della solution (app, PCF, web resource, tabelle, flussi, ruoli, plugin): individuata e corretta l'assenza del ruolo di sicurezza **"Amministratore ASPEN"** dai RootComponents, aggiunto con `pac solution add-solution-component --solutionUniqueName ASPEN --component 9fb62eb8-4fb7-f111-aaab-7ced8d763868 --componentType 20`.
+
+### Rimosso
+- Tabella legacy **`agc_canestrofascicolo`** ("Peso 1" storica) eliminata fisicamente dall'ambiente `Tribunali-dev` — dismissione completata (in precedenza fermata per dipendenze residue, vedi sessione 26-27/09/2026). Rimossa dai RootComponents della solution e dai `MissingDependencies`.
 
 ### Noto/residuo (non bloccante)
 - Layout Home privo di scroll verticale su viewport stretti/bassi (item aperto, richiede wrapping in Container scrollabile da Power Apps Studio).
-- Tabelle legacy `agc_canestrofascicolo`/`agc_peso2` non ancora eliminabili fisicamente (dipendenze residue di metadata su più layer di solution storici); dati già migrati e verificati al 100% su `agc_pesouno`/`agc_pesodue`.
+- Tabella legacy `agc_peso2` ("Peso 2" storica) ancora presente come metadata non versionata, in attesa di analoga dismissione fisica; dati già migrati e verificati al 100% su `agc_pesouno`/`agc_pesodue`.
 - Fase 9 (governance Power Automate, service account con licenza Premium per il flow "Chiusura automatica esoneri scaduti") saltata su richiesta esplicita del cliente, da pianificare separatamente.
 
 ## Storico (Fasi 0-11)

@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Role id="{9fb62eb8-4fb7-f111-aaab-7ced8d763868}" name="Amministratore ASPEN" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <IsCustomizable>1</IsCustomizable>
+  <IsAutoAssigned>0</IsAutoAssigned>
+  <RolePrivileges>
+    <RolePrivilege name="prvAppendagc_esonero" level="Global" />
+    <RolePrivilege name="prvAppendagc_fascicolo2" level="Global" />
+    <RolePrivilege name="prvAppendagc_fotocaricoesonero" level="Global" />
+    <RolePrivilege name="prvAppendagc_modificacarico" level="Global" />
+    <RolePrivilege name="prvAppendagc_peso2" level="Global" />
+    <RolePrivilege name="prvAppendagc_PesoDue" level="Global" />
+    <RolePrivilege name="prvAppendagc_PesoUno" level="Global" />
+    <RolePrivilege name="prvAppendagc_rgnr" level="Global" />
+    <RolePrivilege name="prvAppendContact" level="Global" />
+    <RolePrivilege name="prvAppendToagc_esonero" level="Global" />
+    <RolePrivilege name="prvAppendToagc_fascicolo2" level="Global" />
+    <RolePrivilege name="prvAppendToagc_fotocaricoesonero" level="Global" />
+    <RolePrivilege name="prvAppendToagc_modificacarico" level="Global" />
+    <RolePrivilege name="prvAppendToagc_peso2" level="Global" />
+    <RolePrivilege name="prvAppendToagc_PesoDue" level="Global" />
+    <RolePrivilege name="prvAppendToagc_PesoUno" level="Global" />
+    <RolePrivilege name="prvAppendToagc_rgnr" level="Global" />
+    <RolePrivilege name="prvAppendToContact" level="Global" />
+    <RolePrivilege name="prvAssignagc_PesoDue" level="Global" />
+    <RolePrivilege name="prvAssignagc_PesoUno" level="Global" />
+    <RolePrivilege name="prvCreateagc_configurazione" level="Global" />
+    <RolePrivilege name="prvCreateagc_esonero" level="Global" />
+    <RolePrivilege name="prvCreateagc_fascicolo2" level="Global" />
+    <RolePrivilege name="prvCreateagc_fotocaricoesonero" level="Global" />
+    <RolePrivilege name="prvCreateagc_modificacarico" level="Global" />
+    <RolePrivilege name="prvCreateagc_peso2" level="Global" />
+    <RolePrivilege name="prvCreateagc_PesoDue" level="Global" />
+    <RolePrivilege name="prvCreateagc_PesoUno" level="Global" />
+    <RolePrivilege name="prvCreateagc_rgnr" level="Global" />
+    <RolePrivilege name="prvCreateSharePointData" level="Global" />
+    <RolePrivilege name="prvDeleteagc_configurazione" level="Global" />
+    <RolePrivilege name="prvDeleteagc_esonero" level="Global" />
+    <RolePrivilege name="prvDeleteagc_fascicolo2" level="Global" />
+    <RolePrivilege name="prvDeleteagc_fotocaricoesonero" level="Global" />
+    <RolePrivilege name="prvDeleteagc_peso2" level="Global" />
+    <RolePrivilege name="prvDeleteagc_PesoDue" level="Global" />
+    <RolePrivilege name="prvDeleteagc_PesoUno" level="Global" />
+    <RolePrivilege name="prvDeleteagc_rgnr" level="Global" />
+    <RolePrivilege name="prvReadagc_configurazione" level="Global" />
+    <RolePrivilege name="prvReadagc_esonero" level="Global" />
+    <RolePrivilege name="prvReadagc_fascicolo2" level="Global" />
+    <RolePrivilege name="prvReadagc_fotocaricoesonero" level="Global" />
+    <RolePrivilege name="prvReadagc_modificacarico" level="Global" />
+    <RolePrivilege name="prvReadagc_peso2" level="Global" />
+    <RolePrivilege name="prvReadagc_PesoDue" level="Global" />
+    <RolePrivilege name="prvReadagc_PesoUno" level="Global" />
+    <RolePrivilege name="prvReadagc_rgnr" level="Global" />
+    <RolePrivilege name="prvReadContact" level="Global" />
+    <RolePrivilege name="prvReadPluginAssembly" level="Global" />
+    <RolePrivilege name="prvReadPluginType" level="Global" />
+    <RolePrivilege name="prvReadSdkMessage" level="Global" />
+    <RolePrivilege name="prvReadSdkMessageProcessingStep" level="Global" />
+    <RolePrivilege name="prvReadSdkMessageProcessingStepImage" level="Global" />
+    <RolePrivilege name="prvReadSharePointData" level="Global" />
+    <RolePrivilege name="prvReadSharePointDocument" level="Global" />
+    <RolePrivilege name="prvShareagc_PesoDue" level="Global" />
+    <RolePrivilege name="prvShareagc_PesoUno" level="Global" />
+    <RolePrivilege name="prvWriteagc_configurazione" level="Global" />
+    <RolePrivilege name="prvWriteagc_esonero" level="Global" />
+    <RolePrivilege name="prvWriteagc_fascicolo2" level="Global" />
+    <RolePrivilege name="prvWriteagc_fotocaricoesonero" level="Global" />
+    <RolePrivilege name="prvWriteagc_modificacarico" level="Global" />
+    <RolePrivilege name="prvWriteagc_peso2" level="Global" />
+    <RolePrivilege name="prvWriteagc_PesoDue" level="Global" />
+    <RolePrivilege name="prvWriteagc_PesoUno" level="Global" />
+    <RolePrivilege name="prvWriteagc_rgnr" level="Global" />
+    <RolePrivilege name="prvWriteContact" level="Global" />
+    <RolePrivilege name="prvWriteSharePointData" level="Global" />
+  </RolePrivileges>
+</Role>

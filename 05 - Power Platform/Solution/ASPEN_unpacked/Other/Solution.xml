@@ -80,7 +80,6 @@
       </Addresses>
     </Publisher>
     <RootComponents>
-      <RootComponent type="1" schemaName="agc_canestrofascicolo" behavior="1" />
       <RootComponent type="1" schemaName="agc_configurazione" behavior="0" />
       <RootComponent type="1" schemaName="agc_esonero" behavior="0" />
       <RootComponent type="1" schemaName="agc_fascicolo2" behavior="0" />
@@ -91,6 +90,7 @@
       <RootComponent type="1" schemaName="agc_pesouno" behavior="0" />
       <RootComponent type="1" schemaName="agc_rgnr" behavior="0" />
       <RootComponent type="1" schemaName="contact" behavior="1" />
+      <RootComponent type="20" id="{9fb62eb8-4fb7-f111-aaab-7ced8d763868}" behavior="0" />
       <RootComponent type="20" id="{b7b3ed9e-4fb7-f111-aaab-7ced8d763868}" behavior="0" />
       <RootComponent type="29" id="{2307e036-c3b8-f111-aaab-7ced8d763868}" behavior="0" />
       <RootComponent type="300" schemaName="agc_aspendefaultcommandlibrary_9af74" behavior="0" />
@@ -140,10 +140,6 @@
           <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
         </Required>
         <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="1" schemaName="agc_canestrofascicolo" displayName="Peso 1" solution="Active" />
-        <Dependent type="1" schemaName="agc_canestrofascicolo" displayName="Peso 1" />
       </MissingDependency>
       <MissingDependency>
         <Required type="1" schemaName="agc_peso2" displayName="Peso 2" solution="Active" />
@@ -280,20 +276,8 @@
         <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
       </MissingDependency>
       <MissingDependency>
-        <Required type="2" schemaName="agc_descrizione" displayName="Descrizione" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" />
-        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 1" id="{bc56548f-7171-409c-911d-974e791fcbde}" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="2" schemaName="agc_name" displayName="Nome" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" />
-        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 1" id="{bc56548f-7171-409c-911d-974e791fcbde}" />
-      </MissingDependency>
-      <MissingDependency>
         <Required type="2" schemaName="agc_name" displayName="Nome" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" />
         <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 2" id="{76cb78de-3455-49b8-98d8-762f25d8cb48}" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" />
-        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 1" id="{bc56548f-7171-409c-911d-974e791fcbde}" />
       </MissingDependency>
       <MissingDependency>
         <Required type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" />
@@ -372,10 +356,6 @@
         <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
       </MissingDependency>
       <MissingDependency>
-        <Required type="20" displayName="Amministratore ASPEN" solution="Active" id="{9fb62eb8-4fb7-f111-aaab-7ced8d763868}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
         <Required type="20" displayName="Customer Service Representative" solution="msdyn_PowerAppsOfficeExtensions (1.0.0.1)" id="{d22d8156-a97d-42d8-a31e-187c5d192cbe}" parentId="{ecfd0b44-5720-45e3-ae68-417ddb0fb654}">
           <package appName="PowerAppsAppFramework Package" version="1.0.0.25">PowerAppsAppFramework_Anchor (1.0.0.25)</package>
         </Required>
@@ -416,14 +396,6 @@
         <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
       </MissingDependency>
       <MissingDependency>
-        <Required type="26" schemaName="Lista Pesi 1" displayName="Lista Pesi 1" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{2117c670-0a32-4b46-b479-b4b2907be54c}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="26" schemaName="Lista Pesi 2" displayName="Lista Pesi 2" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{276045e4-6442-43a7-bbf4-955e42ce60b6}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
         <Required type="26" schemaName="Opportunità aperte personali" displayName="Opportunità aperte personali" parentSchemaName="opportunity" parentDisplayName="Opportunità" solution="msdynce_Sales (9.0.4.0076)" id="{00000000-0000-0000-00aa-000010003000}">
           <package appName="msdynce_Sales" version="9.0.26083.10006">msdynce_SalesAnchor (9.0.26083.10006)</package>
         </Required>
@@ -436,42 +408,10 @@
         <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
       </MissingDependency>
       <MissingDependency>
-        <Required type="26" schemaName="Ricerca rapida Pesi 1 attivi/e" displayName="Ricerca rapida Pesi 1 attivi/e" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{22768eb6-7e3b-4a56-81d4-8fb550b94a2e}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="26" schemaName="Ricerca rapida Pesi 2 attivi/e" displayName="Ricerca rapida Pesi 2 attivi/e" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{502ac9b4-8ff5-4b4b-a71c-a289339dbea4}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
         <Required type="26" schemaName="Ruoli Web attivi" displayName="Ruoli Web attivi" parentSchemaName="mspp_webrole" parentDisplayName="Ruolo Web" solution="PowerPages_Apps (1.0.2605.0)" id="{735de4f0-c287-42eb-b5e6-2f01a75a40fb}">
           <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
         </Required>
         <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="26" schemaName="Visualizzazione associata Peso 1" displayName="Visualizzazione associata Peso 1" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{5c3f7a7e-a7d4-4a0b-aae0-de5f22eac611}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="26" schemaName="Visualizzazione associata Peso 2" displayName="Visualizzazione associata Peso 2" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{f4195390-9bf3-48eb-aed8-8899a223ca09}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="26" schemaName="Visualizzazione ricerca avanzata Peso 1" displayName="Visualizzazione ricerca avanzata Peso 1" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{301c341f-b960-4a70-aea2-9764cceee948}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="26" schemaName="Visualizzazione ricerca avanzata Peso 2" displayName="Visualizzazione ricerca avanzata Peso 2" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{44f29c85-b854-4c2d-8293-f6a7a28d4f7d}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="26" schemaName="Visualizzazione ricerca Peso 1" displayName="Visualizzazione ricerca Peso 1" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{96908071-eab2-4b1f-aa65-4640413fe1d6}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="26" schemaName="Visualizzazione ricerca Peso 2" displayName="Visualizzazione ricerca Peso 2" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{0e49fbe1-e7c7-4624-84ea-47c22b14eb8f}" />
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
       </MissingDependency>
       <MissingDependency>
         <Required type="59" schemaName="Casi attivi per agente" displayName="Casi attivi per agente" parentSchemaName="incident" parentDisplayName="Caso" solution="msdynce_Service (9.0.5.56)" id="{4143b74e-4a07-4d01-9ffe-2cdcaa4208fd}">
@@ -580,12 +520,6 @@
           <package appName="UnifiedRoutingPrime" version="1.5.26084.264">UnifiedRoutingPrimeAnchor (1.5.26084.264)</package>
         </Required>
         <Dependent type="60" displayName="TimelineWallControl - Contatto - Principale" parentDisplayName="Contatto" id="{986258b5-2985-4ae0-970a-5e1d108ab793}" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="60" displayName="Modulo scheda contatto" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{bc0f68dd-a4b1-4a8f-bed3-c8f5db2f89cf}">
-          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
-        </Required>
-        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
       </MissingDependency>
       <MissingDependency>
         <Required type="60" displayName="Modulo inserimento rapido" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{bdb0ae1c-32fa-4374-b637-8dafe107bc44}">

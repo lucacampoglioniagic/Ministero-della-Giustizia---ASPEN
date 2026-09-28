@@ -3,7 +3,6 @@
   <IsCustomizable>1</IsCustomizable>
   <IsAutoAssigned>0</IsAutoAssigned>
   <RolePrivileges>
-    <RolePrivilege name="prvAppendagc_canestrofascicolo" level="Global" />
     <RolePrivilege name="prvAppendagc_esonero" level="Local" />
     <RolePrivilege name="prvAppendagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvAppendagc_fotocaricoesonero" level="Global" />
@@ -12,7 +11,6 @@
     <RolePrivilege name="prvAppendagc_PesoUno" level="Local" />
     <RolePrivilege name="prvAppendagc_rgnr" level="Local" />
     <RolePrivilege name="prvAppendContact" level="Local" />
-    <RolePrivilege name="prvAppendToagc_canestrofascicolo" level="Global" />
     <RolePrivilege name="prvAppendToagc_esonero" level="Local" />
     <RolePrivilege name="prvAppendToagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvAppendToagc_fotocaricoesonero" level="Global" />
@@ -26,7 +24,6 @@
     <RolePrivilege name="prvAssignagc_PesoUno" level="Local" />
     <RolePrivilege name="prvAssignagc_rgnr" level="Local" />
     <RolePrivilege name="prvAssignContact" level="Global" />
-    <RolePrivilege name="prvCreateagc_canestrofascicolo" level="Global" />
     <RolePrivilege name="prvCreateagc_esonero" level="Local" />
     <RolePrivilege name="prvCreateagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvCreateagc_fotocaricoesonero" level="Global" />
@@ -37,7 +34,6 @@
     <RolePrivilege name="prvCreateSharePointData" level="Global" />
     <RolePrivilege name="prvDeleteagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvDeleteagc_rgnr" level="Local" />
-    <RolePrivilege name="prvReadagc_canestrofascicolo" level="Global" />
     <RolePrivilege name="prvReadagc_esonero" level="Global" />
     <RolePrivilege name="prvReadagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvReadagc_fotocaricoesonero" level="Global" />
@@ -54,7 +50,6 @@
     <RolePrivilege name="prvReadSdkMessageProcessingStepImage" level="Global" />
     <RolePrivilege name="prvReadSharePointData" level="Global" />
     <RolePrivilege name="prvReadSharePointDocument" level="Global" />
-    <RolePrivilege name="prvWriteagc_canestrofascicolo" level="Global" />
     <RolePrivilege name="prvWriteagc_esonero" level="Local" />
     <RolePrivilege name="prvWriteagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvWriteagc_peso2" level="Global" />

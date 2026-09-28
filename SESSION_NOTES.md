@@ -4,6 +4,20 @@
 
 ---
 
+## Sessione 28/09/2026 — Fase 12: export/unpack solution, solution checker, audit completezza, fix ruolo mancante
+
+- Riconfermato via `SESSION_NOTES.md`: tutti i 42 scenari E2E PASS, inclusi i retest specifici sui pesi (E2E-26/49/13/37/51/43/44/46/47) dopo la migrazione tabelle Peso1/Peso2 → `agc_pesouno`/`agc_pesodue`; permessi "Operatore ASPEN" confermati a parità (CRUD + Assign) sulle nuove tabelle.
+- Esportata e unpacked la solution `ASPEN` (unmanaged) in `05 - Power Platform/Solution/ASPEN_unpacked/`, versionata in repo. Export managed di prova: 142 `MissingDependencies`, tutte riconducibili a form OOB `contact` (Sales/Service/Power Pages non incluse) e alle tabelle legacy Peso1/Peso2 (metadata-only), non bloccanti.
+- `pac solution checker`: 0 Critical, 0 High, 39 Medium, 0 Low.
+- **Audit di completezza della solution** (app, PCF, web resource, tabelle, flussi, ruoli, plugin, custom API, App Actions): tutto presente **tranne il ruolo di sicurezza "Amministratore ASPEN"**, mancante dai RootComponents (era presente solo "Operatore ASPEN"). Corretto GUID ruolo (root BU) trovato via `pac data export` con schema Configuration Migration Tool ad-hoc: `9fb62eb8-4fb7-f111-aaab-7ced8d763868`; aggiunto con `pac solution add-solution-component --solutionUniqueName ASPEN --component 9fb62eb8-4fb7-f111-aaab-7ced8d763868 --componentType 20`. Ri-esportato/ri-unpacked, confermato presente in `Roles/`.
+- **Dismissione tabella legacy `agc_canestrofascicolo` ("Peso 1") completata** (confermato dall'utente): tabella eliminata fisicamente dall'ambiente `Tribunali-dev` — non più presente né tra i RootComponents né tra i `MissingDependencies`. `agc_peso2` ("Peso 2") resta ancora presente come metadata non versionata.
+- Aggiornati `README.md` (sezione "Ambiente di destinazione — Tribunali-dev") e `CHANGELOG.md` (nuovo file) con i risultati di validazione Fase 12.
+- Aggiornata checklist §7.6 del piano di migrazione: E2E-39/40 confermati già chiusi il 25/09 (non più pendenti come riportava una nota più vecchia).
+- Redatta bozza di chiusura email a MS Support sul bug legacy `agc_canestro`/`agc_fascicolo` in ambiente sorgente/POC (`06 - Riferimenti Normativi e Tecnici/Risposta_MS_Support_EntityMap_Corruption_Chiusura.md`): comunicato che il problema è stato risolto ricreando l'applicazione da zero per motivi di tempo.
+- Item ancora aperti (a carico dell'utente): test di restorability in ambiente vuoto, disattivazione accessi in ambiente sorgente, backup go-live.
+
+---
+
 ## Da fare / Prossimi passi (aggiornato al 24/09/2026, fine sessione "septies")
 
 Elenco consolidato degli item ancora aperti, raccolti da tutte le sezioni "Not yet done"/"Next steps" precedenti ancora rilevanti. Da qui riprendere la prossima sessione.
