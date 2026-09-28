@@ -661,12 +661,17 @@ Spuntare ogni voce con evidenza (screenshot/ID test E2E). La parità è raggiunt
 
 > **Stato al 25/09/2026** — Checklist aggiornata a fine Fase 11 (tutti i 42 scenari E2E PASS,
 > dettagli in `SESSION_NOTES.md`). Punti ancora aperti:
-> - Link Home "Cruscotto ASPEN" e "Nuovo Fascicolo" non ancora verificati (solo "Lista Fascicoli"
->   testato, §7.6) e test responsive (E2E-40) non eseguito.
+> - ✅ **[FATTO 25/09]** Link Home "Cruscotto ASPEN" e "Nuovo Fascicolo" (E2E-39) verificati: entrambi
+>   aprono correttamente la destinazione attesa (dashboard di sistema con dati reali; form nuovo
+>   `agc_fascicolo2` con tutti i campi corretti). Test responsive (E2E-40) eseguito a 1400/1000/600px:
+>   layout OK a 1400px; a 1000px e 600px il pannello KPI/ultime card risultano parzialmente o
+>   totalmente fuori viewport per assenza di scroll verticale su Screen1 — **problema noto e già
+>   segnalato dall'utente**, resta come item aperto separato ("implementare scroll verticale",
+>   richiede wrapping in Container scrollabile da Power Apps Studio), non bloccante per la Fase 12.
 > - **Fase 9 (governance Power Automate)**: saltata su richiesta esplicita dell'utente, da
 >   pianificare separatamente.
 > - **Fase 12 (validazione finale/export solution/solution checker/README-CHANGELOG/backup
->   Go-live)**: non ancora avviata, rimandata alla prossima sessione.
+>   Go-live)**: in corso.
 
 ### 7.1 Datamodel
 - [x] Tutte le tabelle di §3.3 esistono con logical/schema name, tipi, obbligatorietà e default indicati — verificato tramite import dati reali (Fase 10) e uso quotidiano dell'app su tutte le tabelle senza errori di schema riscontrati
@@ -713,7 +718,7 @@ Il PCF `CaricoPerCanestro` non compariva nella lista predefinita di "Aggiungi co
 - [x] App `agc_ASPEN` con sitemap §1.9 (7 tabelle + Dashboard, 3 gruppi, privilege rule su Configurazioni); Home custom page ancora da aggiungere (rimandata a Fase 8, vedi nota §1.9)
 - [x] Command Designer su `agc_fascicolo2` → griglia principale: comandi "Assegna Fascicolo" (visibilità Power Fx `CountRows(Self.Selected.AllItems) >= 1`, icona web resource) e "Assegnazione massiva" (visibilità `CountRows(Self.Selected.AllItems) = 0`) creati con Power Fx (`ASPEN_DefaultCommandLibrary`), salvati e pubblicati
 - [x] **Fase 8 completata (24/09/2026)**: custom page "ASPEN Home" (`cr248_aspenhome_1750e`) creata in Studio, sorgenti YAML del repo importate via `pac canvas unpack`/`pack` + `pac solution pack`/`import --publish-changes --force-overwrite`; 3 `Launch()` URL ripuntati su destinazione (appid `7c769e36-f2b7-f111-aaab-000d3a697f24`, dashboard id `4ff56c67-5fb7-f111-aaab-000d3a697f24`, viewid Fascicoli `487d09ca-0922-4613-a4a3-8a98dbf32779`) e verificati funzionalmente; data source `Fascicoli` (`agc_fascicolo2`) aggiunto da Studio (nessun errore residuo sulle 4 formule KPI); pagina salvata e pubblicata da Studio; nel sitemap app "ASPEN Home" spostata come **prima voce del gruppo Operatività** (rimossa e riaggiunta come pagina esistente per cambiare gruppo, poi "Sposta su"); "Mostra home page" disattivato in Impostazioni → Spostamento così da rendere "ASPEN Home" la landing effettiva dell'app; "Salva e pubblica" dell'intera app eseguito con successo
-- [x] Home: KPI popolati con dati reali dopo l'import (vedi §7.7); navigazione card verso destinazione (E2E-39 — verificato solo il link "Lista Fascicoli"; Cruscotto/Nuovo Fascicolo da testare), responsive (E2E-40, non ancora testato) rimangono da completare
+- [x] Home: KPI popolati con dati reali dopo l'import (vedi §7.7); navigazione card verso destinazione (E2E-39, PASS 25/09 — "Lista Fascicoli", "Cruscotto ASPEN" e "Nuovo Fascicolo" tutti verificati), responsive (E2E-40, eseguito 25/09 a 1400/1000/600px — OK a 1400px, scroll verticale mancante a 1000/600px, item separato non bloccante)
 - [x] **Layout dashboard "Cruscotto ASPEN" corretto in 2 colonne × 2 righe (25/09/2026)**: il layout reale non era mai stato un vero 2×2 (nonostante la descrizione in §1.4) ma 3 grafici affiancati in riga 1 + 1 grafico da solo in riga 2. Riorganizzato via `PATCH systemforms` (nessun editor grafico raggiungibile in questo ambiente, vedi nota tecnica sotto) in 2 colonne × 2 righe, con gli stessi 4 controlli/binding invariati. Verificato visivamente: tutti e 4 i grafici renderizzati correttamente a piena dimensione.
 
 #### 7.6bis — Nota tecnica: dashboard classici, layout a colonne e altezza celle (RISOLTO 25/09/2026)

@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AppModule>
+  <UniqueName>agc_ASPEN</UniqueName>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <WebResourceId>89062325-c5b8-f111-aaab-7ced8d763868</WebResourceId>
+  <OptimizedFor></OptimizedFor>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <FormFactor>1</FormFactor>
+  <ClientType>4</ClientType>
+  <NavigationType>0</NavigationType>
+  <AppModuleComponents>
+    <AppModuleComponent type="1" schemaName="agc_canestrofascicolo" />
+    <AppModuleComponent type="1" schemaName="agc_configurazione" />
+    <AppModuleComponent type="1" schemaName="agc_esonero" />
+    <AppModuleComponent type="1" schemaName="agc_fascicolo2" />
+    <AppModuleComponent type="1" schemaName="agc_peso2" />
+    <AppModuleComponent type="1" schemaName="agc_rgnr" />
+    <AppModuleComponent type="1" schemaName="contact" />
+    <AppModuleComponent type="26" id="{00000000-0000-0000-00aa-000000666400}" />
+    <AppModuleComponent type="26" id="{00000000-0000-0000-00aa-000010001210}" />
+    <AppModuleComponent type="26" id="{23c6aa78-b0f5-44ff-a0d6-136cd748ac4f}" />
+    <AppModuleComponent type="26" id="{1c068981-535a-4a53-9b97-197edcf27d56}" />
+    <AppModuleComponent type="26" id="{432e4603-89ce-4a7e-a055-347bb38beed5}" />
+    <AppModuleComponent type="26" id="{96908071-eab2-4b1f-aa65-4640413fe1d6}" />
+    <AppModuleComponent type="26" id="{0e49fbe1-e7c7-4624-84ea-47c22b14eb8f}" />
+    <AppModuleComponent type="26" id="{e6785610-2673-4178-9677-4cab61e1b9e3}" />
+    <AppModuleComponent type="26" id="{14ea1914-0e2c-4918-8eca-60930324f18f}" />
+    <AppModuleComponent type="26" id="{44d4b281-60e5-4b93-8c26-6c614ea8f6b0}" />
+    <AppModuleComponent type="26" id="{c024cf88-50b7-f111-aaab-7ced8d766a4e}" />
+    <AppModuleComponent type="26" id="{ce24cf88-50b7-f111-aaab-7ced8d766a4e}" />
+    <AppModuleComponent type="26" id="{a2d479c5-53e3-4c69-addd-802327e67a0d}" />
+    <AppModuleComponent type="26" id="{f4195390-9bf3-48eb-aed8-8899a223ca09}" />
+    <AppModuleComponent type="26" id="{487d09ca-0922-4613-a4a3-8a98dbf32779}" />
+    <AppModuleComponent type="26" id="{22768eb6-7e3b-4a56-81d4-8fb550b94a2e}" />
+    <AppModuleComponent type="26" id="{06d0459f-f8e0-404e-869d-93fca336b9ed}" />
+    <AppModuleComponent type="26" id="{276045e4-6442-43a7-bbf4-955e42ce60b6}" />
+    <AppModuleComponent type="26" id="{301c341f-b960-4a70-aea2-9764cceee948}" />
+    <AppModuleComponent type="26" id="{502ac9b4-8ff5-4b4b-a71c-a289339dbea4}" />
+    <AppModuleComponent type="26" id="{b77f18e5-b6dd-4716-8f9c-aecbc9bfad03}" />
+    <AppModuleComponent type="26" id="{2117c670-0a32-4b46-b479-b4b2907be54c}" />
+    <AppModuleComponent type="26" id="{58fb20ff-d5be-406f-908e-c777e9dedf5f}" />
+    <AppModuleComponent type="26" id="{5c3f7a7e-a7d4-4a0b-aae0-de5f22eac611}" />
+    <AppModuleComponent type="26" id="{3bd1e6bf-9770-40b5-81a1-e80a24985c72}" />
+    <AppModuleComponent type="26" id="{8df19b44-a073-40c3-9d6d-ee1355d8c4ba}" />
+    <AppModuleComponent type="26" id="{44f29c85-b854-4c2d-8293-f6a7a28d4f7d}" />
+    <AppModuleComponent type="26" id="{e30304d2-aa45-45e1-9b7d-fef245d7daac}" />
+    <AppModuleComponent type="26" id="{eda26f1e-dbcc-40ad-91f2-ff2878d1d8d8}" />
+    <AppModuleComponent type="60" id="{4ff56c67-5fb7-f111-aaab-000d3a697f24}" />
+    <AppModuleComponent type="60" id="{cdbb9298-3b2e-41f3-8f4a-0168d6b09fc4}" />
+    <AppModuleComponent type="60" id="{d880c3cf-80e2-42f3-82f9-24d040d09f17}" />
+    <AppModuleComponent type="60" id="{449faa0e-f471-48ec-87d0-4719909546d2}" />
+    <AppModuleComponent type="60" id="{7bb87dfd-ec3e-4ed9-8e3e-5725d3067295}" />
+    <AppModuleComponent type="60" id="{661157fe-2fc9-4eaa-835f-5bfa2f7b64f7}" />
+    <AppModuleComponent type="60" id="{f3b707fb-3b5f-45f9-9c6b-5e573bb5d19e}" />
+    <AppModuleComponent type="60" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+    <AppModuleComponent type="60" id="{bdb0ae1c-32fa-4374-b637-8dafe107bc44}" />
+    <AppModuleComponent type="60" id="{5194a156-576a-4fa1-bf1a-abf7a41b0e8c}" />
+    <AppModuleComponent type="60" id="{05ea391a-d034-43fe-849b-b4fa3213a2b2}" />
+    <AppModuleComponent type="60" id="{29de27bc-a257-4f29-99cf-bab4a84e688f}" />
+    <AppModuleComponent type="60" id="{bc0f68dd-a4b1-4a8f-bed3-c8f5db2f89cf}" />
+    <AppModuleComponent type="60" id="{3d22ab88-96c8-4b3f-a533-d4827e2925c9}" />
+    <AppModuleComponent type="60" id="{707fc57b-c5e6-471b-a180-e37ed28a38e2}" />
+    <AppModuleComponent type="62" schemaName="agc_ASPEN" />
+  </AppModuleComponents>
+  <AppModuleRoleMaps>
+    <Role id="{9fb62eb8-4fb7-f111-aaab-7ced8d763868}" />
+    <Role id="{627090ff-40a3-4053-8790-584edc5be201}" />
+    <Role id="{b7b3ed9e-4fb7-f111-aaab-7ced8d763868}" />
+    <Role id="{119f245c-3cc8-4b62-b31c-d1a046ced15d}" />
+  </AppModuleRoleMaps>
+  <LocalizedNames>
+    <LocalizedName description="ASPEN" languagecode="1040" />
+  </LocalizedNames>
+  <appelements>
+    <appelement uniquename="agc_agc_ASPEN_canvasappid_agc_aspendefaultcommandlibrary_9af74">
+      <canvasappid>
+        <name>agc_aspendefaultcommandlibrary_9af74</name>
+      </canvasappid>
+      <iscustomizable>1</iscustomizable>
+      <name>agc_agc_ASPEN_canvasappid_agc_aspendefaultcommandlibrary_9af74</name>
+    </appelement>
+  </appelements>
+  <appsettings>
+    <appsetting settingdefinitionid.uniquename="AppChannel">
+      <iscustomizable>1</iscustomizable>
+      <value>1</value>
+    </appsetting>
+  </appsettings>
+</AppModule>

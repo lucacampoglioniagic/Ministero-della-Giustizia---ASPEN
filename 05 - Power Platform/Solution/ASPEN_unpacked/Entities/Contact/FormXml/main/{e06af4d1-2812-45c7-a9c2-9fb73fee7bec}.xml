@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}</formid>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form>
+      <DisplayConditions FallbackForm="true" Order="9" solutionaction="Modified" />
+    </form>
+    <LocalizedNames>
+      <LocalizedName description="Contatto per esperienza multisessione" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Modulo Contatto per esperienza multisessione predefinito." languagecode="1040" />
+    </Descriptions>
+  </systemform>
+</forms>

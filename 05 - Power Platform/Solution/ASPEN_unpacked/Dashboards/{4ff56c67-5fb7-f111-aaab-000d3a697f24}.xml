@@ -1,0 +1,453 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Dashboard xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <LocalizedNames>
+    <LocalizedName description="Cruscotto ASPEN" languagecode="1040" />
+  </LocalizedNames>
+  <FormId>{4ff56c67-5fb7-f111-aaab-000d3a697f24}</FormId>
+  <IsCustomizable>1</IsCustomizable>
+  <IsDefault>0</IsDefault>
+  <FormXml>
+    <forms type="dashboard">
+      <form>
+        <tabs>
+          <tab showlabel="true" verticallayout="true" id="{3d649bcd-9b11-4f10-9382-294b9c85fd50}">
+            <labels>
+              <label description="Scheda" languagecode="1040" />
+            </labels>
+            <columns>
+              <column width="100%">
+                <sections>
+                  <section showlabel="false" showbar="false" columns="11" id="{6a4c4e4a-6207-416e-8a94-331d30579d7f}">
+                    <labels>
+                      <label description="Sezione" languagecode="1040" />
+                    </labels>
+                    <rows>
+                      <row>
+                        <cell colspan="1" rowspan="12" showlabel="false" id="{07db648a-1281-4032-8f26-5ad023022fe9}" auto="false">
+                          <labels>
+                            <label description="Fascicoli" languagecode="1040" />
+                          </labels>
+                          <control id="Component17e74f3" uniqueid="{c833a3ee-c8a6-e41e-ce16-5b0418d19a95}" classid="{F9A8A302-114E-466A-B582-6771B2AE0D92}" indicationOfSubgrid="true">
+                            <parameters>
+                              <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                              <ChartGridMode>Grid</ChartGridMode>
+                              <EnableQuickFind>true</EnableQuickFind>
+                              <EnableViewPicker>true</EnableViewPicker>
+                              <EnableJumpBar>true</EnableJumpBar>
+                              <RecordsPerPage>8</RecordsPerPage>
+                              <HeaderColorCode />
+                              <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                              <IsUserView>false</IsUserView>
+                              <ViewIds />
+                              <AutoExpand>Fixed</AutoExpand>
+                              <VisualizationId />
+                              <IsUserChart>false</IsUserChart>
+                              <EnableChartPicker>false</EnableChartPicker>
+                              <RelationshipName />
+                            </parameters>
+                          </control>
+                        </cell>
+                        <cell colspan="1" rowspan="12" showlabel="false" id="{489983d8-2a23-47b4-b35d-6eabd64341ff}" auto="false">
+                          <labels>
+                            <label description="Fascicoli" languagecode="1040" />
+                          </labels>
+                          <control id="Component2fb1040" uniqueid="{e0b5e660-b349-8cb0-0d50-e62a864bd257}" classid="{F9A8A302-114E-466A-B582-6771B2AE0D92}" indicationOfSubgrid="true">
+                            <parameters>
+                              <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                              <ChartGridMode>Grid</ChartGridMode>
+                              <EnableQuickFind>true</EnableQuickFind>
+                              <EnableViewPicker>true</EnableViewPicker>
+                              <EnableJumpBar>true</EnableJumpBar>
+                              <RecordsPerPage>8</RecordsPerPage>
+                              <HeaderColorCode />
+                              <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                              <IsUserView>false</IsUserView>
+                              <ViewIds />
+                              <AutoExpand>Fixed</AutoExpand>
+                              <VisualizationId />
+                              <IsUserChart>false</IsUserChart>
+                              <EnableChartPicker>false</EnableChartPicker>
+                              <RelationshipName />
+                            </parameters>
+                          </control>
+                        </cell>
+                      </row>
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row>
+                        <cell colspan="1" rowspan="12" showlabel="false" id="{bb861e2e-1440-401a-8d8f-527bfe597659}" auto="false">
+                          <labels>
+                            <label description="Esoneri" languagecode="1040" />
+                          </labels>
+                          <control id="Componentc15e734" uniqueid="{4174e533-3da8-d990-a05e-6ead8dea45d1}" classid="{F9A8A302-114E-466A-B582-6771B2AE0D92}" indicationOfSubgrid="true">
+                            <parameters>
+                              <TargetEntityType>agc_esonero</TargetEntityType>
+                              <ChartGridMode>Grid</ChartGridMode>
+                              <EnableQuickFind>true</EnableQuickFind>
+                              <EnableViewPicker>true</EnableViewPicker>
+                              <EnableJumpBar>true</EnableJumpBar>
+                              <RecordsPerPage>8</RecordsPerPage>
+                              <HeaderColorCode />
+                              <ViewId>{767C2BC1-21CB-41EF-B8C1-6F8094BCAC77}</ViewId>
+                              <IsUserView>false</IsUserView>
+                              <ViewIds />
+                              <AutoExpand>Fixed</AutoExpand>
+                              <VisualizationId />
+                              <IsUserChart>false</IsUserChart>
+                              <EnableChartPicker>false</EnableChartPicker>
+                              <RelationshipName />
+                            </parameters>
+                          </control>
+                        </cell>
+                        <cell id="{68ae9d8b-28dc-e8aa-6946-1ce5ac5a112b}" showlabel="false" colspan="1" auto="false" rowspan="12">
+                          <labels>
+                            <label description="Fascicoli" languagecode="1040" />
+                          </labels>
+                          <control id="Component9593628" classid="{F9A8A302-114E-466A-B582-6771B2AE0D92}" indicationOfSubgrid="true" uniqueid="{0606f03a-61ec-4c2b-bcc3-3017e548d67e}">
+                            <parameters>
+                              <ViewId>{1B9BF48B-50B7-F111-AAAB-7CED8D763868}</ViewId>
+                              <IsUserView>false</IsUserView>
+                              <RelationshipName />
+                              <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                              <AutoExpand>Fixed</AutoExpand>
+                              <EnableQuickFind>true</EnableQuickFind>
+                              <EnableViewPicker>true</EnableViewPicker>
+                              <ViewIds />
+                              <EnableJumpBar>true</EnableJumpBar>
+                              <ChartGridMode>Grid</ChartGridMode>
+                              <VisualizationId />
+                              <IsUserChart>false</IsUserChart>
+                              <EnableChartPicker>false</EnableChartPicker>
+                              <RecordsPerPage>8</RecordsPerPage>
+                              <HeaderColorCode />
+                            </parameters>
+                          </control>
+                        </cell>
+                      </row>
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                      <row />
+                    </rows>
+                  </section>
+                </sections>
+              </column>
+            </columns>
+          </tab>
+          <tab showlabel="true" verticallayout="true" id="{1ceafa3f-7985-426d-95c9-c697a969a451}">
+            <labels>
+              <label description="Scheda" languagecode="1040" />
+            </labels>
+            <columns>
+              <column width="100%">
+                <sections>
+                  <section showlabel="false" showbar="false" columns="1111" id="{410101a8-c411-4c65-9037-0097ad898bf6}">
+                    <labels>
+                      <label description="Sezione" languagecode="1040" />
+                    </labels>
+                    <rows>
+                      <row>
+                        <cell id="{be556d99-5d75-bc1a-4cb6-781a1b2eeab7}" showlabel="false">
+                          <labels>
+                            <label description="" languagecode="1040" />
+                          </labels>
+                        </cell>
+                        <cell id="{ba4e715b-1180-e7da-01c2-dad89d50a68e}" showlabel="false">
+                          <labels>
+                            <label description="" languagecode="1040" />
+                          </labels>
+                        </cell>
+                        <cell id="{36c89b05-c2a7-4419-239a-8e09e91c060a}" showlabel="false">
+                          <labels>
+                            <label description="" languagecode="1040" />
+                          </labels>
+                        </cell>
+                        <cell id="{79be4e28-386b-43dd-63a1-b3667986ca57}" showlabel="false">
+                          <labels>
+                            <label description="" languagecode="1040" />
+                          </labels>
+                        </cell>
+                      </row>
+                    </rows>
+                  </section>
+                </sections>
+              </column>
+            </columns>
+          </tab>
+        </tabs>
+        <controlDescriptions>
+          <controlDescription forControl="{c833a3ee-c8a6-e41e-ce16-5b0418d19a95}">
+            <customControl id="{E7A81278-8635-4d9e-8D4D-59480B391C5B}">
+              <parameters>
+                <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                <ChartGridMode>Grid</ChartGridMode>
+                <EnableQuickFind>true</EnableQuickFind>
+                <EnableViewPicker>true</EnableViewPicker>
+                <EnableJumpBar>true</EnableJumpBar>
+                <RecordsPerPage>8</RecordsPerPage>
+                <HeaderColorCode />
+                <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                <IsUserView>false</IsUserView>
+                <ViewIds />
+                <AutoExpand>Fixed</AutoExpand>
+                <VisualizationId />
+                <IsUserChart>false</IsUserChart>
+                <EnableChartPicker>false</EnableChartPicker>
+                <RelationshipName />
+              </parameters>
+            </customControl>
+            <customControl formFactor="0" name="agc_AgicAspen.CaricoMagistratiChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                  <magistratoField>agc_magistratocontatto</magistratoField>
+                  <pesoField>agc_pesocalcolato2</pesoField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+            <customControl formFactor="1" name="agc_AgicAspen.CaricoMagistratiChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                  <magistratoField>agc_magistratocontatto</magistratoField>
+                  <pesoField>agc_pesocalcolato2</pesoField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+            <customControl formFactor="2" name="agc_AgicAspen.CaricoMagistratiChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                  <magistratoField>agc_magistratocontatto</magistratoField>
+                  <pesoField>agc_pesocalcolato2</pesoField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+          </controlDescription>
+          <controlDescription forControl="{e0b5e660-b349-8cb0-0d50-e62a864bd257}">
+            <customControl id="{E7A81278-8635-4d9e-8D4D-59480B391C5B}">
+              <parameters>
+                <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                <ChartGridMode>Grid</ChartGridMode>
+                <EnableQuickFind>true</EnableQuickFind>
+                <EnableViewPicker>true</EnableViewPicker>
+                <EnableJumpBar>true</EnableJumpBar>
+                <RecordsPerPage>8</RecordsPerPage>
+                <HeaderColorCode />
+                <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                <IsUserView>false</IsUserView>
+                <ViewIds />
+                <AutoExpand>Fixed</AutoExpand>
+                <VisualizationId />
+                <IsUserChart>false</IsUserChart>
+                <EnableChartPicker>false</EnableChartPicker>
+                <RelationshipName />
+              </parameters>
+            </customControl>
+            <customControl formFactor="0" name="agc_AgicAspen.FascicoliPerCanestroChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                  <canestroField>agc_pesouno</canestroField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+            <customControl formFactor="1" name="agc_AgicAspen.FascicoliPerCanestroChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                  <canestroField>agc_pesouno</canestroField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+            <customControl formFactor="2" name="agc_AgicAspen.FascicoliPerCanestroChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{B724CF88-50B7-F111-AAAB-7CED8D766A4E}</ViewId>
+                  <canestroField>agc_pesouno</canestroField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+          </controlDescription>
+          <controlDescription forControl="{4174e533-3da8-d990-a05e-6ead8dea45d1}">
+            <customControl id="{E7A81278-8635-4d9e-8D4D-59480B391C5B}">
+              <parameters>
+                <TargetEntityType>agc_esonero</TargetEntityType>
+                <ChartGridMode>Grid</ChartGridMode>
+                <EnableQuickFind>true</EnableQuickFind>
+                <EnableViewPicker>true</EnableViewPicker>
+                <EnableJumpBar>true</EnableJumpBar>
+                <RecordsPerPage>8</RecordsPerPage>
+                <HeaderColorCode />
+                <ViewId>{767C2BC1-21CB-41EF-B8C1-6F8094BCAC77}</ViewId>
+                <IsUserView>false</IsUserView>
+                <ViewIds />
+                <AutoExpand>Fixed</AutoExpand>
+                <VisualizationId />
+                <IsUserChart>false</IsUserChart>
+                <EnableChartPicker>false</EnableChartPicker>
+                <RelationshipName />
+              </parameters>
+            </customControl>
+            <customControl formFactor="0" name="agc_AgicAspen.EsoneriAttiviChart">
+              <parameters>
+                <data-set name="esoneriDataSet">
+                  <ViewId>{767C2BC1-21CB-41EF-B8C1-6F8094BCAC77}</ViewId>
+                  <magistratoField>agc_magistrato</magistratoField>
+                  <tipoField>agc_tipoesonero</tipoField>
+                  <statoField>agc_statoesonero</statoField>
+                  <percentualeField>agc_percentualeesonero</percentualeField>
+                  <dataInizioField>agc_datainizio</dataInizioField>
+                  <dataFineField>agc_datafine</dataFineField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_esonero</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+            <customControl formFactor="1" name="agc_AgicAspen.EsoneriAttiviChart">
+              <parameters>
+                <data-set name="esoneriDataSet">
+                  <ViewId>{767C2BC1-21CB-41EF-B8C1-6F8094BCAC77}</ViewId>
+                  <magistratoField>agc_magistrato</magistratoField>
+                  <tipoField>agc_tipoesonero</tipoField>
+                  <statoField>agc_statoesonero</statoField>
+                  <percentualeField>agc_percentualeesonero</percentualeField>
+                  <dataInizioField>agc_datainizio</dataInizioField>
+                  <dataFineField>agc_datafine</dataFineField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_esonero</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+            <customControl formFactor="2" name="agc_AgicAspen.EsoneriAttiviChart">
+              <parameters>
+                <data-set name="esoneriDataSet">
+                  <ViewId>{767C2BC1-21CB-41EF-B8C1-6F8094BCAC77}</ViewId>
+                  <magistratoField>agc_magistrato</magistratoField>
+                  <tipoField>agc_tipoesonero</tipoField>
+                  <statoField>agc_statoesonero</statoField>
+                  <percentualeField>agc_percentualeesonero</percentualeField>
+                  <dataInizioField>agc_datainizio</dataInizioField>
+                  <dataFineField>agc_datafine</dataFineField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_esonero</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+          </controlDescription>
+          <controlDescription forControl="{0606f03a-61ec-4c2b-bcc3-3017e548d67e}">
+            <customControl id="{E7A81278-8635-4d9e-8D4D-59480B391C5B}">
+              <parameters>
+                <ViewId>{1B9BF48B-50B7-F111-AAAB-7CED8D763868}</ViewId>
+                <IsUserView>false</IsUserView>
+                <RelationshipName />
+                <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                <AutoExpand>Fixed</AutoExpand>
+                <EnableQuickFind>true</EnableQuickFind>
+                <EnableViewPicker>true</EnableViewPicker>
+                <ViewIds />
+                <EnableJumpBar>true</EnableJumpBar>
+                <ChartGridMode>Grid</ChartGridMode>
+                <VisualizationId />
+                <IsUserChart>false</IsUserChart>
+                <EnableChartPicker>false</EnableChartPicker>
+                <RecordsPerPage>8</RecordsPerPage>
+                <HeaderColorCode />
+              </parameters>
+            </customControl>
+            <customControl formFactor="0" name="agc_AgicAspen.AndamentoCaricoMensileChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{1B9BF48B-50B7-F111-AAAB-7CED8D763868}</ViewId>
+                  <magistratoField>agc_magistratocontatto</magistratoField>
+                  <pesoField>agc_pesocalcolato2</pesoField>
+                  <dataField>agc_datacaso</dataField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+            <customControl formFactor="1" name="agc_AgicAspen.AndamentoCaricoMensileChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{1B9BF48B-50B7-F111-AAAB-7CED8D763868}</ViewId>
+                  <magistratoField>agc_magistratocontatto</magistratoField>
+                  <pesoField>agc_pesocalcolato2</pesoField>
+                  <dataField>agc_datacaso</dataField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+            <customControl formFactor="2" name="agc_AgicAspen.AndamentoCaricoMensileChart">
+              <parameters>
+                <data-set name="fascicoliDataSet">
+                  <ViewId>{1B9BF48B-50B7-F111-AAAB-7CED8D763868}</ViewId>
+                  <magistratoField>agc_magistratocontatto</magistratoField>
+                  <pesoField>agc_pesocalcolato2</pesoField>
+                  <dataField>agc_datacaso</dataField>
+                  <IsUserView>false</IsUserView>
+                  <TargetEntityType>agc_fascicolo2</TargetEntityType>
+                  <EnableViewPicker>true</EnableViewPicker>
+                  <FilteredViewIds />
+                </data-set>
+              </parameters>
+            </customControl>
+          </controlDescription>
+        </controlDescriptions>
+      </form>
+    </forms>
+  </FormXml>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <IsTabletEnabled>0</IsTabletEnabled>
+</Dashboard>

@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<savedqueries xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <savedquery>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>1</CanBeDeleted>
+    <isquickfindquery>0</isquickfindquery>
+    <isprivate>0</isprivate>
+    <isdefault>1</isdefault>
+    <savedqueryid>{f5e11bde-4db7-f111-aaab-000d3a697f24}</savedqueryid>
+    <layoutxml>
+      <grid name="resultset" jump="agc_numeroregistrogenerale" select="1" preview="1" icon="1">
+        <row name="result" id="agc_fascicolo2id">
+          <cell name="agc_numeroregistrogenerale" width="150" />
+          <cell name="agc_magistratocontatto" width="150" />
+          <cell name="agc_pesouno" width="130" />
+          <cell name="agc_pesodue" width="100" />
+          <cell name="agc_statocaso" width="100" />
+          <cell name="agc_datacaso" width="110" />
+          <cell name="agc_rgnr" width="110" />
+          <cell name="agc_ruoloassegnazione" width="100" />
+          <cell name="agc_pesocalcolato2" width="100" />
+        </row>
+      </grid>
+    </layoutxml>
+    <querytype>8192</querytype>
+    <fetchxml>
+      <fetch version="1.0" mapping="logical">
+        <entity name="agc_fascicolo2">
+          <attribute name="agc_fascicolo2id" />
+          <attribute name="agc_numeroregistrogenerale" />
+          <attribute name="agc_magistratocontatto" />
+          <attribute name="agc_pesouno" />
+          <attribute name="agc_pesodue" />
+          <attribute name="agc_statocaso" />
+          <attribute name="agc_datacaso" />
+          <attribute name="agc_rgnr" />
+          <attribute name="agc_ruoloassegnazione" />
+          <order attribute="agc_numeroregistrogenerale" descending="false" />
+          <attribute name="agc_pesocalcolato2" />
+        </entity>
+      </fetch>
+    </fetchxml>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <LocalizedNames>
+      <LocalizedName description="Entità Fascicoli personali" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Entità Fascicoli attive di proprietà dell'utente corrente" languagecode="1040" />
+    </Descriptions>
+  </savedquery>
+</savedqueries>

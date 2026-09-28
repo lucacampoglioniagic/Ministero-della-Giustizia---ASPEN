@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{ebbf8769-f9c3-4be1-b476-849fa95d0821}</formid>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form>
+      <tabs>
+        <tab verticallayout="true" id="{294ae41c-8b0d-40ea-886a-3ce0957d8c29}" IsUserDefined="1">
+          <labels>
+            <label description="" languagecode="1040" />
+          </labels>
+          <columns>
+            <column width="100%">
+              <sections>
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{94d4571a-197e-4946-a69f-0619ed4d2174}">
+                  <labels>
+                    <label description="GENERALE" languagecode="1040" />
+                  </labels>
+                  <rows>
+                    <row>
+                      <cell id="{83bbfc9d-6ce9-4cd2-9547-d4859239b9a2}">
+                        <labels>
+                          <label description="Nome" languagecode="1040" />
+                        </labels>
+                        <control id="agc_nome" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="agc_nome" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+              </sections>
+            </column>
+          </columns>
+        </tab>
+      </tabs>
+    </form>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>1</CanBeDeleted>
+    <LocalizedNames>
+      <LocalizedName description="Informazioni" languagecode="1040" />
+    </LocalizedNames>
+  </systemform>
+</forms>

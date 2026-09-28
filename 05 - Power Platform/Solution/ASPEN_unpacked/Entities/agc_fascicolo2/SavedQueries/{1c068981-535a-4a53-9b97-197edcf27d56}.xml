@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<savedqueries xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <savedquery>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>0</CanBeDeleted>
+    <isquickfindquery>0</isquickfindquery>
+    <isprivate>0</isprivate>
+    <isdefault>1</isdefault>
+    <savedqueryid>{1c068981-535a-4a53-9b97-197edcf27d56}</savedqueryid>
+    <layoutxml>
+      <grid name="agc_fascicolo2s" jump="agc_numeroregistrogenerale" select="1" icon="1" preview="1">
+        <row name="agc_fascicolo2" id="agc_fascicolo2id">
+          <cell name="agc_numeroregistrogenerale" width="300" />
+          <cell name="createdon" width="125" />
+        </row>
+      </grid>
+    </layoutxml>
+    <querytype>2</querytype>
+    <fetchxml>
+      <fetch version="1.0" mapping="logical">
+        <entity name="agc_fascicolo2">
+          <attribute name="agc_fascicolo2id" />
+          <attribute name="agc_numeroregistrogenerale" />
+          <attribute name="createdon" />
+          <order attribute="agc_numeroregistrogenerale" descending="false" />
+          <filter type="and">
+            <condition attribute="statecode" operator="eq" value="0" />
+          </filter>
+        </entity>
+      </fetch>
+    </fetchxml>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <LocalizedNames>
+      <LocalizedName description="Visualizzazione associata Fascicolo" languagecode="1040" />
+    </LocalizedNames>
+  </savedquery>
+</savedqueries>

@@ -1,0 +1,99 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_commondataserviceforapps": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "agc_sharedcommondataserviceforapps_5c0ce"
+        },
+        "api": {
+          "name": "shared_commondataserviceforapps"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1,
+            "startTime": "2026-09-26T00:00:00Z"
+          },
+          "metadata": {
+            "operationMetadataId": "188b0302-a9d0-4a31-a661-97901e78d4bf"
+          },
+          "type": "Recurrence"
+        }
+      },
+      "actions": {
+        "Elenca_Esoneri": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "4d42b5c0-615b-49fa-95a4-08011ae038b5"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_commondataserviceforapps",
+              "operationId": "ListRecords",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+            },
+            "parameters": {
+              "entityName": "agc_esoneros",
+              "$filter": "agc_statoesonero eq 1 and agc_datafine le '@{formatDateTime(utcNow(),'yyyy-MM-dd')}'"
+            },
+            "authentication": "@parameters('$authentication')"
+          }
+        },
+        "Applica_a_ogni_esonero": {
+          "foreach": "@outputs('Elenca_Esoneri')?['body/value']",
+          "actions": {
+            "Chiudi_esonero": {
+              "runAfter": {},
+              "metadata": {
+                "operationMetadataId": "adf23a8c-524e-4dba-bf94-f1e7533a3327"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_commondataserviceforapps",
+                  "operationId": "UpdateOnlyRecord",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps"
+                },
+                "parameters": {
+                  "entityName": "agc_esoneros",
+                  "recordId": "@items('Applica_a_ogni_esonero')?['agc_esoneroid']",
+                  "item/agc_statoesonero": 2
+                },
+                "authentication": "@parameters('$authentication')"
+              }
+            }
+          },
+          "runAfter": {
+            "Elenca_Esoneri": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "a50a9104-eae8-47d9-9ebd-6cece57fa33e"
+          },
+          "type": "Foreach"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

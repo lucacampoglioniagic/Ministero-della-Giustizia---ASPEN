@@ -1,0 +1,19 @@
+<customapi uniquename="agc_ModificaCaricoMagistrato">
+  <allowedcustomprocessingsteptype>0</allowedcustomprocessingsteptype>
+  <bindingtype>1</bindingtype>
+  <boundentitylogicalname>contact</boundentitylogicalname>
+  <description default="Corregge manualmente il carico (agc_caricoattuale) di un magistrato, tracciando la modifica in un record agc_modificacarico di audit.">
+    <label description="Corregge manualmente il carico (agc_caricoattuale) di un magistrato, tracciando la modifica in un record agc_modificacarico di audit." languagecode="1040" />
+  </description>
+  <displayname default="Modifica Carico Magistrato">
+    <label description="Modifica Carico Magistrato" languagecode="1040" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isfunction>0</isfunction>
+  <isprivate>0</isprivate>
+  <name>agc_ModificaCaricoMagistrato</name>
+  <plugintypeid>
+    <plugintypeexportkey>1bfdc450-58b7-f111-aaab-000d3a697f24</plugintypeexportkey>
+  </plugintypeid>
+  <workflowsdkstepenabled>0</workflowsdkstepenabled>
+</customapi>

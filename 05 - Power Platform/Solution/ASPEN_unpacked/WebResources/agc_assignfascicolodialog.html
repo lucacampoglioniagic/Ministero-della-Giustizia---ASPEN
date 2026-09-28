@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <title>ASPEN - Assegnazione Fascicolo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Segoe, Arial, sans-serif;
+      background: #fff;
+      color: #242424;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .hdr {
+      background: #0F6CBD;
+      color: #fff;
+      padding: 14px 20px;
+      flex-shrink: 0;
+    }
+
+    .hdr h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .hdr p {
+      font-size: 12px;
+      opacity: .8;
+      margin-top: 3px;
+    }
+
+    /* ── Content ── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+    }
+
+    .description {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0F6CBD;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-count {
+      background: #FDE7E9;
+      color: #D13438;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 7px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    /* ── Ricerca magistrati ── */
+    .mag-search {
+      width: 100%;
+      padding: 7px 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      border: 1px solid #E0E0E0;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    .mag-search:focus {
+      outline: none;
+      border-color: #0F6CBD;
+    }
+
+    /* ── Magistrati list ── */
+    .mag-list {
+      border: 1px solid #E0E0E0;
+      border-radius: 4px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .mag-item.hidden {
+      display: none;
+    }
+
+    .mag-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #F0F0F0;
+      transition: background .1s;
+      user-select: none;
+    }
+
+    .mag-item:last-child {
+      border-bottom: none;
+    }
+
+    .mag-item:hover {
+      background: #F3F9FF;
+    }
+
+    .mag-item.incomp {
+      background: #FFF4CE;
+    }
+
+    .mag-item input[type=checkbox] {
+      width: 15px;
+      height: 15px;
+      accent-color: #D13438;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .mag-item label {
+      font-size: 13px;
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .incomp-tag {
+      font-size: 10px;
+      font-weight: 700;
+      background: #FDE7E9;
+      color: #D13438;
+      padding: 1px 6px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .mag-item.incomp .incomp-tag {
+      display: inline-block;
+    }
+
+    /* ── Loading / Error ── */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 12px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .status.err {
+      color: #D13438;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 12px 20px;
+      border-top: 1px solid #E8E8E8;
+      background: #FAFAFA;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      padding: 8px 22px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #0F6CBD;
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #0D5AA7;
+    }
+
+    .btn-primary:disabled {
+      background: #A0C4E8;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: #333;
+      border: 1px solid #C8C8C8;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #F0F0F0;
+    }
+
+    .btn-secondary:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    /* ── Spinner overlay ── */
+    .spinner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, .88);
+      z-index: 50;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .spinner-overlay.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid #E0E0E0;
+      border-top-color: #0F6CBD;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner-text {
+      font-size: 14px;
+      color: #555;
+    }
+
+    /* ── Success screen ── */
+    .success {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .success.show {
+      display: flex;
+    }
+
+    .check-circle {
+      width: 68px;
+      height: 68px;
+      background: #107C10;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      color: #fff;
+      animation: pop .35s ease;
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(.4);
+        opacity: 0;
+      }
+
+      70% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .success-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #107C10;
+    }
+
+    .success-subtitle {
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+      max-width: 360px;
+    }
+
+    .success-close {
+      margin-top: 8px;
+    }
+
+    /* ── Confirm overlay (modale custom, sostituisce window.confirm) ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(36, 36, 36, .45);
+      z-index: 120;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .confirm-overlay.show {
+      display: flex;
+    }
+
+    .confirm-box {
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 8px 28px rgba(0, 0, 0, .3);
+      width: 360px;
+      max-width: calc(100vw - 40px);
+      padding: 18px 20px;
+    }
+
+    .confirm-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #C42B1C;
+      margin-bottom: 10px;
+    }
+
+    .confirm-message {
+      font-size: 13px;
+      color: #333;
+      line-height: 1.5;
+      white-space: pre-line;
+      margin-bottom: 16px;
+    }
+
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="hdr">
+    <h2 id="dlg-title">Assegna Fascicolo</h2>
+    <p>Seleziona eventuali incompatibilità prima di confermare l'assegnazione</p>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <p class="description">
+      Spunta i magistrati che hanno <strong>incompatibilità</strong> con questo fascicolo:
+      verranno esclusi dal processo di assegnazione automatica.
+    </p>
+
+    <div class="section-label">
+      Magistrati
+      <span class="badge-count" id="badge-count">0 incompatibili</span>
+    </div>
+
+    <input type="text" class="mag-search" id="mag-search" placeholder="Cerca magistrato…" autocomplete="off">
+
+    <div class="mag-list" id="mag-list">
+      <div class="status" id="status-loading">
+        <div class="spinner" style="width:20px;height:20px;border-width:2px"></div>
+        Caricamento magistrati…
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <button class="btn btn-secondary" id="btn-annulla">Annulla</button>
+    <button class="btn btn-primary" id="btn-conferma" disabled>Conferma Assegnazione</button>
+  </div>
+
+  <!-- Spinner overlay -->
+  <div class="spinner-overlay" id="spinner-overlay">
+    <div class="spinner"></div>
+    <div class="spinner-text">Assegnazione in corso…</div>
+  </div>
+
+  <!-- Success screen -->
+  <div class="success" id="success-screen">
+    <div class="check-circle">✓</div>
+    <div class="success-title">Fascicolo assegnato!</div>
+    <div class="success-subtitle" id="success-sub">La finestra si chiuderà automaticamente.</div>
+    <button class="btn btn-secondary success-close" id="btn-close-success">Chiudi</button>
+  </div>
+
+  <!-- Confirm overlay (modale custom, sostituisce window.confirm) -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <div class="confirm-title" id="confirm-title">Conferma richiesta</div>
+      <div class="confirm-message" id="confirm-message"></div>
+      <div class="confirm-actions">
+        <button class="btn btn-secondary" id="confirm-btn-annulla">Annulla</button>
+        <button class="btn btn-primary" id="confirm-btn-procedi">Procedi</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+
+      /* ── Parse data from URL ── */
+      var fascicoloRg = "";
+      var fascicoloId = "";
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var raw = params.get("Data") || params.get("data") || "";
+        if (raw) {
+          var parsed = JSON.parse(decodeURIComponent(raw));
+          fascicoloRg = parsed.rg || "";
+          fascicoloId = parsed.id || "";
+        }
+      } catch (e) { /* ignore */ }
+
+      if (fascicoloRg) {
+        document.getElementById("dlg-title").textContent = "Assegna Fascicolo " + fascicoloRg;
+      }
+
+      /* ── State ── */
+      var incompatibili = {};
+      var orgUrl = window.location.origin;
+      var apiHeaders = { "OData-MaxVersion": "4.0", "OData-Version": "4.0", "Accept": "application/json" };
+
+      /* ── Legge il body JSON di una risposta fetch, rifiutando esplicitamente se la
+         risposta HTTP non è ok (es. 403/500): senza questo controllo un errore di
+         permessi/servizio produce un body senza "value", che verrebbe interpretato
+         silenziosamente come "nessun dato" (es. nessun esonero attivo) invece che
+         segnalato come errore. ── */
+      function parseJsonOrThrow(r) {
+        if (!r.ok) {
+          return r.text().then(function (text) {
+            var msg = "HTTP " + r.status;
+            try {
+              var parsed = text ? JSON.parse(text) : null;
+              if (parsed && parsed.error && parsed.error.message) msg += ": " + parsed.error.message;
+            } catch (e) { /* body non JSON, ignora */ }
+            throw new Error(msg);
+          });
+        }
+        return r.json();
+      }
+
+      /* ── Load magistrati ── */
+      fetch(
+        orgUrl + "/api/data/v9.2/contacts?$select=fullname,contactid&$filter=agc_ismagistrato eq true&$orderby=fullname",
+        { headers: apiHeaders }
+      )
+        .then(parseJsonOrThrow)
+        .then(function (data) {
+          var list = document.getElementById("mag-list");
+          list.innerHTML = "";
+          document.getElementById("btn-conferma").disabled = false;
+
+          (data.value || []).forEach(function (m) {
+            var id = m.contactid;
+            var nome = m.fullname || "(senza nome)";
+
+            var item = document.createElement("div");
+            item.className = "mag-item";
+            item.dataset.nome = nome.toLowerCase();
+
+            var chkId = "chk-" + id;
+            /* ── Costruzione via DOM (non innerHTML): "nome" proviene da Dataverse e non va
+               interpretato come markup, per evitare HTML injection/XSS persistente. ── */
+            var chk = document.createElement("input");
+            chk.type = "checkbox";
+            chk.id = chkId;
+            chk.value = id;
+
+            var label = document.createElement("label");
+            label.setAttribute("for", chkId);
+            label.textContent = nome;
+
+            var tag = document.createElement("span");
+            tag.className = "incomp-tag";
+            tag.textContent = "Incompatibile";
+
+            item.appendChild(chk);
+            item.appendChild(label);
+            item.appendChild(tag);
+
+            chk.addEventListener("change", function () {
+              if (chk.checked) {
+                incompatibili[id] = nome;
+                item.classList.add("incomp");
+              } else {
+                delete incompatibili[id];
+                item.classList.remove("incomp");
+              }
+              updateBadge();
+            });
+
+            item.addEventListener("click", function (e) {
+              if (e.target !== chk && e.target.tagName !== "LABEL") {
+                chk.checked = !chk.checked;
+                chk.dispatchEvent(new Event("change"));
+              }
+            });
+
+            list.appendChild(item);
+          });
+
+          if ((data.value || []).length === 0) {
+            list.innerHTML = '<div class="status">Nessun magistrato trovato.</div>';
+          }
+
+          /* ── Filtro di ricerca: nasconde i magistrati che non contengono il testo ── */
+          document.getElementById("mag-search").addEventListener("input", function (e) {
+            var q = e.target.value.trim().toLowerCase();
+            list.querySelectorAll(".mag-item").forEach(function (el) {
+              el.classList.toggle("hidden", q.length > 0 && el.dataset.nome.indexOf(q) === -1);
+            });
+          });
+        })
+        .catch(function () {
+          document.getElementById("mag-list").innerHTML =
+            '<div class="status err">Errore nel caricamento dei magistrati.</div>';
+          document.getElementById("btn-conferma").disabled = false;
+        });
+
+      /* ── Badge ── */
+      function updateBadge() {
+        var n = Object.keys(incompatibili).length;
+        var el = document.getElementById("badge-count");
+        if (n > 0) {
+          el.style.display = "inline-block";
+          el.textContent = n + " incompatibil" + (n === 1 ? "e" : "i");
+        } else {
+          el.style.display = "none";
+        }
+      }
+
+      /* ── Mostra errore ── */
+      function showError(msg) {
+        document.getElementById("spinner-overlay").classList.remove("show");
+        document.getElementById("btn-conferma").disabled = false;
+        document.getElementById("btn-annulla").disabled = false;
+        var list = document.getElementById("mag-list");
+        var err = document.createElement("div");
+        err.className = "status err";
+        err.textContent = "❌ " + msg;
+        list.prepend(err);
+      }
+
+      /* ── Modale di conferma custom (sostituisce window.confirm, mai nativo) ──
+         Ritorna una Promise<boolean> risolta in base al pulsante premuto. */
+      function confirmDialog(message, title) {
+        return new Promise(function (resolve) {
+          var overlay = document.getElementById("confirm-overlay");
+          document.getElementById("confirm-title").textContent = title || "Conferma richiesta";
+          document.getElementById("confirm-message").textContent = message;
+          overlay.classList.add("show");
+
+          var btnAnnulla = document.getElementById("confirm-btn-annulla");
+          var btnProcedi = document.getElementById("confirm-btn-procedi");
+
+          function chiudi(esito) {
+            overlay.classList.remove("show");
+            btnAnnulla.removeEventListener("click", onAnnulla);
+            btnProcedi.removeEventListener("click", onProcedi);
+            resolve(esito);
+          }
+          function onAnnulla() { chiudi(false); }
+          function onProcedi() { chiudi(true); }
+
+          btnAnnulla.addEventListener("click", onAnnulla);
+          btnProcedi.addEventListener("click", onProcedi);
+        });
+      }
+
+      /* ── Annulla ── */
+      document.getElementById("btn-annulla").addEventListener("click", function () {
+        window.close();
+      });
+
+      /* ── Recupera esoneri attivi oggi per un elenco di magistrati ──
+         Ritorna una mappa contactid -> { tipo, percentuale } (solo esoneri con
+         agc_statoesonero = 1/Attivo e la data odierna compresa tra
+         agc_datainizio e agc_datafine, quest'ultima opzionale) */
+      /* Data odierna troncata a mezzanotte UTC (vedi commento in
+         agc_assignfascicolo.js#oggiDataIso): confronto a sola data cosi' un
+         esonero resta attivo per l'intera giornata di fine, non solo fino a
+         mezzanotte. */
+      function oggiDataIso() {
+        var oggi = new Date();
+        return new Date(Date.UTC(oggi.getUTCFullYear(), oggi.getUTCMonth(), oggi.getUTCDate())).toISOString();
+      }
+
+      function getEsoneriAttivi(contactIds) {
+        if (contactIds.length === 0) return Promise.resolve({});
+        var oggiIso = oggiDataIso();
+        var filterEsoneri = contactIds.map(function (id) {
+          return "_agc_magistrato_value eq " + id;
+        }).join(" or ");
+
+        return fetch(
+          orgUrl + "/api/data/v9.2/agc_esoneros?$select=agc_tipoesonero,agc_percentualeesonero,_agc_magistrato_value&$filter=(" + filterEsoneri + ") and statecode eq 0 and agc_statoesonero eq 1 and agc_datainizio le " + oggiIso + " and (agc_datafine ge " + oggiIso + " or agc_datafine eq null)",
+          { headers: apiHeaders }
+        )
+          .then(parseJsonOrThrow)
+          .then(function (data) {
+            var esoneroPer = {};
+            (data.value || []).forEach(function (e) {
+              var mid = e["_agc_magistrato_value"];
+              if (mid) esoneroPer[mid] = { tipo: e.agc_tipoesonero, percentuale: e.agc_percentualeesonero || 0 };
+            });
+            return esoneroPer;
+          });
+      }
+
+      /* ── Verifica riserva GUP (3.4) ──
+         Regola: per un RGNR i cui fascicoli collegati sono tutti di ruolo GIP,
+         deve sempre restare disponibile almeno un magistrato del tribunale non
+         ancora impegnato come GIP su quello stesso RGNR, così da poter essere
+         eventualmente assegnato come GUP in futuro. Il controllo si applica solo
+         all'assegnazione di un fascicolo di ruolo GIP collegato a un RGNR, e solo
+         se per quel RGNR non esiste già un fascicolo di ruolo GUP assegnato
+         (in tal caso la riserva è già stata utilizzata/non più rilevante).
+         Non blocca l'assegnazione: restituisce solo un avviso da confermare. */
+      function verificaRiservaGup(opts) {
+        if (!opts.rgnrId || opts.ruolo !== 0) return Promise.resolve({ warn: false });
+
+        var filtroGup = "_agc_rgnr_value eq " + opts.rgnrId +
+          " and agc_ruoloassegnazione eq 1 and _agc_magistratocontatto_value ne null" +
+          (opts.fascicoloId ? " and agc_fascicolo2id ne " + opts.fascicoloId : "");
+
+        return fetch(
+          orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=agc_fascicolo2id&$filter=" + filtroGup + "&$top=1",
+          { headers: apiHeaders }
+        )
+          .then(parseJsonOrThrow)
+          .then(function (gupData) {
+            if ((gupData.value || []).length > 0) return { warn: false };
+
+            var filtroGip = "_agc_rgnr_value eq " + opts.rgnrId +
+              " and agc_ruoloassegnazione eq 0 and _agc_magistratocontatto_value ne null" +
+              (opts.fascicoloId ? " and agc_fascicolo2id ne " + opts.fascicoloId : "");
+
+            return fetch(
+              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=_agc_magistratocontatto_value&$filter=" + filtroGip,
+              { headers: apiHeaders }
+            )
+              .then(parseJsonOrThrow)
+              .then(function (gipData) {
+                var assegnati = {};
+                (gipData.value || []).forEach(function (f) {
+                  var mid = f["_agc_magistratocontatto_value"];
+                  if (mid) assegnati[mid] = true;
+                });
+                assegnati[opts.candidatoContactId] = true; // simula l'assegnazione corrente
+
+                var distinti = Object.keys(assegnati).length;
+                var filtroMag = "agc_ismagistrato eq true" +
+                  (opts.businessUnitId ? " and _owningbusinessunit_value eq " + opts.businessUnitId : "");
+
+                return fetch(
+                  orgUrl + "/api/data/v9.2/contacts?$select=contactid&$filter=" + filtroMag,
+                  { headers: apiHeaders }
+                )
+                  .then(parseJsonOrThrow)
+                  .then(function (magData) {
+                    var totale = (magData.value || []).length;
+                    if (totale > 0 && distinti >= totale) {
+                      return {
+                        warn: true,
+                        messaggio: "Assegnando questo fascicolo a " + (opts.candidatoNome || "questo magistrato") +
+                          ", tutti i " + totale + " magistrati disponibili per questo tribunale risulteranno impegnati come GIP sullo stesso procedimento (RGNR). " +
+                          (opts.candidatoNome || "Il magistrato") + " rappresenta l'ultima riserva disponibile per un eventuale futuro fascicolo GUP collegato allo stesso RGNR.\n\nProcedere comunque con l'assegnazione?"
+                      };
+                    }
+                    return { warn: false };
+                  });
+              });
+          });
+      }
+
+      /* NOTA: l'aggiornamento di agc_caricoattuale (regola 3.11 "carico monotono") è ora
+         gestito interamente lato server dal plugin CaricoMagistratoAssegnazionePlugin,
+         registrato su Create/Update di agc_fascicolo2. Non è quindi più necessario
+         incrementarlo qui: basta scrivere agc_magistratocontatto sul fascicolo. */
+
+      /* ── Conferma: logica assegnazione reale ── */
+      document.getElementById("btn-conferma").addEventListener("click", async function () {
+        document.getElementById("btn-conferma").disabled = true;
+        document.getElementById("btn-annulla").disabled = true;
+        document.getElementById("spinner-overlay").classList.add("show");
+
+        if (!fascicoloId) {
+          showError("ID fascicolo mancante. Chiudi e riapri il dialog.");
+          return;
+        }
+
+        try {
+          // 0. Recupera RGNR, ruolo e business unit del fascicolo corrente
+          var fascResp0 = await fetch(
+            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")?$select=_agc_rgnr_value,agc_ruoloassegnazione,_owningbusinessunit_value",
+            { headers: apiHeaders }
+          );
+          var fascicoloCorrente = await parseJsonOrThrow(fascResp0);
+          var rgnrId = fascicoloCorrente["_agc_rgnr_value"];
+          var ruoloFascicolo = fascicoloCorrente.agc_ruoloassegnazione;
+          var businessUnitFascicolo = fascicoloCorrente["_owningbusinessunit_value"];
+
+          // 0b. Continuità fascicolo (3.3): se il fascicolo appartiene a un RGNR e altri
+          // fascicoli dello stesso RGNR sono già assegnati, assegna allo stesso magistrato
+          // (a meno che non sia stato marcato come incompatibile in questo dialog).
+          if (rgnrId) {
+            var siblingResp = await fetch(
+              orgUrl + "/api/data/v9.2/agc_fascicolo2s?$select=_agc_magistratocontatto_value&$filter=_agc_rgnr_value eq " + rgnrId + " and agc_fascicolo2id ne " + fascicoloId + " and _agc_magistratocontatto_value ne null&$top=1",
+              { headers: Object.assign({}, apiHeaders, { "Prefer": 'odata.include-annotations="*"' }) }
+            );
+            if (!siblingResp.ok) throw new Error("HTTP " + siblingResp.status + " (verifica continuità RGNR)");
+            var siblingData = await siblingResp.json();
+            var sibling = (siblingData.value || [])[0];
+
+            if (sibling && !incompatibili[sibling["_agc_magistratocontatto_value"]]) {
+              var contId = sibling["_agc_magistratocontatto_value"];
+
+              // 0c. Anche in continuità RGNR, il magistrato va escluso se ha un esonero
+              // Totale attivo oggi: in tal caso si abbandona la continuità e si prosegue
+              // con la regola di assegnazione classica (minor carico) più sotto.
+              var esoneroSibling = await getEsoneriAttivi([contId]);
+              var siblingInEsoneroTotale = esoneroSibling[contId] && esoneroSibling[contId].tipo === 1;
+
+              if (!siblingInEsoneroTotale) {
+                var patchContinuita = JSON.stringify({
+                  "agc_magistratocontatto@odata.bind": "/contacts(" + contId + ")"
+                });
+                var patchRespCont = await fetch(
+                  orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")",
+                  {
+                    method: "PATCH",
+                    headers: Object.assign({}, apiHeaders, {
+                      "Content-Type": "application/json; charset=utf-8",
+                      "If-Match": "*"
+                    }),
+                    body: patchContinuita
+                  }
+                );
+                if (!patchRespCont.ok) throw new Error("HTTP " + patchRespCont.status);
+
+                document.getElementById("spinner-overlay").classList.remove("show");
+                document.getElementById("success-sub").textContent =
+                  "Assegnato per continuità RGNR a: " + (sibling["_agc_magistratocontatto_value@OData.Community.Display.V1.FormattedValue"] || contId);
+                document.getElementById("success-screen").classList.add("show");
+                setTimeout(function () { window.close(); }, 3000);
+                return;
+              }
+              // altrimenti: prosegue sotto con la regola classica (esclude comunque
+              // il magistrato in esonero totale al passo 2)
+            }
+          }
+
+          // 1. Recupera tutti i magistrati compatibili con il loro carico cumulativo attuale
+          var magResp = await fetch(
+            orgUrl + "/api/data/v9.2/contacts?$select=contactid,fullname,agc_caricoattuale&$filter=agc_ismagistrato eq true",
+            { headers: apiHeaders }
+          );
+          var magData = await parseJsonOrThrow(magResp);
+          var magistrati = (magData.value || []).filter(function (m) {
+            return !incompatibili[m.contactid];
+          });
+
+          if (magistrati.length === 0) {
+            showError("Tutti i magistrati sono stati marcati come incompatibili. Rimuovi almeno un'incompatibilità.");
+            return;
+          }
+
+          // 2. Esclude i magistrati con esonero Totale (tipo 1) attivo oggi
+          var esoneroPer = await getEsoneriAttivi(magistrati.map(function (m) { return m.contactid; }));
+          magistrati = magistrati.filter(function (m) {
+            var es = esoneroPer[m.contactid];
+            return !(es && es.tipo === 1);
+          });
+
+          if (magistrati.length === 0) {
+            showError("Tutti i magistrati compatibili sono in esonero totale. Impossibile assegnare automaticamente.");
+            return;
+          }
+
+          // 3. Carico cumulativo attuale (agc_caricoattuale, regola 3.11 "carico monotono":
+          // cresce con ogni assegnazione, non diminuisce mai per chiusura fascicolo).
+          // Il saldo REALE già contiene i contributi maggiorati dagli esoneri parziali
+          // applicati alle assegnazioni precedenti (li scrive CaricoMagistratoAssegnazionePlugin),
+          // quindi il confronto tra magistrati si fa direttamente su questo valore, senza
+          // ri-moltiplicare per il coefficiente di esonero (altrimenti si penalizzerebbe due
+          // volte lo stesso magistrato, divergendo dal criterio usato nell'assegnazione massiva).
+          var pesoPer = {};
+          magistrati.forEach(function (m) { pesoPer[m.contactid] = m.agc_caricoattuale || 0; });
+
+          // 4. Trova il magistrato col carico reale minore
+          var migliore = magistrati.reduce(function (best, m) {
+            return pesoPer[m.contactid] < pesoPer[best.contactid] ? m : best;
+          });
+
+          // 5. Verifica riserva GUP (3.4): avviso non bloccante se questa assegnazione
+          // esaurisce l'ultimo magistrato disponibile del tribunale come GIP sull'RGNR
+          var esitoRiserva = await verificaRiservaGup({
+            rgnrId: rgnrId,
+            ruolo: ruoloFascicolo,
+            fascicoloId: fascicoloId,
+            businessUnitId: businessUnitFascicolo,
+            candidatoContactId: migliore.contactid,
+            candidatoNome: migliore.fullname
+          });
+
+          if (esitoRiserva.warn && !(await confirmDialog(esitoRiserva.messaggio, "Riserva GUP"))) {
+            document.getElementById("spinner-overlay").classList.remove("show");
+            document.getElementById("btn-conferma").disabled = false;
+            document.getElementById("btn-annulla").disabled = false;
+            showError("Assegnazione annullata: riserva GUP non confermata.");
+            return;
+          }
+
+          // 6. Aggiorna il fascicolo con il magistrato scelto
+          var patchBody = JSON.stringify({
+            "agc_magistratocontatto@odata.bind": "/contacts(" + migliore.contactid + ")"
+          });
+
+          var patchResp = await fetch(
+            orgUrl + "/api/data/v9.2/agc_fascicolo2s(" + fascicoloId + ")",
+            {
+              method: "PATCH",
+              headers: Object.assign({}, apiHeaders, {
+                "Content-Type": "application/json; charset=utf-8",
+                "If-Match": "*"
+              }),
+              body: patchBody
+            }
+          );
+          if (!patchResp.ok) throw new Error("HTTP " + patchResp.status);
+
+          // Il carico cumulativo (agc_caricoattuale) viene aggiornato dal plugin server-side
+          // CaricoMagistratoAssegnazionePlugin non appena il campo Magistrato viene scritto sopra.
+
+          document.getElementById("spinner-overlay").classList.remove("show");
+
+          var sub = "Assegnato a: " + (migliore.fullname || migliore.contactid) +
+            " (carico: " + pesoPer[migliore.contactid].toFixed(1) + ")";
+          if (Object.keys(incompatibili).length > 0) {
+            sub += " | Esclusi: " + Object.values(incompatibili).join(", ");
+          }
+          document.getElementById("success-sub").textContent = sub;
+          document.getElementById("success-screen").classList.add("show");
+
+          setTimeout(function () { window.close(); }, 3000);
+        } catch (err) {
+          showError("Errore durante l'assegnazione: " + (err.message || err));
+        }
+      });
+
+      /* ── Chiudi (success) ── */
+      document.getElementById("btn-close-success").addEventListener("click", function () {
+        window.close();
+      });
+
+    })();
+  </script>
+</body>
+
+</html>

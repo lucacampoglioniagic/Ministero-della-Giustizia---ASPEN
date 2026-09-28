@@ -1,0 +1,39 @@
+<appaction uniquename="agc__AssegnaFascicolo!29508581d77d453d9217e04ad751fb88!agc_ASPEN!agc_fascicolo2!1">
+  <appmoduleid>
+    <uniquename>agc_ASPEN</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Assegna Fascicolo">
+    <label description="Assegna Fascicolo" languagecode="1040" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>agc_fascicolo2</logicalname>
+  </contextentity>
+  <contextvalue>agc_fascicolo2</contextvalue>
+  <hidden>0</hidden>
+  <iconwebresourceid>
+    <webresourceid>763f83a1-59b7-f111-aaab-7ced8d763868</webresourceid>
+  </iconwebresourceid>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>1</location>
+  <name>AssegnaFascicolo!29508581d77d453d9217e04ad751fb88</name>
+  <onclickeventjavascriptfunctionname>AgicAspen.AssegnaFascicolo.openDialogFromGrid</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":12},{"type":24}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>fb65a19b-59b7-f111-aaab-000d3a697f24</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>0</origin>
+  <sequence>1000100010.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilityformulacomponentlibraryid>
+    <name>agc_aspendefaultcommandlibrary_9af74</name>
+  </visibilityformulacomponentlibraryid>
+  <visibilityformulacomponentname>59c759e0aea74bbca42fa69889441a0c</visibilityformulacomponentname>
+  <visibilityformulafunctionname>Visible</visibilityformulafunctionname>
+  <visibilitytype>1</visibilitytype>
+</appaction>

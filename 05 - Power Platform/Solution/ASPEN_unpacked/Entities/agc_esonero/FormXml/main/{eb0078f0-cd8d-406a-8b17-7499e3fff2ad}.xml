@@ -1,0 +1,193 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{eb0078f0-cd8d-406a-8b17-7499e3fff2ad}</formid>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form headerdensity="HighWithControls">
+      <formLibraries>
+        <Library name="agc_esoneroform.js" libraryUniqueId="{079b1d25-5194-4439-b06e-a0cd61957dbd}" />
+      </formLibraries>
+      <events>
+        <event name="onload" application="false" active="true">
+          <Handlers>
+            <Handler functionName="AgicAspen.EsoneroForm.onLoad" libraryName="agc_esoneroform.js" handlerUniqueId="{d776122d-9cf2-4a48-8808-ba31f4e09d21}" enabled="true" parameters="" passExecutionContext="true" />
+          </Handlers>
+        </event>
+        <event name="onchange" application="false" active="true" attribute="agc_tipoesonero">
+          <Handlers>
+            <Handler functionName="AgicAspen.EsoneroForm.onChangeTipoEsonero" libraryName="agc_esoneroform.js" handlerUniqueId="{1b7043de-3077-43c1-abfb-29711e04fb2a}" enabled="true" parameters="" passExecutionContext="true" />
+          </Handlers>
+        </event>
+      </events>
+      <tabs>
+        <tab verticallayout="true" id="{5a1b2c3d-1111-4a11-9c3f-000d3a697f24}" IsUserDefined="1">
+          <labels>
+            <label description="Generale" languagecode="1040" />
+          </labels>
+          <columns>
+            <column width="100%">
+              <sections>
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{5a1b2c3d-2222-4a11-9c3f-000d3a697f24}">
+                  <labels>
+                    <label description="Generale" languagecode="1040" />
+                  </labels>
+                  <rows>
+                    <row>
+                      <cell id="{5a1b2c3d-3001-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Nome" languagecode="1040" />
+                        </labels>
+                        <control id="agc_name" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="agc_name" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3002-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Proprietario" languagecode="1040" />
+                        </labels>
+                        <control id="ownerid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="ownerid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3003-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Magistrato" languagecode="1040" />
+                        </labels>
+                        <control id="agc_magistrato" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="agc_magistrato" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3004-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Data Inizio" languagecode="1040" />
+                        </labels>
+                        <control id="agc_datainizio" classid="{5b773807-9fb2-42db-97c3-7a91eff8adff}" datafieldname="agc_datainizio" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3005-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Data Fine" languagecode="1040" />
+                        </labels>
+                        <control id="agc_datafine" classid="{5b773807-9fb2-42db-97c3-7a91eff8adff}" datafieldname="agc_datafine" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3007-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Tipo Esonero" languagecode="1040" />
+                        </labels>
+                        <control id="agc_tipoesonero" classid="{3ef39988-22bb-4f0b-bbbe-64b5a3748aee}" datafieldname="agc_tipoesonero" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3008-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Percentuale Esonero" languagecode="1040" />
+                        </labels>
+                        <control id="agc_percentualeesonero" classid="{C3EFE0C3-0EC6-42BE-8349-CBD9079DFD8E}" datafieldname="agc_percentualeesonero" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3009-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Punteggio al momento esonero" languagecode="1040" />
+                        </labels>
+                        <control id="agc_punteggioalmomentoesonero" classid="{C3EFE0C3-0EC6-42BE-8349-CBD9079DFD8E}" datafieldname="agc_punteggioalmomentoesonero" disabled="true" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3010-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Punteggio al rientro" languagecode="1040" />
+                        </labels>
+                        <control id="agc_punteggioalrientro" classid="{C3EFE0C3-0EC6-42BE-8349-CBD9079DFD8E}" datafieldname="agc_punteggioalrientro" disabled="true" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3011-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Collega di riferimento" languagecode="1040" />
+                        </labels>
+                        <control id="agc_collegariferimento" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="agc_collegariferimento" disabled="true" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{5a1b2c3d-3012-4a11-9c3f-000d3a697f24}">
+                        <labels>
+                          <label description="Note" languagecode="1040" />
+                        </labels>
+                        <control id="agc_note" classid="{E0DECE4B-6FC8-4a8f-A065-082708572369}" datafieldname="agc_note" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+              </sections>
+            </column>
+          </columns>
+        </tab>
+      </tabs>
+      <header id="{be3035e0-b0e2-4071-b35a-c011b4c95f14}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+        <rows>
+          <row>
+            <cell id="{69e8d78b-15bc-4bf8-963e-30e770beac15}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{6fbba06d-9797-4c34-b446-3b5268d986b6}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{77175b74-00f8-4d69-a230-247d1c54a3cc}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{5a1b2c3d-3006-4a11-9c3f-000d3a697f24}" colspan="1" rowspan="1">
+              <labels>
+                <label description="Stato Esonero" languagecode="1040" />
+              </labels>
+              <control id="header_agc_statoesonero" classid="{3ef39988-22bb-4f0b-bbbe-64b5a3748aee}" datafieldname="agc_statoesonero" />
+            </cell>
+          </row>
+        </rows>
+      </header>
+      <footer id="{eda31d86-2be1-4c68-8035-f0e11719dce0}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+        <rows>
+          <row>
+            <cell id="{9720ab38-9fbe-4e9a-885e-e431a0a1be14}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{8af124eb-8ffa-41fa-a2e6-a8040bde53ba}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{49869154-e453-4816-8362-0e6c0b24d74c}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+          </row>
+        </rows>
+      </footer>
+      <DisplayConditions Order="0" FallbackForm="true">
+        <Everyone />
+      </DisplayConditions>
+    </form>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>1</CanBeDeleted>
+    <LocalizedNames>
+      <LocalizedName description="Informazioni" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Modulo per questa entità." languagecode="1040" />
+    </Descriptions>
+  </systemform>
+</forms>

@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SdkMessageProcessingStep Name="EsoneroOverlapValidationPlugin: Create of agc_esonero" SdkMessageProcessingStepId="{59ddea56-58b7-f111-aaab-000d3a697f24}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SdkMessageId>9ebdbb1b-ea3e-db11-86a7-000a3a5473e8</SdkMessageId>
+  <PluginTypeName>AgicAspen.Plugins.EsoneroOverlapValidationPlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc</PluginTypeName>
+  <PluginTypeId>a51b0052-58b7-f111-aaab-7ced8d763868</PluginTypeId>
+  <PrimaryEntity>agc_esonero</PrimaryEntity>
+  <AsyncAutoDelete>0</AsyncAutoDelete>
+  <FilteringAttributes></FilteringAttributes>
+  <InvocationSource>1</InvocationSource>
+  <Mode>0</Mode>
+  <Rank>1</Rank>
+  <EventHandlerTypeCode>4602</EventHandlerTypeCode>
+  <Stage>20</Stage>
+  <IsCustomizable>1</IsCustomizable>
+  <IsHidden>0</IsHidden>
+  <SupportedDeployment>0</SupportedDeployment>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <SdkMessageProcessingStepImages />
+</SdkMessageProcessingStep>

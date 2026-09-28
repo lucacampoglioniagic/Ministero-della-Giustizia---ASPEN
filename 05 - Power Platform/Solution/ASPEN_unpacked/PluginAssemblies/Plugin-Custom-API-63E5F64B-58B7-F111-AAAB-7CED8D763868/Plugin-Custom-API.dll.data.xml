@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PluginAssembly FullName="Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc" PluginAssemblyId="63e5f64b-58b7-f111-aaab-7ced8d763868" CustomizationLevel="1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <IsolationMode>2</IsolationMode>
+  <SourceType>0</SourceType>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <FileName>/PluginAssemblies/Plugin-Custom-API-63E5F64B-58B7-F111-AAAB-7CED8D763868/Plugin-Custom-API.dll</FileName>
+  <PluginTypes>
+    <PluginType AssemblyQualifiedName="AgicAspen.Plugins.AnnoRegistroValidationPlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc" PluginTypeId="16fdc450-58b7-f111-aaab-000d3a697f24" Name="AgicAspen.Plugins.AnnoRegistroValidationPlugin">
+      <FriendlyName>AnnoRegistroValidationPlugin</FriendlyName>
+    </PluginType>
+    <PluginType AssemblyQualifiedName="AgicAspen.Plugins.CaricoMagistratoAssegnazionePlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc" PluginTypeId="13fdc450-58b7-f111-aaab-000d3a697f24" Name="AgicAspen.Plugins.CaricoMagistratoAssegnazionePlugin">
+      <FriendlyName>CaricoMagistratoAssegnazionePlugin</FriendlyName>
+    </PluginType>
+    <PluginType AssemblyQualifiedName="AgicAspen.Plugins.EsoneroOverlapValidationPlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc" PluginTypeId="a51b0052-58b7-f111-aaab-7ced8d763868" Name="AgicAspen.Plugins.EsoneroOverlapValidationPlugin">
+      <FriendlyName>EsoneroOverlapValidationPlugin</FriendlyName>
+    </PluginType>
+    <PluginType AssemblyQualifiedName="AgicAspen.Plugins.EsoneroRientroPlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc" PluginTypeId="a71b0052-58b7-f111-aaab-7ced8d763868" Name="AgicAspen.Plugins.EsoneroRientroPlugin">
+      <FriendlyName>EsoneroRientroPlugin</FriendlyName>
+    </PluginType>
+    <PluginType AssemblyQualifiedName="AgicAspen.Plugins.ModificaCaricoMagistratoPlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc" PluginTypeId="1bfdc450-58b7-f111-aaab-000d3a697f24" Name="AgicAspen.Plugins.ModificaCaricoMagistratoPlugin">
+      <FriendlyName>ModificaCaricoMagistratoPlugin</FriendlyName>
+    </PluginType>
+    <PluginType AssemblyQualifiedName="AgicAspen.Plugins.SetOwnerTeamPlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc" PluginTypeId="04fdc450-58b7-f111-aaab-000d3a697f24" Name="AgicAspen.Plugins.SetOwnerTeamPlugin">
+      <FriendlyName>SetOwnerTeamPlugin</FriendlyName>
+    </PluginType>
+  </PluginTypes>
+</PluginAssembly>

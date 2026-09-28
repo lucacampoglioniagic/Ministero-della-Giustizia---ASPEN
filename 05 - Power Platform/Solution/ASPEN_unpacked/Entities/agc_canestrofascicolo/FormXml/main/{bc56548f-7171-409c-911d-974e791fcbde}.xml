@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{bc56548f-7171-409c-911d-974e791fcbde}</formid>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form headerdensity="HighWithControls" shownavigationbar="false">
+      <tabs>
+        <tab verticallayout="true" id="{a0fa6b32-97a1-4b85-95ca-adf453984ff9}" IsUserDefined="1">
+          <labels>
+            <label description="Generale" languagecode="1040" />
+          </labels>
+          <columns>
+            <column width="100%">
+              <sections>
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{8c19e07a-e62e-4a1e-aaa4-fe6b0e36cbe4}">
+                  <labels>
+                    <label description="Generale" languagecode="1040" />
+                  </labels>
+                  <rows>
+                    <row>
+                      <cell id="{3ea9bc4d-00a9-45a5-82dd-3eb6fd5dd5a5}">
+                        <labels>
+                          <label description="Nome" languagecode="1040" />
+                        </labels>
+                        <control id="agc_name" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="agc_name" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{6392ace7-f0c9-427b-bc54-d8be799b92f9}">
+                        <labels>
+                          <label description="Descrizione" languagecode="1040" />
+                        </labels>
+                        <control id="agc_descrizione" classid="{E0DECE4B-6FC8-4a8f-A065-082708572369}" datafieldname="agc_descrizione" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{62a98a4b-5ead-48ab-b4e9-c62c229d4a22}">
+                        <labels>
+                          <label description="Peso" languagecode="1040" />
+                        </labels>
+                        <control id="agc_peso" classid="{c6d124ca-7eda-4a60-aea9-7fb8d318b68f}" datafieldname="agc_peso" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+              </sections>
+            </column>
+          </columns>
+        </tab>
+      </tabs>
+      <header id="{2adcac6a-30ad-420b-b861-f98d45309639}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+        <rows>
+          <row>
+            <cell id="{ab9c6852-da16-4bce-8c49-d7e702e460db}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{53f6781b-b809-4934-9bc5-e7a6698f4ec5}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{04b25373-f1f2-48fe-b8a7-69c09e5820c8}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+          </row>
+        </rows>
+      </header>
+      <footer id="{1e64c989-6ead-453c-96d6-fb8766c51e20}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+        <rows>
+          <row>
+            <cell id="{fd26d7fb-b4a7-4eee-a364-b0c5d6d24731}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{5844ed89-542f-45b0-b593-273148df137c}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{72cc6095-3c8d-43ed-8568-8e2f304f9140}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+          </row>
+        </rows>
+      </footer>
+      <DisplayConditions Order="0" FallbackForm="true">
+        <Everyone />
+      </DisplayConditions>
+    </form>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>1</CanBeDeleted>
+    <LocalizedNames>
+      <LocalizedName description="Informazioni" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Modulo per questa entità." languagecode="1040" />
+    </Descriptions>
+  </systemform>
+</forms>

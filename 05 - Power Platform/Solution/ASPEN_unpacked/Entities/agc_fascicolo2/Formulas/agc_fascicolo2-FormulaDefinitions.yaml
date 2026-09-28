@@ -1,0 +1,1 @@
+agc_pesocalcolato2: =agc_numeroimputati + agc_numeroimputazioni + If(IsBlank(agc_PesoUno), 0, agc_PesoUno.agc_peso) + If(IsBlank(agc_PesoDue), 0, agc_PesoDue.agc_peso) + 1

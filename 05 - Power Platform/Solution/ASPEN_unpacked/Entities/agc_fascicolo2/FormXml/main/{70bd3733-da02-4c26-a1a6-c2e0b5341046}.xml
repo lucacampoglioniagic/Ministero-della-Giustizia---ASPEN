@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{70bd3733-da02-4c26-a1a6-c2e0b5341046}</formid>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form headerdensity="HighWithControls" shownavigationbar="false">
+      <formLibraries>
+        <Library name="agc_assignfascicolo.js" libraryUniqueId="{8a1b6e10-59b7-4a11-9c3f-000d3a697f24}" />
+      </formLibraries>
+      <events>
+        <event name="onload" application="false" active="true">
+          <Handlers>
+            <Handler functionName="AgicAspen.AssegnaFascicolo.onFormLoad" libraryName="agc_assignfascicolo.js" handlerUniqueId="{8a1b6e11-59b7-4a11-9c3f-000d3a697f24}" enabled="true" parameters="" passExecutionContext="true" />
+          </Handlers>
+        </event>
+      </events>
+      <tabs>
+        <tab verticallayout="true" id="{2e961b11-6f1b-4bea-a41b-80379d0fe954}" IsUserDefined="1">
+          <labels>
+            <label description="Generale" languagecode="1040" />
+          </labels>
+          <columns>
+            <column width="100%">
+              <sections>
+                <section showlabel="false" showbar="false" IsUserDefined="0" id="{fc13cbe6-b26b-4ed2-868e-225d848a221e}">
+                  <labels>
+                    <label description="Generale" languagecode="1040" />
+                  </labels>
+                  <rows>
+                    <row>
+                      <cell id="{201010b6-7400-433b-8072-3ad80701eb7c}" locklevel="0" colspan="1" rowspan="1">
+                        <labels>
+                          <label description="RGNR" languagecode="1040" />
+                        </labels>
+                        <control id="agc_rgnr" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="agc_rgnr" disabled="false" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{cb4aa63c-82e4-4522-8a78-12bf7a0d4ead}">
+                        <labels>
+                          <label description="Numero Registro Generale" languagecode="1040" />
+                        </labels>
+                        <control id="agc_numeroregistrogenerale" classid="{4273EDBD-AC1D-40d3-9FB2-095C621B552D}" datafieldname="agc_numeroregistrogenerale" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{f8423d89-6141-47ca-8765-211cb56d1c23}" visible="false">
+                        <labels>
+                          <label description="Proprietario" languagecode="1040" />
+                        </labels>
+                        <control id="ownerid" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="ownerid" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{a91ee16a-6448-4239-8aa6-d8f1464b6b11}">
+                        <labels>
+                          <label description="N. imputati" languagecode="1040" />
+                        </labels>
+                        <control id="agc_numeroimputati" classid="{c6d124ca-7eda-4a60-aea9-7fb8d318b68f}" datafieldname="agc_numeroimputati" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{1c3c2ad7-c225-4c35-9b66-fe88f3e1967b}">
+                        <labels>
+                          <label description="N. imputazioni" languagecode="1040" />
+                        </labels>
+                        <control id="agc_numeroimputazioni" classid="{c6d124ca-7eda-4a60-aea9-7fb8d318b68f}" datafieldname="agc_numeroimputazioni" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{6503bbcf-48f4-45d3-82e4-f1012e6100b5}" locklevel="0" colspan="1" rowspan="1">
+                        <labels>
+                          <label description="Peso 1" languagecode="1040" />
+                        </labels>
+                        <control id="agc_pesouno" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="agc_pesouno" disabled="false" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{fd1b20df-d312-4e57-bb2b-4326bbb99490}" locklevel="0" colspan="1" rowspan="1">
+                        <labels>
+                          <label description="Peso 2" languagecode="1040" />
+                        </labels>
+                        <control id="agc_pesodue" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="agc_pesodue" disabled="false" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{85ae4d6a-dcab-4be4-b2d7-3b5bc958c712}" locklevel="0" colspan="1" rowspan="1">
+                        <labels>
+                          <label description="Magistrato assegnato" languagecode="1040" />
+                        </labels>
+                        <control id="agc_magistratocontatto" classid="{270BD3DB-D9AF-4782-9025-509E298DEC0A}" datafieldname="agc_magistratocontatto" disabled="false" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{06379e86-9561-4668-8b4c-5918bfbbeb77}" locklevel="0" colspan="1" rowspan="1">
+                        <labels>
+                          <label description="Ruolo assegnazione" languagecode="1040" />
+                        </labels>
+                        <control id="header_agc_ruoloassegnazione" classid="{3EF39988-22BB-4F0B-BBBE-64B5A3748AEE}" datafieldname="agc_ruoloassegnazione" disabled="false" />
+                      </cell>
+                    </row>
+                    <row>
+                      <cell id="{756d3540-0c69-4608-9d93-b022b1486c9d}">
+                        <labels>
+                          <label description="Data" languagecode="1040" />
+                        </labels>
+                        <control id="agc_datacaso" classid="{5b773807-9fb2-42db-97c3-7a91eff8adff}" datafieldname="agc_datacaso" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+              </sections>
+            </column>
+          </columns>
+        </tab>
+      </tabs>
+      <header id="{9a3144c9-e849-4b08-9e21-b4fb1ce11955}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+        <rows>
+          <row>
+            <cell id="{d82b9b75-beca-44d1-9ad8-70a66344cba0}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{32ead829-8b23-495c-a20c-7dc588caf680}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{3a26cb8d-c18a-4fc6-91d0-71b5a6c480c5}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{f1e2b20d-d312-4e57-bb2b-4326bbb99491}" locklevel="0" colspan="1" rowspan="1">
+              <labels>
+                <label description="Peso calcolato" languagecode="1040" />
+              </labels>
+              <control id="header_agc_pesocalcolato2" classid="{C3EFE0C3-0EC6-42BE-8349-CBD9079DFD8E}" datafieldname="agc_pesocalcolato2" disabled="true" />
+            </cell>
+            <cell id="{d2887017-01a4-446a-804a-c8fde4a768b2}" colspan="1" rowspan="1">
+              <labels>
+                <label description="Stato" languagecode="1040" />
+              </labels>
+              <control id="header_agc_statocaso" classid="{3ef39988-22bb-4f0b-bbbe-64b5a3748aee}" datafieldname="agc_statocaso" />
+            </cell>
+          </row>
+        </rows>
+      </header>
+      <footer id="{131693b7-0302-4210-a1c5-dfb0c1c14725}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+        <rows>
+          <row>
+            <cell id="{ad469f48-d9bb-47b9-a286-b102e9a5f63e}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{e137bd57-3b8c-4f75-bcff-5e0b8a4d62ab}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+            <cell id="{f737d785-2b23-47fa-87b4-48dbcd13f354}" showlabel="false">
+              <labels>
+                <label description="" languagecode="1040" />
+              </labels>
+            </cell>
+          </row>
+        </rows>
+      </footer>
+      <DisplayConditions Order="0" FallbackForm="true">
+        <Everyone />
+      </DisplayConditions>
+    </form>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>1</CanBeDeleted>
+    <LocalizedNames>
+      <LocalizedName description="Informazioni" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Modulo per questa entità." languagecode="1040" />
+    </Descriptions>
+  </systemform>
+</forms>

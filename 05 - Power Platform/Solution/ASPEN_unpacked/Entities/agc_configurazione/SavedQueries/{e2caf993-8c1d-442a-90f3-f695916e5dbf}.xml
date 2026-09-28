@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<savedqueries xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <savedquery>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>0</CanBeDeleted>
+    <isquickfindquery>0</isquickfindquery>
+    <isprivate>0</isprivate>
+    <isdefault>1</isdefault>
+    <savedqueryid>{e2caf993-8c1d-442a-90f3-f695916e5dbf}</savedqueryid>
+    <layoutxml>
+      <grid name="resultset" jump="agc_nome" select="1" icon="1" preview="1">
+        <row name="result" id="agc_configurazioneid">
+          <cell name="agc_nome" width="300" />
+          <cell name="agc_valore" width="100" />
+          <cell name="createdon" width="125" />
+        </row>
+      </grid>
+    </layoutxml>
+    <querytype>0</querytype>
+    <fetchxml>
+      <fetch version="1.0" mapping="logical">
+        <entity name="agc_configurazione">
+          <attribute name="agc_configurazioneid" />
+          <attribute name="agc_nome" />
+          <attribute name="createdon" />
+          <order attribute="agc_nome" descending="false" />
+          <filter type="and">
+            <condition attribute="statecode" operator="eq" value="0" />
+          </filter>
+          <attribute name="agc_valore" />
+        </entity>
+      </fetch>
+    </fetchxml>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <LocalizedNames>
+      <LocalizedName description="Lista Configurazioni" languagecode="1040" />
+    </LocalizedNames>
+  </savedquery>
+</savedqueries>

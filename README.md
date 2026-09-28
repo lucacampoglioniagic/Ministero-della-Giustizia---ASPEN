@@ -417,6 +417,44 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
 
 ---
 
+## Ambiente di destinazione — Tribunali-dev (Fase 12 — validazione finale e parità funzionale)
+
+A partire dalla Fase 0 del piano di migrazione (`03 - Documentazione Prodotta/Tecnica/ASPEN - Piano di Migrazione Ambiente Destinazione.md`), l'ambiente di produzione/destinazione è **`Tribunali-dev`** (Dataverse, tenant `org8e819d4a.crm4.dynamics.com`), distinto dall'ambiente POC/sorgente (`LCC-MINISTEROGIUSTIZIA-DEMO`) descritto nelle sezioni precedenti di questo README. Solution: **ASPEN** (unmanaged, publisher `Agic`, prefix `agc`).
+
+### GUID chiave dell'ambiente di destinazione
+
+| Componente | GUID / identificatore |
+|---|---|
+| App model-driven `agc_ASPEN` | `7c769e36-f2b7-f111-aaab-000d3a697f24` |
+| Dashboard "Cruscotto ASPEN" | `4ff56c67-5fb7-f111-aaab-000d3a697f24` |
+| Vista "Fascicoli" (per Home) | `487d09ca-0922-4613-a4a3-8a98dbf32779` |
+| Custom page "ASPEN Home" | `cr248_aspenhome_1750e` |
+| Plugin assembly `Plugin-Custom-API` | `63e5f64b-58b7-f111-aaab-7ced8d763868` (v2.0.0.0) |
+
+### Procedura di re-point della Custom Page "ASPEN Home" verso un nuovo ambiente
+
+1. In Power Apps Studio creare/aprire la custom page "ASPEN Home" nell'app ASPEN (annotare il nuovo `appid`).
+2. `pac solution export` di ASPEN → `pac canvas unpack --msapp CanvasApps/agc_home_*.msapp --sources src/Home`.
+3. Aggiornare in `Src/App.fx.yaml`/`Src/Screen1.fx.yaml` i 3 `Launch()` (Cruscotto, Lista Fascicoli, Nuovo Fascicolo): dominio ambiente, `appid`, `id` del dashboard, `viewid` della vista Fascicoli.
+4. `pac canvas pack` → `pac solution pack` → `pac solution import --publish-changes --force-overwrite`.
+5. **Obbligatorio**: aprire la pagina in **Power Apps Studio** (App Designer → icona matita "Modifica pagina personalizzata") e ripubblicare da lì — `pac solution import` da solo non invalida la cache del player pubblicato (vedi nota tecnica nella sezione "Custom Page — Home ASPEN" sopra, stesso comportamento riscontrato anche in destinazione).
+6. Impostare la Home come prima voce del gruppo Operatività della sitemap e come pagina iniziale dell'app (disattivare "Mostra home page" in Impostazioni → Spostamento).
+
+### Comandi moderni (Command Designer) — formule di riferimento
+
+Stessa configurazione descritta nella sezione "Comandi moderni griglia `agc_fascicolo2`" sopra, replicata in destinazione tramite `ASPEN_DefaultCommandLibrary`: comando "Assegna Fascicolo" con visibilità Power Fx `CountRows(Self.Selected.AllItems) >= 1`, comando "Assegnazione massiva" con `CountRows(Self.Selected.AllItems) = 0`. Non versionabili come file (non presenti nel `RibbonDiff.xml` classico): da ricreare in Maker Portal in caso di reimport in un ambiente vuoto.
+
+### Export/unpack della solution ed esiti della validazione (Fase 12)
+
+- Solution unmanaged esportata e unpacked in `05 - Power Platform/Solution/ASPEN_unpacked/` (commit in repo per tracciabilità/restorability; formule Power Fx, FormXml e RibbonDiff versionati).
+- Export managed di prova eseguito con successo; **verifica `MissingDependencies`**: presenti (142 voci), tutte riconducibili a 2 cause note e non bloccanti:
+  1. Form OOB standard di `contact` (es. "Contatto portale (avanzato)", "Casi profilo cliente") che referenziano tabelle di altre app Microsoft (Sales/Service/Power Pages) non incluse nella solution — comportamento atteso quando `contact` è root component, non un difetto introdotto dal progetto.
+  2. Le vecchie tabelle legacy **`agc_canestrofascicolo`/`agc_peso2`** ("Peso 1"/"Peso 2" storiche, sostituite da `agc_pesouno`/`agc_pesodue`), incluse solo come metadata (behavior 1/2): coerente con la dismissione incompleta già documentata (vedi `SESSION_NOTES.md`, sessione 26-27/09/2026 — eliminazione fisica fermata su decisione del committente per dipendenze residue).
+- **`pac solution checker`**: **0 Critical, 0 High, 39 Medium, 0 Low** — criterio "nessun errore High" soddisfatto. Il dettaglio dei 39 Medium: 18 relative alle stesse tabelle Peso1/Peso2 legacy (vedi sopra), 12 `console.log` residui nei web resource JS (`agc_assignfascicolo.js`, `agc_modificacarico.js`), 6 mancanza `"use strict"`, 2 asset di entità non completamente gestita (stesse tabelle legacy), 1 nome schermata canvas poco descrittivo. Nessuna azione correttiva richiesta per il go-live; possibile pulizia tecnica futura opzionale.
+- Vedi `CHANGELOG.md` per il riepilogo cronologico e `03 - Documentazione Prodotta/Tecnica/ASPEN - Piano di Migrazione Ambiente Destinazione.md` §7 per la checklist di parità funzionale completa.
+
+---
+
 ## Interlocutori
 
 | Ruolo | Nominativo | Ente |

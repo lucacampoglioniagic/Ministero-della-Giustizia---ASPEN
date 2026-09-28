@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SdkMessageProcessingStep Name="EsoneroRientroPlugin: Update of agc_esonero" SdkMessageProcessingStepId="{1eff2558-58b7-f111-aaab-7ced8d763868}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SdkMessageId>20bebb1b-ea3e-db11-86a7-000a3a5473e8</SdkMessageId>
+  <PluginTypeName>AgicAspen.Plugins.EsoneroRientroPlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc</PluginTypeName>
+  <PluginTypeId>a71b0052-58b7-f111-aaab-7ced8d763868</PluginTypeId>
+  <PrimaryEntity>agc_esonero</PrimaryEntity>
+  <AsyncAutoDelete>0</AsyncAutoDelete>
+  <FilteringAttributes>agc_statoesonero</FilteringAttributes>
+  <InvocationSource>1</InvocationSource>
+  <Mode>0</Mode>
+  <Rank>1</Rank>
+  <EventHandlerTypeCode>4602</EventHandlerTypeCode>
+  <Stage>40</Stage>
+  <IsCustomizable>1</IsCustomizable>
+  <IsHidden>0</IsHidden>
+  <SupportedDeployment>0</SupportedDeployment>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <SdkMessageProcessingStepImages>
+    <SdkMessageProcessingStepImage Name="PreImage">
+      <SdkMessageProcessingStepImageId>{eabbc757-58b7-f111-aaab-7ced8d766a4e}</SdkMessageProcessingStepImageId>
+      <Attributes>agc_statoesonero,agc_magistrato</Attributes>
+      <EntityAlias>PreImage</EntityAlias>
+      <ImageType>0</ImageType>
+      <MessagePropertyName>Target</MessagePropertyName>
+      <IsCustomizable>1</IsCustomizable>
+    </SdkMessageProcessingStepImage>
+  </SdkMessageProcessingStepImages>
+</SdkMessageProcessingStep>

@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AppModuleSiteMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SiteMapUniqueName>agc_ASPEN</SiteMapUniqueName>
+  <EnableCollapsibleGroups>False</EnableCollapsibleGroups>
+  <ShowHome>False</ShowHome>
+  <ShowPinned>True</ShowPinned>
+  <ShowRecents>True</ShowRecents>
+  <SiteMap IntroducedVersion="7.0.0.0">
+    <Area Id="area_0523e81f" ResourceId="SitemapDesigner.NewTitle" DescriptionResourceId="SitemapDesigner.NewTitle" ShowGroups="true" IntroducedVersion="7.0.0.0">
+      <Titles>
+        <Title LCID="1040" Title="Area 1" />
+      </Titles>
+      <Group Id="group_e9dd6921" ResourceId="SitemapDesigner.NewGroup" DescriptionResourceId="SitemapDesigner.NewGroup" IntroducedVersion="7.0.0.0" IsProfile="false" ToolTipResourseId="SitemapDesigner.Unknown">
+        <Titles>
+          <Title LCID="1040" Title="Operatività" />
+        </Titles>
+        <SubArea Id="subarea_28f399e1" VectorIcon="/WebResources/msdyn_OmnichannelBase/_imgs/SitemapIcon/Home.svg" Icon="/WebResources/msdyn_OmnichannelBase/_imgs/SitemapIcon/Home.svg" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA" Page="cr248_aspenhome_1750e">
+          <Titles>
+            <Title LCID="1040" Title="Home" />
+          </Titles>
+        </SubArea>
+        <SubArea Id="subarea_94991a5f" DescriptionResourceId="Dashboards_Description" VectorIcon="/WebResources/agc_icons8graph32" Icon="/WebResources/agc_icons8graph32" Url="/workplace/home_dashboards.aspx" DefaultDashboard="4ff56c67-5fb7-f111-aaab-000d3a697f24" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+          <Titles>
+            <Title LCID="1040" Title="Cruscotto ASPEN" />
+          </Titles>
+        </SubArea>
+      </Group>
+      <Group Id="group_77ae7ef6" ResourceId="SitemapDesigner.NewGroup" DescriptionResourceId="SitemapDesigner.NewGroup" IntroducedVersion="7.0.0.0" IsProfile="false" ToolTipResourseId="SitemapDesigner.Unknown">
+        <Titles>
+          <Title LCID="1040" Title="Assegnazione" />
+        </Titles>
+        <SubArea Id="subarea_9cd933fe" VectorIcon="/WebResources/msdyn_OmnichannelBase/_imgs/SitemapIcon/OmnichannelQueues" Icon="/WebResources/msdyn_OmnichannelBase/_imgs/SitemapIcon/OmnichannelQueues" Entity="agc_rgnr" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA" />
+        <SubArea Id="subarea_72558355" VectorIcon="/WebResources/msdyn_OmnichannelBase/_imgs/SitemapIcon/ProductivityTools.svg" Icon="/WebResources/msdyn_OmnichannelBase/_imgs/SitemapIcon/ProductivityTools.svg" Entity="agc_fascicolo2" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA" />
+        <SubArea Id="subarea_f4a9b226" VectorIcon="/WebResources/agc_geminisvg" Icon="/WebResources/agc_geminisvg" Entity="agc_pesouno" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA" />
+        <SubArea Id="subarea_dc6e4068" VectorIcon="/WebResources/agc_geminisvg" Icon="/WebResources/agc_geminisvg" Entity="agc_pesodue" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA" />
+      </Group>
+      <Group Id="group_43918596" ResourceId="SitemapDesigner.NewGroup" DescriptionResourceId="SitemapDesigner.NewGroup" IntroducedVersion="7.0.0.0" IsProfile="false" ToolTipResourseId="SitemapDesigner.Unknown">
+        <Titles>
+          <Title LCID="1040" Title="Anagrafiche" />
+        </Titles>
+        <SubArea Id="subarea_170c5cc5" VectorIcon="/WebResources/cc_MscrmControls.OmniChannel.OCQuickReplyPreviewControl/Images/PersonalQuickReplyIcon.svg" Icon="/WebResources/cc_MscrmControls.OmniChannel.OCQuickReplyPreviewControl/Images/PersonalQuickReplyIcon.svg" Entity="contact" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+          <Titles>
+            <Title LCID="1040" Title="Magistrati" />
+          </Titles>
+        </SubArea>
+        <SubArea Id="subarea_e43b8693" VectorIcon="/WebResources/msdyn_pause.svg" Icon="/WebResources/msdyn_pause.svg" Entity="agc_esonero" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA" />
+      </Group>
+      <Group Id="group_83e4f6c4" ResourceId="SitemapDesigner.NewGroup" DescriptionResourceId="SitemapDesigner.NewGroup" IntroducedVersion="7.0.0.0" IsProfile="false" ToolTipResourseId="SitemapDesigner.Unknown">
+        <Titles>
+          <Title LCID="1040" Title="Impostazioni" />
+        </Titles>
+        <SubArea Id="subarea_ad327017" VectorIcon="/WebResources/mspp_settings.svg" Icon="/WebResources/mspp_settings.svg" Entity="agc_configurazione" Client="All,Outlook,OutlookLaptopClient,OutlookWorkstationClient,Web" AvailableOffline="true" PassParams="false" Sku="All,OnPremise,Live,SPLA">
+          <Privilege Entity="agc_configurazione" Privilege="Write" />
+        </SubArea>
+      </Group>
+    </Area>
+  </SiteMap>
+  <LocalizedNames>
+    <LocalizedName description="ASPEN" languagecode="1040" />
+  </LocalizedNames>
+</AppModuleSiteMap>

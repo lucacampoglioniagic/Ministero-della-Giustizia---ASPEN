@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{edfc131b-8d2d-ed11-9db2-002248285e57}</formid>
+    <IntroducedVersion>1.0.0.0</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form showImage="true" headerdensity="HighWithControls" showinformselector="false">
+      <tabs>
+        <tab name="Card Tab" id="fbcb51fb-fb51-4be1-9437-1d84499a5481" IsUserDefined="0" locklevel="0" showlabel="true" labelid="{e320e0e8-d69a-4f68-a2a7-bd27f803ea4f}" ordinalvalue="0">
+          <columns>
+            <column width="100%" id="0">
+              <sections>
+                <section name="Customer card" id="222f1f40-e866-4deb-9d71-f1995ae2e707" IsUserDefined="0" locklevel="0" showlabel="false" showbar="false" layout="varwidth" celllabelalignment="Left" celllabelposition="Left" columns="1" labelwidth="115" labelid="{40a0bdec-f927-4bb6-9743-fb37d4377577}" ordinalvalue="0">
+                  <rows>
+                    <row>
+                      <cell locklevel="0" id="{dd09be9a-8f05-4d9a-8c72-b5e04de2af52}" colspan="1" rowspan="1" labelid="{ff643abc-24af-4b27-bc27-d1bfe1c7b19d}" showlabel="false" ordinalvalue="10000">
+                        <control id="parentcustomerid" classid="{F9A8A302-114E-466A-B582-6771B2AE0D92}" isunbound="true" isrequired="false" uniqueid="{B29D692B-4061-49F0-8073-6FF0680124F4}" solutionaction="Modified" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+                <section name="Recent cases" id="4eff7af1-9673-4ba0-8473-e0e155d4b902" IsUserDefined="0" locklevel="0" showlabel="false" showbar="false" layout="varwidth" celllabelalignment="Left" celllabelposition="Left" columns="1" labelwidth="115" labelid="{6a9b3774-3059-4d47-8763-7d4e48785a9d}" ordinalvalue="1">
+                  <rows>
+                    <row>
+                      <cell locklevel="0" id="{8b192fed-6181-4ef2-bc4e-4dbb540122ea}" colspan="1" rowspan="1" showlabel="false" labelid="{3285afb5-9055-4c10-a3c4-91b214028348}" ordinalvalue="10000">
+                        <control indicationOfSubgrid="true" id="cc_1662431725068" classid="{F9A8A302-114E-466A-B582-6771B2AE0D92}" uniqueid="{E9EB42E1-ED07-469E-8935-63F53F0AAE35}" solutionaction="Modified" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+              </sections>
+            </column>
+          </columns>
+        </tab>
+      </tabs>
+      <controlDescriptions>
+        <controlDescription forControl="{B29D692B-4061-49F0-8073-6FF0680124F4}" solutionaction="Modified">
+          <customControl formFactor="0" name="MscrmControls.FieldControls.CustomerCard">
+            <parameters>
+              <property1 type="Lookup.Customer">parentcustomerid</property1>
+              <property2 type="SingleLine.Email">emailaddress1</property2>
+              <property3 type="SingleLine.Text">mobilephone</property3>
+              <property4 type="OptionSet">preferredcontactmethodcode</property4>
+              <property8 type="Enum" static="true">address1_composite</property8>
+              <enableEditing type="Enum" static="true">1</enableEditing>
+              <showBorder type="Enum" static="true">0</showBorder>
+              <marginStart static="true" type="Whole.None">0</marginStart>
+            </parameters>
+          </customControl>
+          <customControl formFactor="2" name="MscrmControls.FieldControls.CustomerCard">
+            <parameters>
+              <property1 type="Lookup.Customer">parentcustomerid</property1>
+              <property2 type="SingleLine.Email">emailaddress1</property2>
+              <property3 type="SingleLine.Text">mobilephone</property3>
+              <property4 type="OptionSet">preferredcontactmethodcode</property4>
+              <property8 type="Enum" static="true">address1_composite</property8>
+              <enableEditing type="Enum" static="true">1</enableEditing>
+              <showBorder type="Enum" static="true">0</showBorder>
+              <marginStart static="true" type="Whole.None">0</marginStart>
+            </parameters>
+          </customControl>
+          <customControl formFactor="1" name="MscrmControls.FieldControls.CustomerCard">
+            <parameters>
+              <property1 type="Lookup.Customer">parentcustomerid</property1>
+              <property2 type="SingleLine.Email">emailaddress1</property2>
+              <property3 type="SingleLine.Text">mobilephone</property3>
+              <property4 type="OptionSet">preferredcontactmethodcode</property4>
+              <property8 type="Enum" static="true">address1_composite</property8>
+              <enableEditing type="Enum" static="true">1</enableEditing>
+              <showBorder type="Enum" static="true">0</showBorder>
+              <marginStart static="true" type="Whole.None">0</marginStart>
+            </parameters>
+          </customControl>
+        </controlDescription>
+        <controlDescription forControl="{E9EB42E1-ED07-469E-8935-63F53F0AAE35}" solutionaction="Modified">
+          <customControl id="{E7A81278-8635-4D9E-8D4D-59480B391C5B}">
+            <parameters>
+              <TargetEntityType>incident</TargetEntityType>
+              <ViewId>{1ffc069e-b296-4a1e-9768-2b8ca570f40a}</ViewId>
+              <EnableViewPicker>false</EnableViewPicker>
+              <IsUserView>false</IsUserView>
+              <RelationshipName>incident_customer_contacts</RelationshipName>
+            </parameters>
+          </customControl>
+          <customControl formFactor="0" name="MscrmControls.FieldControls.RecentRecords">
+            <parameters>
+              <data-set name="Grid">
+                <TargetEntityType>incident</TargetEntityType>
+                <ViewId>{1ffc069e-b296-4a1e-9768-2b8ca570f40a}</ViewId>
+                <IsUserView>false</IsUserView>
+                <EnableViewPicker>false</EnableViewPicker>
+                <RelationshipName>incident_customer_contacts</RelationshipName>
+                <FilteredViewIds />
+              </data-set>
+              <showBorder type="Enum" static="true">0</showBorder>
+            </parameters>
+          </customControl>
+          <customControl formFactor="2" name="MscrmControls.FieldControls.RecentRecords">
+            <parameters>
+              <data-set name="Grid">
+                <TargetEntityType>incident</TargetEntityType>
+                <ViewId>{1ffc069e-b296-4a1e-9768-2b8ca570f40a}</ViewId>
+                <IsUserView>false</IsUserView>
+                <EnableViewPicker>false</EnableViewPicker>
+                <RelationshipName>incident_customer_contacts</RelationshipName>
+                <FilteredViewIds />
+              </data-set>
+              <showBorder type="Enum" static="true">0</showBorder>
+            </parameters>
+          </customControl>
+          <customControl formFactor="1" name="MscrmControls.FieldControls.RecentRecords">
+            <parameters>
+              <data-set name="Grid">
+                <TargetEntityType>incident</TargetEntityType>
+                <ViewId>{1ffc069e-b296-4a1e-9768-2b8ca570f40a}</ViewId>
+                <IsUserView>false</IsUserView>
+                <EnableViewPicker>false</EnableViewPicker>
+                <RelationshipName>incident_customer_contacts</RelationshipName>
+                <FilteredViewIds />
+              </data-set>
+              <showBorder type="Enum" static="true">0</showBorder>
+            </parameters>
+          </customControl>
+        </controlDescription>
+      </controlDescriptions>
+      <footer id="{90cd2e76-e5d7-4a4c-9a17-faa2a12dc301}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+        <rows>
+          <row>
+            <cell id="{2b6adbaf-af40-43f0-a017-61b7eb3b5556}" showlabel="false" labelid="{17b38871-4c5e-4599-86b4-3cfee2f49cfb}" ordinalvalue="10000" solutionaction="Removed" />
+            <cell id="{aae68f5e-66b6-4e75-a29b-c84e1780647a}" showlabel="false" labelid="{8517a279-9502-4db2-aa1e-9713dc3858ea}" ordinalvalue="20001" solutionaction="Removed" />
+            <cell id="{8f2e1b86-7cdf-45b2-9101-15146bd6d303}" showlabel="false" labelid="{2fc58fcd-e193-44cc-aff7-e05b2cef54f2}" ordinalvalue="30002" solutionaction="Removed" />
+          </row>
+        </rows>
+      </footer>
+      <DisplayConditions FallbackForm="false" Order="31" solutionaction="Modified" />
+    </form>
+    <LocalizedNames>
+      <LocalizedName description="Modulo contatto per la scheda cliente" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Modulo contatto per la scheda cliente." languagecode="1040" />
+    </Descriptions>
+  </systemform>
+</forms>

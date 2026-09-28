@@ -1,0 +1,26 @@
+<CustomTheme
+  basePaletteColor="#0066CC"
+  lockPrimary="true"
+  font="'Segoe UI', sans-serif"
+  primary="#0066CC"
+  darker10="#0061C2"
+  darker20="#005CB8"
+  darker30="#0052A3"
+  darker40="#004D99"
+  darker50="#003D7A"
+  lighter50="#99C2EB"
+  lighter60="#BDD5F2"
+  lighter70="#D6E8FF"
+  lighter80="#EBF3FF"
+>
+  <AppHeaderColors
+    background="#0066CC"
+    foreground="#FFFFFF"
+    backgroundHover="#0052A3"
+    foregroundHover="#FFFFFF"
+    backgroundPressed="#003D7A"
+    foregroundPressed="#FFFFFF"
+    backgroundSelected="#004D99"
+    foregroundSelected="#FFFFFF"
+  />
+</CustomTheme>

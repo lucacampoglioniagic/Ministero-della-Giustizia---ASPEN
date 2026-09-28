@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<savedqueries xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <savedquery>
+    <IsCustomizable>1</IsCustomizable>
+    <CanBeDeleted>0</CanBeDeleted>
+    <isquickfindquery>0</isquickfindquery>
+    <isprivate>0</isprivate>
+    <isdefault>1</isdefault>
+    <savedqueryid>{c9acdd9a-36a2-4c87-9a7a-c4bdf420bb31}</savedqueryid>
+    <layoutxml>
+      <grid name="resultset" jump="agc_name" select="1" icon="1" preview="1">
+        <row name="result" id="agc_esoneroid">
+          <cell name="agc_name" width="300" />
+          <cell name="createdon" width="125" />
+        </row>
+      </grid>
+    </layoutxml>
+    <querytype>1</querytype>
+    <fetchxml>
+      <fetch version="1.0" mapping="logical">
+        <entity name="agc_esonero">
+          <attribute name="agc_esoneroid" />
+          <attribute name="agc_name" />
+          <attribute name="createdon" />
+          <order attribute="agc_name" descending="false" />
+        </entity>
+      </fetch>
+    </fetchxml>
+    <IntroducedVersion>1.0</IntroducedVersion>
+    <LocalizedNames>
+      <LocalizedName description="Visualizzazione ricerca avanzata Esonero" languagecode="1040" />
+    </LocalizedNames>
+  </savedquery>
+</savedqueries>

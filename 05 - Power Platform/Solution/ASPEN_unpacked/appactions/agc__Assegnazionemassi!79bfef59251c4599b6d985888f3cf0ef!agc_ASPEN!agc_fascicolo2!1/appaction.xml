@@ -1,0 +1,36 @@
+<appaction uniquename="agc__Assegnazionemassi!79bfef59251c4599b6d985888f3cf0ef!agc_ASPEN!agc_fascicolo2!1">
+  <appmoduleid>
+    <uniquename>agc_ASPEN</uniquename>
+  </appmoduleid>
+  <buttonlabeltext default="Assegnazione massiva">
+    <label description="Assegnazione massiva" languagecode="1040" />
+  </buttonlabeltext>
+  <context>1</context>
+  <contextentity>
+    <logicalname>agc_fascicolo2</logicalname>
+  </contextentity>
+  <contextvalue>agc_fascicolo2</contextvalue>
+  <hidden>0</hidden>
+  <iscustomizable>1</iscustomizable>
+  <isdisabled>0</isdisabled>
+  <isgrouptitlehidden>0</isgrouptitlehidden>
+  <location>1</location>
+  <name>Assegnazionemassi!79bfef59251c4599b6d985888f3cf0ef</name>
+  <onclickeventjavascriptfunctionname>AgicAspen.AssegnaFascicolo.openBulkAssignFromGrid</onclickeventjavascriptfunctionname>
+  <onclickeventjavascriptparameters>[{"type":12}]</onclickeventjavascriptparameters>
+  <onclickeventjavascriptwebresourceid>
+    <webresourceid>fb65a19b-59b7-f111-aaab-000d3a697f24</webresourceid>
+  </onclickeventjavascriptwebresourceid>
+  <onclickeventtype>2</onclickeventtype>
+  <origin>0</origin>
+  <sequence>1000100010.0000000000</sequence>
+  <statecode>0</statecode>
+  <statuscode>1</statuscode>
+  <type>0</type>
+  <visibilityformulacomponentlibraryid>
+    <name>agc_aspendefaultcommandlibrary_9af74</name>
+  </visibilityformulacomponentlibraryid>
+  <visibilityformulacomponentname>f5ff620796bf4adc908ac3751fb188fb</visibilityformulacomponentname>
+  <visibilityformulafunctionname>Visible</visibilityformulafunctionname>
+  <visibilitytype>1</visibilitytype>
+</appaction>

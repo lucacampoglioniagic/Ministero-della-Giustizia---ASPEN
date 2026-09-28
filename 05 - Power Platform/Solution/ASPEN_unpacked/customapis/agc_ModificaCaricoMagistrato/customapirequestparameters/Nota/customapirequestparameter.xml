@@ -1,0 +1,9 @@
+<customapirequestparameter uniquename="Nota">
+  <displayname default="Nota">
+    <label description="Nota" languagecode="1040" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>Nota</name>
+  <type>10</type>
+</customapirequestparameter>

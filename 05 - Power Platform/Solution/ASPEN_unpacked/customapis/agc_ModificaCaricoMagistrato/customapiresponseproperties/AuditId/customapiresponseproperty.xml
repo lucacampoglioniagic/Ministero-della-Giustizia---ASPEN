@@ -1,0 +1,8 @@
+<customapiresponseproperty uniquename="AuditId">
+  <displayname default="Audit Id">
+    <label description="Audit Id" languagecode="1040" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <name>AuditId</name>
+  <type>12</type>
+</customapiresponseproperty>

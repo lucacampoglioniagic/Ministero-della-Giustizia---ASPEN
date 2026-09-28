@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <title>ASPEN - Modifica Carico</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Segoe, Arial, sans-serif;
+      background: #fff;
+      color: #242424;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .hdr {
+      background: #0F6CBD;
+      color: #fff;
+      padding: 14px 20px;
+      flex-shrink: 0;
+    }
+
+    .hdr h2 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .hdr p {
+      font-size: 12px;
+      opacity: .8;
+      margin-top: 3px;
+    }
+
+    /* ── Content ── */
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+    }
+
+    .description {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0F6CBD;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .field-readonly {
+      font-size: 14px;
+      padding: 8px 10px;
+      background: #F3F2F1;
+      border-radius: 4px;
+      color: #333;
+    }
+
+    .field input[type=number],
+    .field textarea {
+      width: 100%;
+      font-size: 14px;
+      font-family: inherit;
+      padding: 8px 10px;
+      border: 1px solid #C8C8C8;
+      border-radius: 4px;
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .field input.invalid,
+    .field textarea.invalid {
+      border-color: #D13438;
+      background: #FFF5F5;
+    }
+
+    .field-hint {
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .field-hint.err {
+      color: #D13438;
+    }
+
+    /* ── Loading / Error ── */
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 12px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .status.err {
+      color: #D13438;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 12px 20px;
+      border-top: 1px solid #E8E8E8;
+      background: #FAFAFA;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      padding: 8px 22px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #0F6CBD;
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #0D5AA7;
+    }
+
+    .btn-primary:disabled {
+      background: #A0C4E8;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: #333;
+      border: 1px solid #C8C8C8;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: #F0F0F0;
+    }
+
+    .btn-secondary:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    /* ── Spinner overlay ── */
+    .spinner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, .88);
+      z-index: 50;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .spinner-overlay.show {
+      display: flex;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid #E0E0E0;
+      border-top-color: #0F6CBD;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .spinner-text {
+      font-size: 14px;
+      color: #555;
+    }
+
+    /* ── Success screen ── */
+    .success {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .success.show {
+      display: flex;
+    }
+
+    .check-circle {
+      width: 68px;
+      height: 68px;
+      background: #107C10;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 34px;
+      color: #fff;
+      animation: pop .35s ease;
+    }
+
+    @keyframes pop {
+      0% {
+        transform: scale(.4);
+        opacity: 0;
+      }
+
+      70% {
+        transform: scale(1.1);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    .success-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #107C10;
+    }
+
+    .success-subtitle {
+      font-size: 14px;
+      color: #555;
+      text-align: center;
+      max-width: 360px;
+    }
+
+    .success-close {
+      margin-top: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="hdr">
+    <h2 id="dlg-title">Modifica Carico</h2>
+    <p>Correzione manuale riservata agli amministratori di sistema</p>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <p class="description">
+      Modifica manualmente il carico attuale del magistrato. È necessario indicare una
+      <strong>nota di giustificazione</strong>: la modifica viene tracciata a fini di audit
+      (valore precedente, nuovo valore, utente e data).
+    </p>
+
+    <div class="field">
+      <span class="field-label">Magistrato</span>
+      <div class="field-readonly" id="field-magistrato">—</div>
+    </div>
+
+    <div class="field">
+      <span class="field-label">Carico attuale</span>
+      <div class="field-readonly" id="field-carico-attuale">—</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="input-nuovo-valore">Nuovo valore carico *</label>
+      <input type="number" step="0.01" id="input-nuovo-valore">
+      <div class="field-hint" id="hint-nuovo-valore">Obbligatorio, numerico.</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="input-nota">Nota di giustificazione *</label>
+      <textarea id="input-nota" maxlength="2000" placeholder="Motivo della correzione manuale…"></textarea>
+      <div class="field-hint" id="hint-nota">Obbligatoria.</div>
+    </div>
+
+    <div class="status" id="status-error" style="display:none"></div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <button class="btn btn-secondary" id="btn-annulla">Annulla</button>
+    <button class="btn btn-primary" id="btn-conferma">Conferma Modifica</button>
+  </div>
+
+  <!-- Spinner overlay -->
+  <div class="spinner-overlay" id="spinner-overlay">
+    <div class="spinner"></div>
+    <div class="spinner-text">Salvataggio in corso…</div>
+  </div>
+
+  <!-- Success screen -->
+  <div class="success" id="success-screen">
+    <div class="check-circle">✓</div>
+    <div class="success-title">Carico aggiornato!</div>
+    <div class="success-subtitle">La finestra si chiuderà automaticamente.</div>
+    <button class="btn btn-secondary success-close" id="btn-close-success">Chiudi</button>
+  </div>
+
+  <script>
+    (function () {
+
+      /* ── Parse data from URL ── */
+      var magistratoId = "";
+      var magistratoNome = "";
+      var caricoAttuale = 0;
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var raw = params.get("Data") || params.get("data") || "";
+        if (raw) {
+          var parsed = JSON.parse(decodeURIComponent(raw));
+          magistratoId = parsed.id || "";
+          magistratoNome = parsed.nome || "";
+          caricoAttuale = parsed.carico || 0;
+        }
+      } catch (e) { /* ignore */ }
+
+      document.getElementById("field-magistrato").textContent = magistratoNome || "—";
+      document.getElementById("field-carico-attuale").textContent = caricoAttuale;
+      document.getElementById("input-nuovo-valore").value = caricoAttuale;
+
+      var orgUrl = window.location.origin;
+      var apiHeaders = {
+        "OData-MaxVersion": "4.0",
+        "OData-Version": "4.0",
+        "Accept": "application/json",
+        "Content-Type": "application/json; charset=utf-8"
+      };
+
+      function showError(msg) {
+        document.getElementById("spinner-overlay").classList.remove("show");
+        document.getElementById("btn-conferma").disabled = false;
+        document.getElementById("btn-annulla").disabled = false;
+        var err = document.getElementById("status-error");
+        err.style.display = "flex";
+        err.className = "status err";
+        err.textContent = "❌ " + msg;
+      }
+
+      function validate() {
+        var valido = true;
+
+        var nuovoValoreEl = document.getElementById("input-nuovo-valore");
+        var nuovoValoreHint = document.getElementById("hint-nuovo-valore");
+        if (nuovoValoreEl.value === "" || isNaN(parseFloat(nuovoValoreEl.value))) {
+          nuovoValoreEl.classList.add("invalid");
+          nuovoValoreHint.classList.add("err");
+          nuovoValoreHint.textContent = "Inserire un valore numerico valido.";
+          valido = false;
+        } else {
+          nuovoValoreEl.classList.remove("invalid");
+          nuovoValoreHint.classList.remove("err");
+          nuovoValoreHint.textContent = "Obbligatorio, numerico.";
+        }
+
+        var notaEl = document.getElementById("input-nota");
+        var notaHint = document.getElementById("hint-nota");
+        if (notaEl.value.trim() === "") {
+          notaEl.classList.add("invalid");
+          notaHint.classList.add("err");
+          notaHint.textContent = "La nota di giustificazione è obbligatoria.";
+          valido = false;
+        } else {
+          notaEl.classList.remove("invalid");
+          notaHint.classList.remove("err");
+          notaHint.textContent = "Obbligatoria.";
+        }
+
+        return valido;
+      }
+
+      /* ── Annulla ── */
+      document.getElementById("btn-annulla").addEventListener("click", function () {
+        window.close();
+      });
+
+      document.getElementById("btn-close-success").addEventListener("click", function () {
+        window.close();
+      });
+
+      /* ── Conferma: invoca la Custom API agc_ModificaCaricoMagistrato bound su contact ── */
+      document.getElementById("btn-conferma").addEventListener("click", function () {
+        document.getElementById("status-error").style.display = "none";
+
+        if (!magistratoId) {
+          showError("Magistrato non identificato, impossibile procedere.");
+          return;
+        }
+
+        if (!validate()) return;
+
+        var nuovoValore = parseFloat(document.getElementById("input-nuovo-valore").value);
+        var nota = document.getElementById("input-nota").value.trim();
+
+        document.getElementById("btn-conferma").disabled = true;
+        document.getElementById("btn-annulla").disabled = true;
+        document.getElementById("spinner-overlay").classList.add("show");
+
+        fetch(
+          orgUrl + "/api/data/v9.2/contacts(" + magistratoId + ")/Microsoft.Dynamics.CRM.agc_ModificaCaricoMagistrato",
+          {
+            method: "POST",
+            headers: apiHeaders,
+            body: JSON.stringify({ NuovoValore: nuovoValore, Nota: nota })
+          }
+        ).then(function (r) {
+          if (!r.ok) {
+            return r.json().then(function (body) {
+              var msg = (body && body.error && body.error.message) ? body.error.message : ("Errore HTTP " + r.status);
+              throw new Error(msg);
+            });
+          }
+          document.getElementById("spinner-overlay").classList.remove("show");
+          document.getElementById("success-screen").classList.add("show");
+          setTimeout(function () { window.close(); }, 2500);
+        }).catch(function (err) {
+          showError(err && err.message ? err.message : "Errore imprevisto durante il salvataggio.");
+        });
+      });
+
+    })();
+  </script>
+
+</body>
+
+</html>

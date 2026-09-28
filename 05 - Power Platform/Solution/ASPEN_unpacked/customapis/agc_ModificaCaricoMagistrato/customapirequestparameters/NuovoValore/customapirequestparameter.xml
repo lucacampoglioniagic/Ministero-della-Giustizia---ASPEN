@@ -1,0 +1,9 @@
+<customapirequestparameter uniquename="NuovoValore">
+  <displayname default="Nuovo Valore">
+    <label description="Nuovo Valore" languagecode="1040" />
+  </displayname>
+  <iscustomizable>1</iscustomizable>
+  <isoptional>0</isoptional>
+  <name>NuovoValore</name>
+  <type>2</type>
+</customapirequestparameter>

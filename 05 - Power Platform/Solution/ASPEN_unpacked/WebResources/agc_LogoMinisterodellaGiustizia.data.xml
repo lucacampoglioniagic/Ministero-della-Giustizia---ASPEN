@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WebResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <WebResourceId>{89062325-c5b8-f111-aaab-7ced8d763868}</WebResourceId>
+  <Name>agc_LogoMinisterodellaGiustizia</Name>
+  <DisplayName>Logo - Ministero della Giustizia</DisplayName>
+  <WebResourceType>5</WebResourceType>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <IsEnabledForMobileClient>0</IsEnabledForMobileClient>
+  <IsAvailableForMobileOffline>0</IsAvailableForMobileOffline>
+  <IsCustomizable>1</IsCustomizable>
+  <CanBeDeleted>1</CanBeDeleted>
+  <IsHidden>0</IsHidden>
+  <FileName>/WebResources/agc_LogoMinisterodellaGiustizia89062325-C5B8-F111-AAAB-7CED8D763868</FileName>
+</WebResource>

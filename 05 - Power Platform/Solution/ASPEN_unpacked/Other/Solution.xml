@@ -1,0 +1,956 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ImportExportXml version="9.2.26085.166" SolutionPackageVersion="9.2" languagecode="1040" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26085.166" OrganizationSchemaType="Full" CRMServerServiceabilityVersion="9.2.26085.00166">
+  <SolutionManifest>
+    <UniqueName>ASPEN</UniqueName>
+    <LocalizedNames>
+      <LocalizedName description="ASPEN" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions />
+    <Version>1.0.0.0</Version>
+    <Managed>0</Managed>
+    <Publisher>
+      <UniqueName>Agic</UniqueName>
+      <LocalizedNames>
+        <LocalizedName description="Agic" languagecode="1040" />
+      </LocalizedNames>
+      <Descriptions>
+        <Description description="Agic" languagecode="1040" />
+      </Descriptions>
+      <EMailAddress xsi:nil="true"></EMailAddress>
+      <SupportingWebsiteUrl xsi:nil="true"></SupportingWebsiteUrl>
+      <CustomizationPrefix>agc</CustomizationPrefix>
+      <CustomizationOptionValuePrefix>68541</CustomizationOptionValuePrefix>
+      <Addresses>
+        <Address>
+          <AddressNumber>1</AddressNumber>
+          <AddressTypeCode>1</AddressTypeCode>
+          <City xsi:nil="true"></City>
+          <County xsi:nil="true"></County>
+          <Country xsi:nil="true"></Country>
+          <Fax xsi:nil="true"></Fax>
+          <FreightTermsCode xsi:nil="true"></FreightTermsCode>
+          <ImportSequenceNumber xsi:nil="true"></ImportSequenceNumber>
+          <Latitude xsi:nil="true"></Latitude>
+          <Line1 xsi:nil="true"></Line1>
+          <Line2 xsi:nil="true"></Line2>
+          <Line3 xsi:nil="true"></Line3>
+          <Longitude xsi:nil="true"></Longitude>
+          <Name xsi:nil="true"></Name>
+          <PostalCode xsi:nil="true"></PostalCode>
+          <PostOfficeBox xsi:nil="true"></PostOfficeBox>
+          <PrimaryContactName xsi:nil="true"></PrimaryContactName>
+          <ShippingMethodCode>1</ShippingMethodCode>
+          <StateOrProvince xsi:nil="true"></StateOrProvince>
+          <Telephone1 xsi:nil="true"></Telephone1>
+          <Telephone2 xsi:nil="true"></Telephone2>
+          <Telephone3 xsi:nil="true"></Telephone3>
+          <TimeZoneRuleVersionNumber xsi:nil="true"></TimeZoneRuleVersionNumber>
+          <UPSZone xsi:nil="true"></UPSZone>
+          <UTCOffset xsi:nil="true"></UTCOffset>
+          <UTCConversionTimeZoneCode xsi:nil="true"></UTCConversionTimeZoneCode>
+        </Address>
+        <Address>
+          <AddressNumber>2</AddressNumber>
+          <AddressTypeCode>1</AddressTypeCode>
+          <City xsi:nil="true"></City>
+          <County xsi:nil="true"></County>
+          <Country xsi:nil="true"></Country>
+          <Fax xsi:nil="true"></Fax>
+          <FreightTermsCode xsi:nil="true"></FreightTermsCode>
+          <ImportSequenceNumber xsi:nil="true"></ImportSequenceNumber>
+          <Latitude xsi:nil="true"></Latitude>
+          <Line1 xsi:nil="true"></Line1>
+          <Line2 xsi:nil="true"></Line2>
+          <Line3 xsi:nil="true"></Line3>
+          <Longitude xsi:nil="true"></Longitude>
+          <Name xsi:nil="true"></Name>
+          <PostalCode xsi:nil="true"></PostalCode>
+          <PostOfficeBox xsi:nil="true"></PostOfficeBox>
+          <PrimaryContactName xsi:nil="true"></PrimaryContactName>
+          <ShippingMethodCode>1</ShippingMethodCode>
+          <StateOrProvince xsi:nil="true"></StateOrProvince>
+          <Telephone1 xsi:nil="true"></Telephone1>
+          <Telephone2 xsi:nil="true"></Telephone2>
+          <Telephone3 xsi:nil="true"></Telephone3>
+          <TimeZoneRuleVersionNumber xsi:nil="true"></TimeZoneRuleVersionNumber>
+          <UPSZone xsi:nil="true"></UPSZone>
+          <UTCOffset xsi:nil="true"></UTCOffset>
+          <UTCConversionTimeZoneCode xsi:nil="true"></UTCConversionTimeZoneCode>
+        </Address>
+      </Addresses>
+    </Publisher>
+    <RootComponents>
+      <RootComponent type="1" schemaName="agc_canestrofascicolo" behavior="1" />
+      <RootComponent type="1" schemaName="agc_configurazione" behavior="0" />
+      <RootComponent type="1" schemaName="agc_esonero" behavior="0" />
+      <RootComponent type="1" schemaName="agc_fascicolo2" behavior="0" />
+      <RootComponent type="1" schemaName="agc_fotocaricoesonero" behavior="0" />
+      <RootComponent type="1" schemaName="agc_modificacarico" behavior="0" />
+      <RootComponent type="1" schemaName="agc_peso2" behavior="2" />
+      <RootComponent type="1" schemaName="agc_pesodue" behavior="0" />
+      <RootComponent type="1" schemaName="agc_pesouno" behavior="0" />
+      <RootComponent type="1" schemaName="agc_rgnr" behavior="0" />
+      <RootComponent type="1" schemaName="contact" behavior="1" />
+      <RootComponent type="20" id="{b7b3ed9e-4fb7-f111-aaab-7ced8d763868}" behavior="0" />
+      <RootComponent type="29" id="{2307e036-c3b8-f111-aaab-7ced8d763868}" behavior="0" />
+      <RootComponent type="300" schemaName="agc_aspendefaultcommandlibrary_9af74" behavior="0" />
+      <RootComponent type="300" schemaName="cr248_aspenhome_1750e" behavior="0" />
+      <RootComponent type="60" id="{4ff56c67-5fb7-f111-aaab-000d3a697f24}" behavior="0" />
+      <RootComponent type="61" schemaName="agc_agc_ModernTheme" behavior="0" />
+      <RootComponent type="61" schemaName="agc_assignfascicolo.js" behavior="0" />
+      <RootComponent type="61" schemaName="agc_assignfascicolo_icon.svg" behavior="0" />
+      <RootComponent type="61" schemaName="agc_assignfascicolodialog.html" behavior="0" />
+      <RootComponent type="61" schemaName="agc_closefascicolo_icon.svg" behavior="0" />
+      <RootComponent type="61" schemaName="agc_geminisvg" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8archive32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8gear32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8graph32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8home32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8options32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8papers32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8pause32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8person32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_icons8weight32" behavior="0" />
+      <RootComponent type="61" schemaName="agc_LogoMinisterodellaGiustizia" behavior="0" />
+      <RootComponent type="61" schemaName="agc_modificacarico.js" behavior="0" />
+      <RootComponent type="61" schemaName="agc_modificacarico_icon.svg" behavior="0" />
+      <RootComponent type="61" schemaName="agc_modificacaricodialog.html" behavior="0" />
+      <RootComponent type="62" schemaName="agc_ASPEN" behavior="0" />
+      <RootComponent type="66" schemaName="agc_AgicAspen.AndamentoCaricoMensileChart" behavior="0" />
+      <RootComponent type="66" schemaName="agc_AgicAspen.CaricoMagistratiChart" behavior="0" />
+      <RootComponent type="66" schemaName="agc_AgicAspen.CaricoPerCanestro" behavior="0" />
+      <RootComponent type="66" schemaName="agc_AgicAspen.EsoneriAttiviChart" behavior="0" />
+      <RootComponent type="66" schemaName="agc_AgicAspen.FascicoliPerCanestroChart" behavior="0" />
+      <RootComponent type="80" schemaName="agc_ASPEN" behavior="0" />
+      <RootComponent type="91" id="{63e5f64b-58b7-f111-aaab-7ced8d763868}" schemaName="Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc" behavior="0" />
+      <RootComponent type="92" id="{0abcc757-58b7-f111-aaab-7ced8d766a4e}" behavior="0" />
+      <RootComponent type="92" id="{16ff2558-58b7-f111-aaab-7ced8d763868}" behavior="0" />
+      <RootComponent type="92" id="{1bff2558-58b7-f111-aaab-7ced8d763868}" behavior="0" />
+      <RootComponent type="92" id="{1cfdc450-58b7-f111-aaab-000d3a697f24}" behavior="0" />
+      <RootComponent type="92" id="{1eff2558-58b7-f111-aaab-7ced8d763868}" behavior="0" />
+      <RootComponent type="92" id="{20fdc450-58b7-f111-aaab-000d3a697f24}" behavior="0" />
+      <RootComponent type="92" id="{53ddea56-58b7-f111-aaab-000d3a697f24}" behavior="0" />
+      <RootComponent type="92" id="{59ddea56-58b7-f111-aaab-000d3a697f24}" behavior="0" />
+      <RootComponent type="92" id="{89a5b251-58b7-f111-aaab-7ced8d766a4e}" behavior="0" />
+      <RootComponent type="92" id="{f9bbc757-58b7-f111-aaab-7ced8d766a4e}" behavior="0" />
+    </RootComponents>
+    <MissingDependencies>
+      <MissingDependency>
+        <Required type="1" schemaName="adx_externalidentity" displayName="Identità esterna" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="1" schemaName="agc_canestrofascicolo" displayName="Peso 1" solution="Active" />
+        <Dependent type="1" schemaName="agc_canestrofascicolo" displayName="Peso 1" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="1" schemaName="agc_peso2" displayName="Peso 2" solution="Active" />
+        <Dependent type="1" schemaName="agc_peso2" displayName="Peso 2" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="1" schemaName="contact" displayName="Contact" parentSchemaName="" solution="OmnichannelTelephony (1.10.0.309)" />
+        <Dependent type="1" schemaName="contact" displayName="Contact" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="1" schemaName="incident" displayName="Caso" solution="msdynce_Service (9.0.5.56)">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Casi profilo cliente" parentDisplayName="Contatto" id="{c621206a-f769-ed11-9561-000d3a36d4e2}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="1" schemaName="incident" displayName="Caso" solution="msdynce_Service (9.0.5.56)">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="1" schemaName="incident" displayName="Caso" solution="msdynce_Service (9.0.5.56)">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="1" schemaName="mspp_webrole" displayName="Ruolo Web" solution="PowerPages_Apps (1.0.2605.0)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="1" schemaName="opportunity" displayName="Opportunità" solution="msdynce_Sales (9.0.4.0076)">
+          <package appName="msdynce_Sales" version="9.0.26083.10006">msdynce_SalesAnchor (9.0.26083.10006)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="10" schemaName="adx_contact_externalidentity" displayName="adx_contact_externalidentity" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_accessfailedcount" displayName="Numero accessi non riusciti" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_emailaddress1confirmed" displayName="Indirizzo e-mail confermato" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_locallogindisabled" displayName="Accesso locale disabilitato" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_lockoutenabled" displayName="Blocco abilitato" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_lockoutenddate" displayName="Data fine blocco" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_logonenabled" displayName="Accesso abilitato" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_mobilephoneconfirmed" displayName="Telefono cellulare confermato" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_securitystamp" displayName="Indicatore sicurezza" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_twofactorenabled" displayName="Autenticazione a due fattori abilitata" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_identity_username" displayName="Nome utente" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_organizationname" displayName="Organization Name" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCoreDependencies (1.0.2305.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato) - Giapponese" parentDisplayName="Contatto" id="{01124dd8-9bff-4cc0-bb33-ea9d943c3f9f}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_organizationname" displayName="Organization Name" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCoreDependencies (1.0.2305.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato)" parentDisplayName="Contatto" id="{bddc0100-0dbe-4562-aafe-31d08c8ab506}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_publicprofilecopy" displayName="Copia profilo pubblico" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato) - Giapponese" parentDisplayName="Contatto" id="{01124dd8-9bff-4cc0-bb33-ea9d943c3f9f}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_publicprofilecopy" displayName="Copia profilo pubblico" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato)" parentDisplayName="Contatto" id="{bddc0100-0dbe-4562-aafe-31d08c8ab506}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="adx_timezone" displayName="Time Zone" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeCoreDependencies (1.0.2305.1)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_descrizione" displayName="Descrizione" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" />
+        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 1" id="{bc56548f-7171-409c-911d-974e791fcbde}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_name" displayName="Nome" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" />
+        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 1" id="{bc56548f-7171-409c-911d-974e791fcbde}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_name" displayName="Nome" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" />
+        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 2" id="{76cb78de-3455-49b8-98d8-762f25d8cb48}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" />
+        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 1" id="{bc56548f-7171-409c-911d-974e791fcbde}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" />
+        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 2" id="{76cb78de-3455-49b8-98d8-762f25d8cb48}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="businesscard" displayName="Biglietto da visita" parentSchemaName="contact" parentDisplayName="Contatto" solution="msdynce_SalesPatch201904 (9.0.1912.1007)">
+          <package appName="msdynce_Sales" version="9.0.26083.10006">msdynce_SalesAnchor (9.0.26083.10006)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="businesscardattributes" displayName="BusinessCardAttributes" parentSchemaName="contact" parentDisplayName="Contatto" solution="msdynce_SalesPatch201904 (9.0.1912.1007)">
+          <package appName="msdynce_Sales" version="9.0.26083.10006">msdynce_SalesAnchor (9.0.26083.10006)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="defaultpricelevelid" displayName="Listino prezzi" parentSchemaName="contact" parentDisplayName="Contatto" solution="msdynce_ProductManagement (9.0.4.0066)">
+          <package appName="msdynce_ProductManagement" version="9.0.26083.10001">msdynce_ProductManagementAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="mspp_userpreferredlcid" displayName="Lingua preferita" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeExtensions (1.1.2605.0)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato) - Giapponese" parentDisplayName="Contatto" id="{01124dd8-9bff-4cc0-bb33-ea9d943c3f9f}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="mspp_userpreferredlcid" displayName="Lingua preferita" parentSchemaName="contact" parentDisplayName="Contatto" solution="PowerPages_RuntimeExtensions (1.1.2605.0)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato)" parentDisplayName="Contatto" id="{bddc0100-0dbe-4562-aafe-31d08c8ab506}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="originatingleadid" displayName="Lead di origine" parentSchemaName="contact" parentDisplayName="Contatto" solution="msdynce_LeadManagement (9.0.4.0066)">
+          <package appName="msdynce_LeadManagement" version="9.0.26083.10001">msdynce_LeadManagementAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="originatingleadid" displayName="Lead di origine" parentSchemaName="contact" parentDisplayName="Contatto" solution="msdynce_LeadManagement (9.0.4.0066)">
+          <package appName="msdynce_LeadManagement" version="9.0.26083.10001">msdynce_LeadManagementAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza interattiva" parentDisplayName="Contatto" id="{cc760212-3eab-4009-b5c3-ea9cf6f3e141}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="2" schemaName="originatingleadid" displayName="Lead di origine" parentSchemaName="contact" parentDisplayName="Contatto" solution="msdynce_LeadManagement (9.0.4.0066)">
+          <package appName="msdynce_LeadManagement" version="9.0.26083.10001">msdynce_LeadManagementAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="20" displayName="Accesso all'app del servizio clienti" solution="msdynce_Customerservicehub (9.0.5.0056)" id="{3dac4d9e-568c-e611-80d4-00155d42a122}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="20" displayName="Accesso all'app del servizio clienti" solution="msdynce_Customerservicehub (9.0.5.0056)" id="{3dac4d9e-568c-e611-80d4-00155d42a122}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="20" displayName="CSR Manager" solution="msdynce_Service (9.0.5.56)" id="{76885cea-7d77-490e-b487-21262e3984b1}" parentId="{1808b939-dd07-4ca7-aa99-ddd2734378f1}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="20" displayName="CSR Manager" solution="msdynce_Service (9.0.5.56)" id="{76885cea-7d77-490e-b487-21262e3984b1}" parentId="{1808b939-dd07-4ca7-aa99-ddd2734378f1}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="20" displayName="Amministratore ASPEN" solution="Active" id="{9fb62eb8-4fb7-f111-aaab-7ced8d763868}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="20" displayName="Customer Service Representative" solution="msdyn_PowerAppsOfficeExtensions (1.0.0.1)" id="{d22d8156-a97d-42d8-a31e-187c5d192cbe}" parentId="{ecfd0b44-5720-45e3-ae68-417ddb0fb654}">
+          <package appName="PowerAppsAppFramework Package" version="1.0.0.25">PowerAppsAppFramework_Anchor (1.0.0.25)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="20" displayName="Customer Service Representative" solution="msdyn_PowerAppsOfficeExtensions (1.0.0.1)" id="{d22d8156-a97d-42d8-a31e-187c5d192cbe}" parentId="{ecfd0b44-5720-45e3-ae68-417ddb0fb654}">
+          <package appName="PowerAppsAppFramework Package" version="1.0.0.25">PowerAppsAppFramework_Anchor (1.0.0.25)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Casi attivi personali" displayName="Casi attivi personali" parentSchemaName="incident" parentDisplayName="Caso" solution="msdynce_Service (9.0.5.56)" id="{00000000-0000-0000-00aa-000010001028}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Casi profilo cliente" parentDisplayName="Contatto" id="{c621206a-f769-ed11-9561-000d3a36d4e2}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Casi attivi personali" displayName="Casi attivi personali" parentSchemaName="incident" parentDisplayName="Caso" solution="msdynce_Service (9.0.5.56)" id="{00000000-0000-0000-00aa-000010001028}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Casi personali per record recenti" displayName="Casi personali per record recenti" parentSchemaName="incident" parentDisplayName="Caso" solution="msdynce_ServicePatch201911 (9.0.26083.1005)" id="{1ffc069e-b296-4a1e-9768-2b8ca570f40a}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Identità esterne attive" displayName="Identità esterne attive" parentSchemaName="adx_externalidentity" parentDisplayName="Identità esterna" solution="PowerPages_RuntimeCore (1.0.2509.1)" id="{93fe9ed1-cabf-4755-9f63-4f3f989084e6}">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Lista Magistrati" displayName="Lista Magistrati" parentSchemaName="contact" parentDisplayName="Contatto" solution="Active" id="{ce24cf88-50b7-f111-aaab-7ced8d766a4e}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Lista Pesi 1" displayName="Lista Pesi 1" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{2117c670-0a32-4b46-b479-b4b2907be54c}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Lista Pesi 2" displayName="Lista Pesi 2" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{276045e4-6442-43a7-bbf4-955e42ce60b6}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Opportunità aperte personali" displayName="Opportunità aperte personali" parentSchemaName="opportunity" parentDisplayName="Opportunità" solution="msdynce_Sales (9.0.4.0076)" id="{00000000-0000-0000-00aa-000010003000}">
+          <package appName="msdynce_Sales" version="9.0.26083.10006">msdynce_SalesAnchor (9.0.26083.10006)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Opportunità recenti" displayName="Opportunità recenti" parentSchemaName="opportunity" parentDisplayName="Opportunità" solution="msdynce_Sales (9.0.4.0076)" id="{9c3f7ee8-eca7-e211-9fb6-00155dd0ea05}">
+          <package appName="msdynce_Sales" version="9.0.26083.10006">msdynce_SalesAnchor (9.0.26083.10006)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Ricerca rapida Pesi 1 attivi/e" displayName="Ricerca rapida Pesi 1 attivi/e" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{22768eb6-7e3b-4a56-81d4-8fb550b94a2e}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Ricerca rapida Pesi 2 attivi/e" displayName="Ricerca rapida Pesi 2 attivi/e" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{502ac9b4-8ff5-4b4b-a71c-a289339dbea4}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Ruoli Web attivi" displayName="Ruoli Web attivi" parentSchemaName="mspp_webrole" parentDisplayName="Ruolo Web" solution="PowerPages_Apps (1.0.2605.0)" id="{735de4f0-c287-42eb-b5e6-2f01a75a40fb}">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Visualizzazione associata Peso 1" displayName="Visualizzazione associata Peso 1" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{5c3f7a7e-a7d4-4a0b-aae0-de5f22eac611}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Visualizzazione associata Peso 2" displayName="Visualizzazione associata Peso 2" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{f4195390-9bf3-48eb-aed8-8899a223ca09}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Visualizzazione ricerca avanzata Peso 1" displayName="Visualizzazione ricerca avanzata Peso 1" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{301c341f-b960-4a70-aea2-9764cceee948}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Visualizzazione ricerca avanzata Peso 2" displayName="Visualizzazione ricerca avanzata Peso 2" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{44f29c85-b854-4c2d-8293-f6a7a28d4f7d}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Visualizzazione ricerca Peso 1" displayName="Visualizzazione ricerca Peso 1" parentSchemaName="agc_canestrofascicolo" parentDisplayName="Peso 1" solution="Active" id="{96908071-eab2-4b1f-aa65-4640413fe1d6}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="26" schemaName="Visualizzazione ricerca Peso 2" displayName="Visualizzazione ricerca Peso 2" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" id="{0e49fbe1-e7c7-4624-84ea-47c22b14eb8f}" />
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="59" schemaName="Casi attivi per agente" displayName="Casi attivi per agente" parentSchemaName="incident" parentDisplayName="Caso" solution="msdynce_Service (9.0.5.56)" id="{4143b74e-4a07-4d01-9ffe-2cdcaa4208fd}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="59" schemaName="Clienti principali" displayName="Clienti principali" parentSchemaName="opportunity" parentDisplayName="Opportunità" solution="msdynce_Sales (9.0.4.0076)" id="{8bc5fb18-48f2-4782-9e16-3d452fa4ddce}">
+          <package appName="msdynce_Sales" version="9.0.26083.10006">msdynce_SalesAnchor (9.0.26083.10006)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo Web profilo (avanzato) - Giapponese" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)" id="{01124dd8-9bff-4cc0-bb33-ea9d943c3f9f}">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato) - Giapponese" parentDisplayName="Contatto" id="{01124dd8-9bff-4cc0-bb33-ea9d943c3f9f}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Profilo cliente" parentDisplayName="Contatto" solution="OmnichannelBase (1.10.0.168)" id="{05ea391a-d034-43fe-849b-b4fa3213a2b2}">
+          <package appName="UnifiedRoutingPrime" version="1.5.26084.264">UnifiedRoutingPrimeAnchor (1.5.26084.264)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="AI for Sales" parentDisplayName="Contatto" solution="SICommon (9.0.26083.10001)" id="{293c878f-f068-40a0-ae48-4297e060871c}">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="scheda contatto account" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{29de27bc-a257-4f29-99cf-bab4a84e688f}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="scheda contatto account" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{29de27bc-a257-4f29-99cf-bab4a84e688f}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Visualizzazione rapida contatto App for Outlook" parentDisplayName="Contatto" solution="AppforOutlook (1.2.13.0)" id="{3d22ab88-96c8-4b3f-a533-d4827e2925c9}">
+          <package appName="Guided Help Package" version="1.2.409">AppforOutlookCDSSolution (1.2.409)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo scheda utente tipo Live" parentDisplayName="Contatto" solution="msdynce_AppCommonPatch201904 (9.0.26083.10001)" id="{449faa0e-f471-48ec-87d0-4719909546d2}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo in contesto" parentDisplayName="Contatto" solution="msdynce_DealManager (9.0.260804.10015)" id="{4c9c89b9-f909-4b34-8f63-b87d7ff2f0c4}">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo in contesto" parentDisplayName="Contatto" id="{4c9c89b9-f909-4b34-8f63-b87d7ff2f0c4}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Casi per il cliente" parentDisplayName="Contatto" solution="OmnichannelPrime (1.10.0.294)" id="{5194a156-576a-4fa1-bf1a-abf7a41b0e8c}">
+          <package appName="OmnichannelPrime" version="1.10.0.5">msdyn_ContactCenterAgentManagementData (1.10.0.5)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo Contatto per la scheda cliente di conversazione" parentDisplayName="Contatto" solution="OmnichannelPrime (1.10.0.294)" id="{5aab71db-78a0-ed11-aad1-6045bd00698c}">
+          <package appName="OmnichannelPrime" version="1.10.0.5">msdyn_ContactCenterAgentManagementData (1.10.0.5)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Contatto per la scheda cliente di conversazione" parentDisplayName="Contatto" id="{5aab71db-78a0-ed11-aad1-6045bd00698c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Creazione rapida contatto" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{661157fe-2fc9-4eaa-835f-5bfa2f7b64f7}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="scheda contatto" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{707fc57b-c5e6-471b-a180-e37ed28a38e2}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza interattiva" parentDisplayName="Contatto" id="{cc760212-3eab-4009-b5c3-ea9cf6f3e141}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="scheda contatto" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{707fc57b-c5e6-471b-a180-e37ed28a38e2}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="scheda contatto" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{707fc57b-c5e6-471b-a180-e37ed28a38e2}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Profili social" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{7bb87dfd-ec3e-4ed9-8e3e-5725d3067295}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="TimelineWallControl - Contatto - Principale" parentDisplayName="Contatto" solution="OmnichannelBase (1.10.0.168)" id="{986258b5-2985-4ae0-970a-5e1d108ab793}">
+          <package appName="UnifiedRoutingPrime" version="1.5.26084.264">UnifiedRoutingPrimeAnchor (1.5.26084.264)</package>
+        </Required>
+        <Dependent type="60" displayName="TimelineWallControl - Contatto - Principale" parentDisplayName="Contatto" id="{986258b5-2985-4ae0-970a-5e1d108ab793}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo scheda contatto" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{bc0f68dd-a4b1-4a8f-bed3-c8f5db2f89cf}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo inserimento rapido" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{bdb0ae1c-32fa-4374-b637-8dafe107bc44}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo Web profilo (avanzato)" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)" id="{bddc0100-0dbe-4562-aafe-31d08c8ab506}">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato)" parentDisplayName="Contatto" id="{bddc0100-0dbe-4562-aafe-31d08c8ab506}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Casi profilo cliente" parentDisplayName="Contatto" solution="OmnichannelPrime (1.10.0.294)" id="{c621206a-f769-ed11-9561-000d3a36d4e2}">
+          <package appName="OmnichannelPrime" version="1.10.0.5">msdyn_ContactCenterAgentManagementData (1.10.0.5)</package>
+        </Required>
+        <Dependent type="60" displayName="Casi profilo cliente" parentDisplayName="Contatto" id="{c621206a-f769-ed11-9561-000d3a36d4e2}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Contatto per esperienza interattiva" parentDisplayName="Contatto" solution="msdynce_LeadManagement (9.0.4.0066)" id="{cc760212-3eab-4009-b5c3-ea9cf6f3e141}">
+          <package appName="msdynce_LeadManagement" version="9.0.26083.10001">msdynce_LeadManagementAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza interattiva" parentDisplayName="Contatto" id="{cc760212-3eab-4009-b5c3-ea9cf6f3e141}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Scheda Contatto App for Outlook" parentDisplayName="Contatto" solution="AppforOutlook (1.2.13.0)" id="{cdbb9298-3b2e-41f3-8f4a-0168d6b09fc4}">
+          <package appName="Guided Help Package" version="1.2.409">AppforOutlookCDSSolution (1.2.409)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo Web di invito" parentDisplayName="Contatto" solution="PowerPages_RuntimeCore (1.0.2509.1)" id="{d6190b35-9474-4098-9698-33f6627eb3bf}">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web di invito" parentDisplayName="Contatto" id="{d6190b35-9474-4098-9698-33f6627eb3bf}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Pannello di riferimento contatto" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{d880c3cf-80e2-42f3-82f9-24d040d09f17}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" solution="msdynce_ServicePatch201911 (9.0.26083.1005)" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" solution="msdyn_ModernCaseManagement (9.0.26083.2012)" id="{edfc131b-8d2d-ed11-9db2-002248285e57}">
+          <package appName="ServiceExtended" version="9.0.26083.2012">msdyn_ServiceExtendedAnchor (9.0.26083.2012)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="60" displayName="Diritti e casi recenti" parentDisplayName="Contatto" solution="msdynce_AppCommon (9.0.4.0066)" id="{f3b707fb-3b5f-45f9-9c6b-5e573bb5d19e}">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="80" schemaName="agc_ASPEN" displayName="ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="agc_esoneroform.js" displayName="agc_esoneroform.js" solution="Active" />
+        <Dependent type="60" displayName="Informazioni" parentDisplayName="Esonero" id="{eb0078f0-cd8d-406a-8b17-7499e3fff2ad}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato) - Giapponese" parentDisplayName="Contatto" id="{01124dd8-9bff-4cc0-bb33-ea9d943c3f9f}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="TimelineWallControl - Contatto - Principale" parentDisplayName="Contatto" id="{986258b5-2985-4ae0-970a-5e1d108ab793}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato)" parentDisplayName="Contatto" id="{bddc0100-0dbe-4562-aafe-31d08c8ab506}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza interattiva" parentDisplayName="Contatto" id="{cc760212-3eab-4009-b5c3-ea9cf6f3e141}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web di invito" parentDisplayName="Contatto" id="{d6190b35-9474-4098-9698-33f6627eb3bf}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
+          <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto per esperienza multisessione" parentDisplayName="Contatto" id="{e06af4d1-2812-45c7-a9c2-9fb73fee7bec}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="cc_MscrmControls.OmniChannel.OCQuickReplyPreviewControl/Images/PersonalQuickReplyIcon.svg" displayName="cc_MscrmControls.OmniChannel.OCQuickReplyPreviewControl/Images/PersonalQuickReplyIcon.svg" solution="OmnichannelBase (1.10.0.168)">
+          <package appName="UnifiedRoutingPrime" version="1.5.26084.264">UnifiedRoutingPrimeAnchor (1.5.26084.264)</package>
+        </Required>
+        <Dependent type="62" schemaName="agc_ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/ACI/Scripts/ACILoader.js" displayName="msdyn_/ACI/Scripts/ACILoader.js" solution="RelationshipAnalytics (9.0.26083.10001)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/ActivityFeeds.Form.js" displayName="msdyn_/ActivityFeeds.Form.js" solution="ActivityFeedsCore (9.0.0.0014)">
+          <package appName="ActivityFeedsCore" version="9.0.0.0014">ActivityFeedsCore (9.0.0.0014)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato) - Giapponese" parentDisplayName="Contatto" id="{01124dd8-9bff-4cc0-bb33-ea9d943c3f9f}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/ActivityFeeds.Form.js" displayName="msdyn_/ActivityFeeds.Form.js" solution="ActivityFeedsCore (9.0.0.0014)">
+          <package appName="ActivityFeedsCore" version="9.0.0.0014">ActivityFeedsCore (9.0.0.0014)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato)" parentDisplayName="Contatto" id="{bddc0100-0dbe-4562-aafe-31d08c8ab506}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/ActivityFeeds.Form.js" displayName="msdyn_/ActivityFeeds.Form.js" solution="ActivityFeedsCore (9.0.0.0014)">
+          <package appName="ActivityFeedsCore" version="9.0.0.0014">ActivityFeedsCore (9.0.0.0014)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/ActivityFeeds.Form.js" displayName="msdyn_/ActivityFeeds.Form.js" solution="ActivityFeedsCore (9.0.0.0014)">
+          <package appName="ActivityFeedsCore" version="9.0.0.0014">ActivityFeedsCore (9.0.0.0014)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web di invito" parentDisplayName="Contatto" id="{d6190b35-9474-4098-9698-33f6627eb3bf}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/RecordWall.htm" displayName="msdyn_/RecordWall.htm" solution="ActivityFeedsCore (9.0.0.0014)">
+          <package appName="ActivityFeedsCore" version="9.0.0.0014">ActivityFeedsCore (9.0.0.0014)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato) - Giapponese" parentDisplayName="Contatto" id="{01124dd8-9bff-4cc0-bb33-ea9d943c3f9f}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/RecordWall.htm" displayName="msdyn_/RecordWall.htm" solution="ActivityFeedsCore (9.0.0.0014)">
+          <package appName="ActivityFeedsCore" version="9.0.0.0014">ActivityFeedsCore (9.0.0.0014)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web profilo (avanzato)" parentDisplayName="Contatto" id="{bddc0100-0dbe-4562-aafe-31d08c8ab506}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/RecordWall.htm" displayName="msdyn_/RecordWall.htm" solution="ActivityFeedsCore (9.0.0.0014)">
+          <package appName="ActivityFeedsCore" version="9.0.0.0014">ActivityFeedsCore (9.0.0.0014)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/RecordWall.htm" displayName="msdyn_/RecordWall.htm" solution="ActivityFeedsCore (9.0.0.0014)">
+          <package appName="ActivityFeedsCore" version="9.0.0.0014">ActivityFeedsCore (9.0.0.0014)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Web di invito" parentDisplayName="Contatto" id="{d6190b35-9474-4098-9698-33f6627eb3bf}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_/Scripts/WhoKnowsWhomLoader.js" displayName="msdyn_/Scripts/WhoKnowsWhomLoader.js" solution="msdyn_connectiongraph (9.3.26083.10001)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_OmnichannelBase/_imgs/SitemapIcon/Home.svg" displayName="msdyn_OmnichannelBase/_imgs/SitemapIcon/Home.svg" solution="OmnichannelBase (1.10.0.168)">
+          <package appName="UnifiedRoutingPrime" version="1.5.26084.264">UnifiedRoutingPrimeAnchor (1.5.26084.264)</package>
+        </Required>
+        <Dependent type="62" schemaName="agc_ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_OmnichannelBase/_imgs/SitemapIcon/OmnichannelQueues" displayName="msdyn_OmnichannelBase/_imgs/SitemapIcon/OmnichannelQueues" solution="OmnichannelBase (1.10.0.168)">
+          <package appName="UnifiedRoutingPrime" version="1.5.26084.264">UnifiedRoutingPrimeAnchor (1.5.26084.264)</package>
+        </Required>
+        <Dependent type="62" schemaName="agc_ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_OmnichannelBase/_imgs/SitemapIcon/ProductivityTools.svg" displayName="msdyn_OmnichannelBase/_imgs/SitemapIcon/ProductivityTools.svg" solution="OmnichannelBase (1.10.0.168)">
+          <package appName="UnifiedRoutingPrime" version="1.5.26084.264">UnifiedRoutingPrimeAnchor (1.5.26084.264)</package>
+        </Required>
+        <Dependent type="62" schemaName="agc_ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_pause.svg" displayName="msdyn_pause.svg" solution="msdyn_PowerAdminSettingsDataManagementSolution (2.2.3510.1)">
+          <package appName="PowerPlatformEnvironmentSettingsApp" version="2.2.3510.1">PowerPlatformEnvironmentSettingsApp_Anchor (2.2.3510.1)</package>
+        </Required>
+        <Dependent type="62" schemaName="agc_ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_SalesOmniChannel/SalesPhoneNumber.Library.js" displayName="msdyn_SalesOmniChannel/SalesPhoneNumber.Library.js" solution="msdyn_SalesOmniChannel (9.1.26083.10001)">
+          <package appName="msdyn_AcceleratedSales" version="9.1.26083.10001">msdyn_AcceleratedSalesAnchor (9.1.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_SalesOmniChannel/SalesPhoneNumber.Library.js" displayName="msdyn_SalesOmniChannel/SalesPhoneNumber.Library.js" solution="msdyn_SalesOmniChannel (9.1.26083.10001)">
+          <package appName="msdyn_AcceleratedSales" version="9.1.26083.10001">msdyn_AcceleratedSalesAnchor (9.1.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_talkingpointsloader.js" displayName="msdyn_talkingpointsloader.js" solution="msdynce_Talkingpoints (9.1.0.59)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="msdyn_talkingpointsloader.js" displayName="msdyn_talkingpointsloader.js" solution="msdynce_Talkingpoints (9.1.0.59)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="mspp_entities/subgrid_filtering.js" displayName="mspp_entities/subgrid_filtering.js" solution="PowerPages_AppResources (1.0.2605.0)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="61" schemaName="mspp_settings.svg" displayName="mspp_settings.svg" solution="PowerPages_AppResources (1.0.2605.0)">
+          <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
+        </Required>
+        <Dependent type="62" schemaName="agc_ASPEN" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="Consent.ContactabilityGridControl.ContactabilityGridControl" displayName="Consent.ContactabilityGridControl.ContactabilityGridControl" solution="DynamicsMKT_Consent (1.3.1162.29)">
+          <package appName="CxpSales" version="1.3.1162.47">DynamicsMKT_CxpSalesAnchorSolution (1.3.1162.47)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="Intelligence.BusinessCardReaderControl.BusinessCardReader" displayName="Intelligence.BusinessCardReaderControl.BusinessCardReader" solution="BaseCustomControlsCore (9.0.2608.4009)">
+          <package appName="Base Custom Controls" version="9.0.2608.4009">BaseCustomControlsCore (9.0.2608.4009)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="Microsoft.AddressInputUCI" displayName="Microsoft.AddressInputUCI" solution="BaseCustomControlsCore (9.0.2608.4009)">
+          <package appName="Base Custom Controls" version="9.0.2608.4009">BaseCustomControlsCore (9.0.2608.4009)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.AcceleratedSales.CadenceWidgetControl" displayName="MscrmControls.AcceleratedSales.CadenceWidgetControl" solution="msdyn_acceleratedsales (9.1.26083.10001)">
+          <package appName="msdyn_AcceleratedSales" version="9.1.26083.10001">msdyn_AcceleratedSalesAnchor (9.1.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.CardFeedContainer.CardFeedContainer" displayName="MscrmControls.CardFeedContainer.CardFeedContainer" solution="BaseCustomControlsCore (9.0.2608.4009)">
+          <package appName="Base Custom Controls" version="9.0.2608.4009">BaseCustomControlsCore (9.0.2608.4009)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.CardFeedContainer.CardFeedContainer" displayName="MscrmControls.CardFeedContainer.CardFeedContainer" solution="BaseCustomControlsCore (9.0.2608.4009)">
+          <package appName="Base Custom Controls" version="9.0.2608.4009">BaseCustomControlsCore (9.0.2608.4009)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo in contesto" parentDisplayName="Contatto" id="{4c9c89b9-f909-4b34-8f63-b87d7ff2f0c4}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.FieldControls.CustomerCard" displayName="MscrmControls.FieldControls.CustomerCard" solution="msdynce_ServicePatch201911 (9.0.26083.1005)">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo Contatto per la scheda cliente di conversazione" parentDisplayName="Contatto" id="{5aab71db-78a0-ed11-aad1-6045bd00698c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.FieldControls.CustomerCard" displayName="MscrmControls.FieldControls.CustomerCard" solution="msdynce_ServicePatch201911 (9.0.26083.1005)">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.FieldControls.RecentRecords" displayName="MscrmControls.FieldControls.RecentRecords" solution="msdynce_ServicePatch201911 (9.0.26083.1005)">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Casi profilo cliente" parentDisplayName="Contatto" id="{c621206a-f769-ed11-9561-000d3a36d4e2}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.FieldControls.RecentRecords" displayName="MscrmControls.FieldControls.RecentRecords" solution="msdynce_ServicePatch201911 (9.0.26083.1005)">
+          <package appName="msdynce_Service" version="9.0.26083.1005">msdynce_ServiceAnchor (9.0.26083.1005)</package>
+        </Required>
+        <Dependent type="60" displayName="Modulo contatto per la scheda cliente" parentDisplayName="Contatto" id="{edfc131b-8d2d-ed11-9db2-002248285e57}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.LeadHygiene.ValidatedFieldControl" displayName="MscrmControls.LeadHygiene.ValidatedFieldControl" solution="msdyn_leadhygiene (9.1.2605.4001)">
+          <package appName="msdyn_AcceleratedSales" version="9.1.26083.10001">msdyn_AcceleratedSalesAnchor (9.1.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.LeadHygiene.ValidatedFieldControl" displayName="MscrmControls.LeadHygiene.ValidatedFieldControl" solution="msdyn_leadhygiene (9.1.2605.4001)">
+          <package appName="msdyn_AcceleratedSales" version="9.1.26083.10001">msdyn_AcceleratedSalesAnchor (9.1.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.RAContainer.RAControl" displayName="MscrmControls.RAContainer.RAControl" solution="RelationshipAnalytics (9.0.26083.10001)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.RAContainer.RAControlv2" displayName="MscrmControls.RAContainer.RAControlv2" solution="RelationshipAnalytics (9.0.26083.10001)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MscrmControls.TalkingPointsControl.TalkingPoints" displayName="MscrmControls.TalkingPointsControl.TalkingPoints" solution="msdynce_Talkingpoints (9.1.0.59)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="msdyn_SalesOmniChannel.SalesPhoneNumberControl" displayName="msdyn_SalesOmniChannel.SalesPhoneNumberControl" solution="msdyn_SalesOmniChannel (9.1.26083.10001)">
+          <package appName="msdyn_AcceleratedSales" version="9.1.26083.10001">msdyn_AcceleratedSalesAnchor (9.1.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="msdyn_SalesOmniChannel.SalesPhoneNumberControl" displayName="msdyn_SalesOmniChannel.SalesPhoneNumberControl" solution="msdyn_SalesOmniChannel (9.1.26083.10001)">
+          <package appName="msdyn_AcceleratedSales" version="9.1.26083.10001">msdyn_AcceleratedSalesAnchor (9.1.26083.10001)</package>
+        </Required>
+        <Dependent type="60" displayName="Magistrato" parentDisplayName="Contatto" id="{30d82f72-fbb7-f111-aaab-7ced8d763868}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MsdynControls.RAControls.HealthWidget" displayName="MsdynControls.RAControls.HealthWidget" solution="RelationshipAnalytics (9.0.26083.10001)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="66" schemaName="MsdynControls.WKWControls.ConnectionsWidget" displayName="MsdynControls.WKWControls.ConnectionsWidget" solution="msdyn_connectiongraph (9.3.26083.10001)">
+          <package appName="msdynce_SalesInsights" version="9.0.26083.10005">msdynce_SalesInsightsAnchor (9.0.26083.10005)</package>
+        </Required>
+        <Dependent type="60" displayName="AI for Sales" parentDisplayName="Contatto" id="{293c878f-f068-40a0-ae48-4297e060871c}" />
+      </MissingDependency>
+      <MissingDependency>
+        <Required type="SettingDefinition" displayName="AppChannel" solution="msdyn_AppFrameworkInfraExtensions (1.0.0.20)" id.uniquename="AppChannel">
+          <package appName="PowerAppsAppFramework Package" version="1.0.0.25">PowerAppsAppFramework_Anchor (1.0.0.25)</package>
+        </Required>
+        <Dependent type="AppSetting" displayName="parentappmoduleid.uniquename=agc_ASPEN,settingdefinitionid.uniquename=AppChannel" id.parentappmoduleid.uniquename="agc_ASPEN" id.settingdefinitionid.uniquename="AppChannel" />
+      </MissingDependency>
+    </MissingDependencies>
+  </SolutionManifest>
+</ImportExportXml>

@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<SdkMessageProcessingStep Name="CaricoMagistratoAssegnazionePlugin: Update of agc_fascicolo2" SdkMessageProcessingStepId="{53ddea56-58b7-f111-aaab-000d3a697f24}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <SdkMessageId>20bebb1b-ea3e-db11-86a7-000a3a5473e8</SdkMessageId>
+  <PluginTypeName>AgicAspen.Plugins.CaricoMagistratoAssegnazionePlugin, Plugin-Custom-API, Version=2.0.0.0, Culture=neutral, PublicKeyToken=561e7782025d35fc</PluginTypeName>
+  <PluginTypeId>13fdc450-58b7-f111-aaab-000d3a697f24</PluginTypeId>
+  <PrimaryEntity>agc_fascicolo2</PrimaryEntity>
+  <AsyncAutoDelete>0</AsyncAutoDelete>
+  <FilteringAttributes>agc_magistratocontatto</FilteringAttributes>
+  <InvocationSource>1</InvocationSource>
+  <Mode>0</Mode>
+  <Rank>1</Rank>
+  <EventHandlerTypeCode>4602</EventHandlerTypeCode>
+  <Stage>40</Stage>
+  <IsCustomizable>1</IsCustomizable>
+  <IsHidden>0</IsHidden>
+  <SupportedDeployment>0</SupportedDeployment>
+  <IntroducedVersion>1.0.0.0</IntroducedVersion>
+  <SdkMessageProcessingStepImages>
+    <SdkMessageProcessingStepImage Name="PreImage">
+      <SdkMessageProcessingStepImageId>{56ddea56-58b7-f111-aaab-000d3a697f24}</SdkMessageProcessingStepImageId>
+      <Attributes>agc_magistratocontatto,agc_contributocaricoassegnato</Attributes>
+      <EntityAlias>PreImage</EntityAlias>
+      <ImageType>0</ImageType>
+      <MessagePropertyName>Target</MessagePropertyName>
+      <IsCustomizable>1</IsCustomizable>
+    </SdkMessageProcessingStepImage>
+  </SdkMessageProcessingStepImages>
+</SdkMessageProcessingStep>

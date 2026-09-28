@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<forms xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <systemform>
+    <formid>{5aab71db-78a0-ed11-aad1-6045bd00698c}</formid>
+    <IntroducedVersion>1.0.0.4</IntroducedVersion>
+    <FormPresentation>1</FormPresentation>
+    <FormActivationState>1</FormActivationState>
+    <form showImage="true" headerdensity="HighWithControls" showinformselector="false">
+      <tabs>
+        <tab name="Card Tab" id="fbcb51fb-fb51-4be1-9437-1d84499a5481" IsUserDefined="0" locklevel="0" showlabel="true" labelid="{4cbba1d7-7bb3-44d4-b361-0cf325e46297}" ordinalvalue="0">
+          <columns>
+            <column width="100%" id="0">
+              <sections>
+                <section name="Customer card" id="222f1f40-e866-4deb-9d71-f1995ae2e707" IsUserDefined="0" locklevel="0" showlabel="false" showbar="false" layout="varwidth" celllabelalignment="Left" celllabelposition="Left" columns="1" labelwidth="115" labelid="{05822565-6050-486e-b39d-f9311f44c11b}" ordinalvalue="0">
+                  <rows>
+                    <row>
+                      <cell locklevel="0" id="{dd09be9a-8f05-4d9a-8c72-b5e04de2af52}" colspan="1" rowspan="1" labelid="{50c2c7b5-09b6-4894-8c1b-df3089c7dfca}" showlabel="false" ordinalvalue="10000">
+                        <control id="parentcustomerid" classid="{F9A8A302-114E-466A-B582-6771B2AE0D92}" isunbound="true" isrequired="false" uniqueid="{70D649D4-6584-46FA-A30B-BD9FE39A8DFA}" solutionaction="Modified" />
+                      </cell>
+                    </row>
+                  </rows>
+                </section>
+              </sections>
+            </column>
+          </columns>
+        </tab>
+      </tabs>
+      <controlDescriptions>
+        <controlDescription forControl="{70D649D4-6584-46FA-A30B-BD9FE39A8DFA}" solutionaction="Modified">
+          <customControl formFactor="1" name="MscrmControls.FieldControls.CustomerCard">
+            <parameters>
+              <entityLogicalName type="Enum" static="true">account</entityLogicalName>
+              <property1 type="Lookup.Customer">parentcustomerid</property1>
+              <property2 type="SingleLine.Email">emailaddress1</property2>
+              <property3 type="SingleLine.Text">mobilephone</property3>
+              <property4 type="SingleLine.Text">address1_composite</property4>
+              <property5 type="OptionSet">preferredcontactmethodcode</property5>
+              <enableEditing type="Enum" static="true">1</enableEditing>
+              <showBorder type="Enum" static="true">0</showBorder>
+              <marginStart type="Whole.None" static="true">0</marginStart>
+              <marginEnd type="Whole.None" static="true">0</marginEnd>
+              <marginTop type="Whole.None" static="true">0</marginTop>
+              <marginBottom type="Whole.None" static="true">0</marginBottom>
+              <hidePersonaAndShowStaticHeader type="Enum" static="true">1</hidePersonaAndShowStaticHeader>
+            </parameters>
+          </customControl>
+          <customControl formFactor="2" name="MscrmControls.FieldControls.CustomerCard">
+            <parameters>
+              <entityLogicalName type="Enum" static="true">account</entityLogicalName>
+              <property1 type="Lookup.Customer">parentcustomerid</property1>
+              <property2 type="SingleLine.Email">emailaddress1</property2>
+              <property3 type="SingleLine.Text">mobilephone</property3>
+              <property4 type="SingleLine.Text">address1_composite</property4>
+              <property5 type="OptionSet">preferredcontactmethodcode</property5>
+              <enableEditing type="Enum" static="true">1</enableEditing>
+              <showBorder type="Enum" static="true">0</showBorder>
+              <marginStart type="Whole.None" static="true">0</marginStart>
+              <marginEnd type="Whole.None" static="true">0</marginEnd>
+              <marginTop type="Whole.None" static="true">0</marginTop>
+              <marginBottom type="Whole.None" static="true">0</marginBottom>
+              <hidePersonaAndShowStaticHeader type="Enum" static="true">1</hidePersonaAndShowStaticHeader>
+            </parameters>
+          </customControl>
+          <customControl formFactor="0" name="MscrmControls.FieldControls.CustomerCard">
+            <parameters>
+              <entityLogicalName type="Enum" static="true">account</entityLogicalName>
+              <property1 type="Lookup.Customer">parentcustomerid</property1>
+              <property2 type="SingleLine.Email">emailaddress1</property2>
+              <property3 type="SingleLine.Text">mobilephone</property3>
+              <property4 type="SingleLine.Text">address1_composite</property4>
+              <property5 type="OptionSet">preferredcontactmethodcode</property5>
+              <enableEditing type="Enum" static="true">1</enableEditing>
+              <showBorder type="Enum" static="true">0</showBorder>
+              <marginStart type="Whole.None" static="true">0</marginStart>
+              <marginEnd type="Whole.None" static="true">0</marginEnd>
+              <marginTop type="Whole.None" static="true">0</marginTop>
+              <marginBottom type="Whole.None" static="true">0</marginBottom>
+              <hidePersonaAndShowStaticHeader type="Enum" static="true">1</hidePersonaAndShowStaticHeader>
+            </parameters>
+          </customControl>
+        </controlDescription>
+      </controlDescriptions>
+      <footer id="{90cd2e76-e5d7-4a4c-9a17-faa2a12dc301}" celllabelposition="Top" columns="111" labelwidth="115" celllabelalignment="Left">
+        <rows>
+          <row>
+            <cell id="{2b6adbaf-af40-43f0-a017-61b7eb3b5556}" showlabel="false" labelid="{f672afd8-d6f1-4054-9097-12c450060fa6}" ordinalvalue="10000" solutionaction="Removed" />
+            <cell id="{aae68f5e-66b6-4e75-a29b-c84e1780647a}" showlabel="false" labelid="{808b1e4e-2962-4ad8-84f0-345cc74257a1}" ordinalvalue="20001" solutionaction="Removed" />
+            <cell id="{8f2e1b86-7cdf-45b2-9101-15146bd6d303}" showlabel="false" labelid="{c75ea9db-447e-417f-bad2-2a092aeed914}" ordinalvalue="30002" solutionaction="Removed" />
+          </row>
+        </rows>
+      </footer>
+      <DisplayConditions FallbackForm="false" Order="30" solutionaction="Modified" />
+    </form>
+    <LocalizedNames>
+      <LocalizedName description="Modulo Contatto per la scheda cliente di conversazione" languagecode="1040" />
+    </LocalizedNames>
+    <Descriptions>
+      <Description description="Modulo Contatto per la scheda cliente di conversazione" languagecode="1040" />
+    </Descriptions>
+  </systemform>
+</forms>
