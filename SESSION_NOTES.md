@@ -13,8 +13,21 @@
 - **Dismissione completa di entrambe le tabelle legacy Peso1/Peso2** (confermato dall'utente): `agc_canestrofascicolo` ("Peso 1") e successivamente anche `agc_peso2` ("Peso 2") eliminate fisicamente dall'ambiente `Tribunali-dev`. Ri-esportata/ri-unpacked la solution dopo la seconda eliminazione: export managed di prova ora con **0 MissingDependencies** (in precedenza 142); `pac solution checker` ripetuto: 0 Critical, 0 High, **21 Medium** (in calo da 39 — tutte le voci legate alle tabelle legacy sparite, residuano solo issue pre-esistenti non correlate: console.log, "use strict", vista "Lista Magistrati"/web resource `agc_esoneroform.js`, nome schermata canvas).
 - Aggiornati `README.md` (sezione "Ambiente di destinazione — Tribunali-dev") e `CHANGELOG.md` (nuovo file) con i risultati di validazione Fase 12.
 - Aggiornata checklist §7.6 del piano di migrazione: E2E-39/40 confermati già chiusi il 25/09 (non più pendenti come riportava una nota più vecchia).
-- Redatta bozza di chiusura email a MS Support sul bug legacy `agc_canestro`/`agc_fascicolo` in ambiente sorgente/POC (`06 - Riferimenti Normativi e Tecnici/Risposta_MS_Support_EntityMap_Corruption_Chiusura.md`): comunicato che il problema è stato risolto ricreando l'applicazione da zero per motivi di tempo.
-- Item ancora aperti (a carico dell'utente): test di restorability in ambiente vuoto, disattivazione accessi in ambiente sorgente, backup go-live.
+- Redatta bozza di chiusura email a MS Support sul bug legacy `agc_canestro`/`agc_fascicolo` in ambiente sorgente/POC (`06 - Riferimenti Normativi e Tecnici/Risposta_MS_Support_EntityMap_Corruption_Chiusura.md`): comunicato che il problema è stato risolto ricreando l'applicazione da zero per motivi di tempo (non inviata, solo documentata).
+- Item ancora aperti (a carico dell'utente): test di restorability in ambiente vuoto, disattivazione accessi in ambiente sorgente (POC), backup go-live.
+
+**Commit di sessione:**
+- `847e4fe` — Fase 12: export/unpack solution ASPEN, solution checker, README/CHANGELOG.
+- `36aec6c` — Fase 12: fix ruolo Amministratore ASPEN mancante dalla solution, conferma dismissione tabella legacy `agc_canestrofascicolo`.
+- `6a2d69a` — Fase 12: conferma dismissione completa tabella legacy `agc_peso2`, 0 MissingDependencies.
+
+**Riepilogo "prossimi passi" (fine sessione 28/09/2026):**
+1. Test di restorability in ambiente vuoto (a carico utente).
+2. Disattivazione accessi in ambiente sorgente (POC) (a carico utente).
+3. Backup go-live (a carico utente).
+4. Fase 9 (governance Power Automate: service account con licenza Premium per il flow "Chiusura automatica esoneri scaduti") — saltata su richiesta esplicita del cliente, da pianificare separatamente se necessario.
+5. Layout Home privo di scroll verticale su viewport stretti/bassi — item noto non bloccante, richiede wrapping in Container scrollabile da Power Apps Studio (vedi E2E-40).
+6. I 21 Medium residui del solution checker (12 `console.log`, 6 mancanza `"use strict"`, 2 dipendenze minori vista "Lista Magistrati"/`agc_esoneroform.js`, 1 nome schermata canvas) restano da valutare se vale la pena ripulire prima del go-live, non bloccanti.
 
 ---
 
