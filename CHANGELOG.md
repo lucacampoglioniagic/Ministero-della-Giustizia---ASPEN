@@ -17,10 +17,10 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ### Rimosso
 - Tabella legacy **`agc_canestrofascicolo`** ("Peso 1" storica) eliminata fisicamente dall'ambiente `Tribunali-dev` — dismissione completata (in precedenza fermata per dipendenze residue, vedi sessione 26-27/09/2026). Rimossa dai RootComponents della solution e dai `MissingDependencies`.
+- Tabella legacy **`agc_peso2`** ("Peso 2" storica) eliminata fisicamente dall'ambiente `Tribunali-dev` — dismissione completata a seguire, stesso giorno. Export managed di prova ripetuto: **0 MissingDependencies** (nodo assente). `pac solution checker`: 0 Critical, 0 High, **21 Medium** (in calo da 39), 0 Low — i 21 residui sono pre-esistenti (console.log, "use strict", 2 dipendenze minori non correlate, 1 nome schermata canvas), nessuno riferito alle tabelle legacy.
 
 ### Noto/residuo (non bloccante)
 - Layout Home privo di scroll verticale su viewport stretti/bassi (item aperto, richiede wrapping in Container scrollabile da Power Apps Studio).
-- Tabella legacy `agc_peso2` ("Peso 2" storica) ancora presente come metadata non versionata, in attesa di analoga dismissione fisica; dati già migrati e verificati al 100% su `agc_pesouno`/`agc_pesodue`.
 - Fase 9 (governance Power Automate, service account con licenza Premium per il flow "Chiusura automatica esoneri scaduti") saltata su richiesta esplicita del cliente, da pianificare separatamente.
 
 ## Storico (Fasi 0-11)

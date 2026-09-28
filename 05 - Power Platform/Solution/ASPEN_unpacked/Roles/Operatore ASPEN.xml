@@ -6,7 +6,6 @@
     <RolePrivilege name="prvAppendagc_esonero" level="Local" />
     <RolePrivilege name="prvAppendagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvAppendagc_fotocaricoesonero" level="Global" />
-    <RolePrivilege name="prvAppendagc_peso2" level="Global" />
     <RolePrivilege name="prvAppendagc_PesoDue" level="Local" />
     <RolePrivilege name="prvAppendagc_PesoUno" level="Local" />
     <RolePrivilege name="prvAppendagc_rgnr" level="Local" />
@@ -14,7 +13,6 @@
     <RolePrivilege name="prvAppendToagc_esonero" level="Local" />
     <RolePrivilege name="prvAppendToagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvAppendToagc_fotocaricoesonero" level="Global" />
-    <RolePrivilege name="prvAppendToagc_peso2" level="Global" />
     <RolePrivilege name="prvAppendToagc_PesoDue" level="Local" />
     <RolePrivilege name="prvAppendToagc_PesoUno" level="Local" />
     <RolePrivilege name="prvAppendToagc_rgnr" level="Local" />
@@ -27,7 +25,6 @@
     <RolePrivilege name="prvCreateagc_esonero" level="Local" />
     <RolePrivilege name="prvCreateagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvCreateagc_fotocaricoesonero" level="Global" />
-    <RolePrivilege name="prvCreateagc_peso2" level="Global" />
     <RolePrivilege name="prvCreateagc_PesoDue" level="Local" />
     <RolePrivilege name="prvCreateagc_PesoUno" level="Local" />
     <RolePrivilege name="prvCreateagc_rgnr" level="Local" />
@@ -38,7 +35,6 @@
     <RolePrivilege name="prvReadagc_fascicolo2" level="Local" />
     <RolePrivilege name="prvReadagc_fotocaricoesonero" level="Global" />
     <RolePrivilege name="prvReadagc_modificacarico" level="Global" />
-    <RolePrivilege name="prvReadagc_peso2" level="Global" />
     <RolePrivilege name="prvReadagc_PesoDue" level="Local" />
     <RolePrivilege name="prvReadagc_PesoUno" level="Local" />
     <RolePrivilege name="prvReadagc_rgnr" level="Local" />
@@ -52,7 +48,6 @@
     <RolePrivilege name="prvReadSharePointDocument" level="Global" />
     <RolePrivilege name="prvWriteagc_esonero" level="Local" />
     <RolePrivilege name="prvWriteagc_fascicolo2" level="Local" />
-    <RolePrivilege name="prvWriteagc_peso2" level="Global" />
     <RolePrivilege name="prvWriteagc_PesoDue" level="Local" />
     <RolePrivilege name="prvWriteagc_PesoUno" level="Local" />
     <RolePrivilege name="prvWriteagc_rgnr" level="Local" />

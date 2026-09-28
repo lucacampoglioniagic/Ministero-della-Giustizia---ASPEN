@@ -85,7 +85,6 @@
       <RootComponent type="1" schemaName="agc_fascicolo2" behavior="0" />
       <RootComponent type="1" schemaName="agc_fotocaricoesonero" behavior="0" />
       <RootComponent type="1" schemaName="agc_modificacarico" behavior="0" />
-      <RootComponent type="1" schemaName="agc_peso2" behavior="2" />
       <RootComponent type="1" schemaName="agc_pesodue" behavior="0" />
       <RootComponent type="1" schemaName="agc_pesouno" behavior="0" />
       <RootComponent type="1" schemaName="agc_rgnr" behavior="0" />
@@ -140,10 +139,6 @@
           <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
         </Required>
         <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="1" schemaName="agc_peso2" displayName="Peso 2" solution="Active" />
-        <Dependent type="1" schemaName="agc_peso2" displayName="Peso 2" />
       </MissingDependency>
       <MissingDependency>
         <Required type="1" schemaName="contact" displayName="Contact" parentSchemaName="" solution="OmnichannelTelephony (1.10.0.309)" />
@@ -274,14 +269,6 @@
           <package appName="Power Pages Core Package" version="1.1.2605.258">PowerPages_Core (1.1.2605.258)</package>
         </Required>
         <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="2" schemaName="agc_name" displayName="Nome" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" />
-        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 2" id="{76cb78de-3455-49b8-98d8-762f25d8cb48}" />
-      </MissingDependency>
-      <MissingDependency>
-        <Required type="2" schemaName="agc_peso" displayName="Peso" parentSchemaName="agc_peso2" parentDisplayName="Peso 2" solution="Active" />
-        <Dependent type="60" displayName="Informazioni" parentDisplayName="Peso 2" id="{76cb78de-3455-49b8-98d8-762f25d8cb48}" />
       </MissingDependency>
       <MissingDependency>
         <Required type="2" schemaName="businesscard" displayName="Biglietto da visita" parentSchemaName="contact" parentDisplayName="Contatto" solution="msdynce_SalesPatch201904 (9.0.1912.1007)">
@@ -625,7 +612,7 @@
         <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
           <package appName="msdynce_AppCommon" version="9.0.26083.10001">msdynce_AppCommonAnchor (9.0.26083.10001)</package>
         </Required>
-        <Dependent type="60" displayName="Contatto per esperienza interattiva" parentDisplayName="Contatto" id="{cc760212-3eab-4009-b5c3-ea9cf6f3e141}" />
+        <Dependent type="60" displayName="Contatto portale (avanzato)" parentDisplayName="Contatto" id="{c1c97961-2d42-4103-abf8-2fe2bdf38224}" />
       </MissingDependency>
       <MissingDependency>
         <Required type="61" schemaName="AppCommon/Contact/Contact_main_system_library.js" displayName="AppCommon/Contact/Contact_main_system_library.js" solution="msdynce_AppCommon (9.0.4.0066)">
