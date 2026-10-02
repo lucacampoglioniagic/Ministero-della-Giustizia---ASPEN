@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RibbonDiffXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CustomActions>
+    <CustomAction Id="agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.CustomAction" Location="Mscrm.Form.agc_fascicolo2.MainTab.Save.Controls._children" Sequence="49">
+      <CommandUIDefinition>
+        <Button Alt="$LocLabels:agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.Alt" Command="agc.Form.agc_fascicolo2.Assegna.Command" Id="agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button" LabelText="$LocLabels:agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.LabelText" Sequence="49" TemplateAlias="o1" ToolTipTitle="$LocLabels:agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.ToolTipTitle" ToolTipDescription="$LocLabels:agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.ToolTipDescription" ModernImage="$webresource:agc_assignfascicolo_icon.svg" />
+      </CommandUIDefinition>
+    </CustomAction>
+    <HideCustomAction HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.ModernSendDirectEmail.Hide" Location="Mscrm.HomepageGrid.agc_fascicolo2.modern.SendDirectEmail" />
+    <HideCustomAction HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.RunFlow.Hide" Location="Mscrm.HomepageGrid.agc_fascicolo2.Flows.RefreshCommandBar" />
+    <HideCustomAction HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.RunFlowNested.Hide" Location="Mscrm.HomepageGrid.agc_fascicolo2.Flows.RefreshCommandBar.Flows" />
+    <HideCustomAction HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.RunReport.Hide" Location="Mscrm.HomepageGrid.agc_fascicolo2.RunReport" />
+    <HideCustomAction HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.SendDirectEmail.Hide" Location="Mscrm.HomepageGrid.agc_fascicolo2.SendDirectEmail" />
+    <HideCustomAction HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.SendLinkByEmail.Hide" Location="Mscrm.HomepageGrid.agc_fascicolo2.Send" />
+    <HideCustomAction HideActionId="agc.Hide.HomepageGrid.agc_fascicolo2.ShowThisView.Hide" Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.QuickPowerBI.Button" />
+    <CustomAction Id="agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.CustomAction" Location="Mscrm.HomepageGrid.agc_fascicolo2.MainTab.Actions.Controls._children" Sequence="21">
+      <CommandUIDefinition>
+        <Button Alt="$LocLabels:agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.Alt" Command="agc.HomepageGrid.agc_fascicolo2.Assegna.Command" Id="agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button" LabelText="$LocLabels:agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.LabelText" Sequence="21" TemplateAlias="o1" ToolTipTitle="$LocLabels:agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.ToolTipTitle" ToolTipDescription="$LocLabels:agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.ToolTipDescription" ModernImage="$webresource:agc_assignfascicolo_icon.svg" />
+      </CommandUIDefinition>
+    </CustomAction>
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_fascicolo2.Assign.Hide" Location="Mscrm.Form.agc_fascicolo2.Assign" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_fascicolo2.Flows.RefreshCommandBar.Flows.Hide" Location="Mscrm.Form.agc_fascicolo2.Flows.RefreshCommandBar.Flows" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_fascicolo2.Flows.RefreshCommandBar.Hide" Location="Mscrm.Form.agc_fascicolo2.Flows.RefreshCommandBar" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_fascicolo2.Reports.Hide" Location="Mscrm.Form.agc_fascicolo2.Reports" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_fascicolo2.WordTemplate.Hide" Location="Mscrm.Form.agc_fascicolo2.WordTemplate" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.agc_fascicolo2.ChangeDataSetControlButton.Hide" Location="Mscrm.HomepageGrid.agc_fascicolo2.ChangeDataSetControlButton" />
+    <HideCustomAction HideActionId="agc.msdyn.HomepageGrid.agc_fascicolo2.OpenFocusedView.Button.Hide" Location="msdyn.HomepageGrid.agc_fascicolo2.OpenFocusedView.Button" />
+  </CustomActions>
+  <Templates>
+    <RibbonTemplates Id="Mscrm.Templates"></RibbonTemplates>
+  </Templates>
+  <CommandDefinitions>
+    <CommandDefinition Id="agc.Form.agc_fascicolo2.Assegna.Command">
+      <EnableRules>
+        <EnableRule Id="Mscrm.FormStateExistingOrReadOnly" />
+        <EnableRule Id="agc.Assegna.NotAssigned.Form.EnableRule" />
+      </EnableRules>
+      <DisplayRules />
+      <Actions>
+        <JavaScriptFunction FunctionName="AgicAspen.AssegnaFascicolo.openDialog" Library="$webresource:agc_assignfascicolo.js">
+          <CrmParameter Value="PrimaryControl" />
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+    <CommandDefinition Id="agc.Form.agc_fascicolo2.Chiudi.Command">
+      <EnableRules>
+        <EnableRule Id="Mscrm.FormStateExistingOrReadOnly" />
+        <EnableRule Id="agc.Chiudi.NotClosed.Form.EnableRule" />
+      </EnableRules>
+      <DisplayRules />
+      <Actions>
+        <JavaScriptFunction FunctionName="AgicAspen.AssegnaFascicolo.openCloseDialog" Library="$webresource:agc_assignfascicolo.js">
+          <CrmParameter Value="PrimaryControl" />
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+    <CommandDefinition Id="agc.HomepageGrid.agc_fascicolo2.Assegna.Command">
+      <EnableRules>
+        <EnableRule Id="agc.Assegna.SingleSelection.EnableRule" />
+        <EnableRule Id="agc.Assegna.NotAssigned.Grid.EnableRule" />
+      </EnableRules>
+      <DisplayRules />
+      <Actions>
+        <JavaScriptFunction FunctionName="AgicAspen.AssegnaFascicolo.openDialogFromGrid" Library="$webresource:agc_assignfascicolo.js">
+          <CrmParameter Value="SelectedControl" />
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+    <CommandDefinition Id="Mscrm.Form.Flows">
+      <EnableRules>
+        <EnableRule Id="Mscrm.IsMicrosoftFlowIntegrationEnabled" />
+        <EnableRule Id="Mscrm.AnySelection" />
+      </EnableRules>
+      <DisplayRules>
+        <DisplayRule Id="Mscrm.MicrosoftFlows" />
+        <DisplayRule Id="Mscrm.HideOnOutlookClient" />
+        <DisplayRule Id="Mscrm.ShowOnlyOnModern" />
+        <DisplayRule Id="Mscrm.IsFlowSubMenuUCIEnabled" />
+      </DisplayRules>
+      <Actions />
+    </CommandDefinition>
+  </CommandDefinitions>
+  <RuleDefinitions>
+    <TabDisplayRules />
+    <DisplayRules>
+      <DisplayRule Id="Mscrm.HideOnOutlookClient">
+        <CrmClientTypeRule Type="Outlook" InvertResult="true" />
+      </DisplayRule>
+      <DisplayRule Id="Mscrm.IsFlowSubMenuUCIEnabled">
+        <ValueRule Value="" />
+      </DisplayRule>
+      <DisplayRule Id="Mscrm.MicrosoftFlows">
+        <MiscellaneousPrivilegeRule PrivilegeName="Flow" />
+      </DisplayRule>
+      <DisplayRule Id="Mscrm.ShowOnlyOnModern">
+        <CommandClientTypeRule Type="Modern" />
+      </DisplayRule>
+    </DisplayRules>
+    <EnableRules>
+      <EnableRule Id="agc.Assegna.NotAssigned.Form.EnableRule">
+        <CustomRule FunctionName="AgicAspen.AssegnaFascicolo.isEnabledForm" Library="$webresource:agc_assignfascicolo.js" Default="false">
+          <CrmParameter Value="PrimaryControl" />
+        </CustomRule>
+      </EnableRule>
+      <EnableRule Id="agc.Assegna.NotAssigned.Grid.EnableRule">
+        <CustomRule FunctionName="AgicAspen.AssegnaFascicolo.isEnabledGrid" Library="$webresource:agc_assignfascicolo.js" Default="false">
+          <CrmParameter Value="SelectedControl" />
+        </CustomRule>
+      </EnableRule>
+      <EnableRule Id="agc.Assegna.SingleSelection.EnableRule">
+        <SelectionCountRule AppliesTo="SelectedEntity" Minimum="1" Maximum="1" />
+      </EnableRule>
+      <EnableRule Id="agc.Chiudi.NotClosed.Form.EnableRule">
+        <CustomRule FunctionName="AgicAspen.AssegnaFascicolo.isCloseEnabledForm" Library="$webresource:agc_assignfascicolo.js" Default="false">
+          <CrmParameter Value="PrimaryControl" />
+        </CustomRule>
+      </EnableRule>
+      <EnableRule Id="Mscrm.AnySelection">
+        <SelectionCountRule AppliesTo="SelectedEntity" />
+      </EnableRule>
+      <EnableRule Id="Mscrm.IsMicrosoftFlowIntegrationEnabled">
+        <CustomRule FunctionName="XrmCore.Commands.Flows.isMicrosoftFlowEnabled" Library="$webresource:Main_system_library.js" />
+      </EnableRule>
+    </EnableRules>
+  </RuleDefinitions>
+  <LocLabels>
+    <LocLabel Id="agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.Alt">
+      <Titles>
+        <Title description="Assegna Fascicolo" languagecode="1033" />
+        <Title description="Assegnazione automatica" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.LabelText">
+      <Titles>
+        <Title description="Assegna Fascicolo" languagecode="1033" />
+        <Title description="Assegnazione automatica" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.ToolTipDescription">
+      <Titles>
+        <Title description="Avvia il processo di assegnazione del fascicolo a un magistrato" languagecode="1033" />
+        <Title description="Assegnazione automatica" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.Form.agc_fascicolo2.MainTab.Save.Assegna.Button.ToolTipTitle">
+      <Titles>
+        <Title description="Assegna Fascicolo" languagecode="1033" />
+        <Title description="Assegnazione automatica" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.Alt">
+      <Titles>
+        <Title description="Assegna Fascicolo" languagecode="1033" />
+        <Title description="Assegnazione massiva" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.LabelText">
+      <Titles>
+        <Title description="Assegna Fascicolo" languagecode="1033" />
+        <Title description="Assegnazione massiva" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.ToolTipDescription">
+      <Titles>
+        <Title description="Avvia il processo di assegnazione del fascicolo a un magistrato" languagecode="1033" />
+        <Title description="Assegnazione massiva" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.HomepageGrid.agc_fascicolo2.MainTab.Actions.Assegna.Button.ToolTipTitle">
+      <Titles>
+        <Title description="Assegna Fascicolo" languagecode="1033" />
+        <Title description="Assegnazione massiva" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+  </LocLabels>
+</RibbonDiffXml>

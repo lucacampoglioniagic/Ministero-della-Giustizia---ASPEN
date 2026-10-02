@@ -4,6 +4,14 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### Corretto
+- **ASPEN Home custom page**: risolto errore runtime su datasource `Fascicoli` in ambiente `Tribunali-dev` (`400 Could not find a property named 'agc_pesocalcolato'...`) aggiornando il mapping al campo live `agc_pesocalcolato2` nel pacchetto canvas app `cr248_aspenhome_1750e_DocumentUri.msapp`.
+
+### Aggiornato
+- Riallineati in repository i sorgenti **live** delle solution Ribbon modificate da Ribbon Workbench, esportate da `Tribunali-dev` e unpacked in:
+  - `05 - Power Platform/AssegnaFascicolo/ASPENRibbon_unpacked_live/`
+  - `05 - Power Platform/AssegnaFascicolo/ASPENRibbon2_unpacked_live/`
+
 ### Aggiunto
 - Export/unpack della solution `ASPEN` (unmanaged) in `05 - Power Platform/Solution/ASPEN_unpacked/`, versionata in repo per tracciabilità e test di restorability.
 - Nuova sezione README "Ambiente di destinazione — Tribunali-dev" con GUID chiave, procedura di re-point della Custom Page "ASPEN Home" e formule Command Designer.

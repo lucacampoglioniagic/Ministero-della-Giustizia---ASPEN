@@ -4,6 +4,28 @@
 
 ---
 
+## Sessione 02/10/2026 — Hotfix Home (`agc_pesocalcolato2`) + riallineamento solution Ribbon live
+
+- Segnalato errore runtime sulla custom page **ASPEN Home**: `400 Could not find a property named 'agc_pesocalcolato' on type 'Microsoft.Dynamics.CRM.agc_fascicolo2'`.
+- Individuata la causa nel pacchetto canvas app della Home (`cr248_aspenhome_1750e_DocumentUri.msapp`): il datasource `Fascicoli` era ancora mappato al vecchio logical name `agc_pesocalcolato`.
+- Applicato fix nel sorgente solution unpacked:
+  - file aggiornato: `05 - Power Platform/Solution/ASPEN_unpacked/CanvasApps/cr248_aspenhome_1750e_DocumentUri.msapp`
+  - mapping aggiornato a `agc_pesocalcolato2` (campo live post-migrazione Peso1/Peso2 → UserOwned).
+- Commit/push su repository:
+  - `f6b6cde` — **Fix ASPEN Home Fascicoli weight field mapping**
+- Deploy in ambiente **Tribunali-dev** eseguito via CLI:
+  - `pac solution pack` (da `05 - Power Platform/Solution/ASPEN_unpacked`)
+  - `pac solution import --publish-changes --force-overwrite`
+  - Nota operativa confermata: per la custom page Home è richiesto anche publish da Power Apps Studio ("Pubblica questa versione") per invalidare il player compilato.
+- Aggiornata autenticazione CLI (`pac auth create`) su account Ministero per superare scadenza refresh token (`AADSTS70043`) prima dell'import.
+- Richiesta utente successiva: evitare sovrascritture delle modifiche fatte in Ribbon Workbench.
+  - Esportate da `Tribunali-dev` e unpacked le solution live:
+    - `ASPENRibbon` → `05 - Power Platform/AssegnaFascicolo/ASPENRibbon_unpacked_live/`
+    - `ASPENRibbon2` → `05 - Power Platform/AssegnaFascicolo/ASPENRibbon2_unpacked_live/`
+  - Obiettivo: usare questi sorgenti live come baseline per futuri deploy Ribbon.
+
+---
+
 ## Sessione 28/09/2026 — Fase 12: export/unpack solution, solution checker, audit completezza, fix ruolo mancante
 
 - Riconfermato via `SESSION_NOTES.md`: tutti i 42 scenari E2E PASS, inclusi i retest specifici sui pesi (E2E-26/49/13/37/51/43/44/46/47) dopo la migrazione tabelle Peso1/Peso2 → `agc_pesouno`/`agc_pesodue`; permessi "Operatore ASPEN" confermati a parità (CRUD + Assign) sulle nuove tabelle.

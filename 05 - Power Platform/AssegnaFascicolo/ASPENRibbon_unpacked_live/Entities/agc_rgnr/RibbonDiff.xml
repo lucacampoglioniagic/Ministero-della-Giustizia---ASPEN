@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RibbonDiffXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CustomActions>
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_rgnr.Assign.Hide" Location="Mscrm.Form.agc_rgnr.Assign" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_rgnr.Flows.RefreshCommandBar.Flows.Hide" Location="Mscrm.Form.agc_rgnr.Flows.RefreshCommandBar.Flows" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_rgnr.Flows.RefreshCommandBar.Hide" Location="Mscrm.Form.agc_rgnr.Flows.RefreshCommandBar" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_rgnr.Reports.Hide" Location="Mscrm.Form.agc_rgnr.Reports" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.agc_rgnr.WordTemplate.Hide" Location="Mscrm.Form.agc_rgnr.WordTemplate" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.agc_rgnr.Copy.Hide" Location="Mscrm.HomepageGrid.agc_rgnr.Copy" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.agc_rgnr.Flows.RefreshCommandBar.Flows.Hide" Location="Mscrm.HomepageGrid.agc_rgnr.Flows.RefreshCommandBar.Flows" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.agc_rgnr.Flows.RefreshCommandBar.Hide" Location="Mscrm.HomepageGrid.agc_rgnr.Flows.RefreshCommandBar" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.agc_rgnr.MainTab.QuickPowerBI.Button.Hide" Location="Mscrm.HomepageGrid.agc_rgnr.MainTab.QuickPowerBI.Button" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.agc_rgnr.RunReport.Hide" Location="Mscrm.HomepageGrid.agc_rgnr.RunReport" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.agc_rgnr.Send.Hide" Location="Mscrm.HomepageGrid.agc_rgnr.Send" />
+    <HideCustomAction HideActionId="agc.msdyn.HomepageGrid.agc_rgnr.OpenFocusedView.Button.Hide" Location="msdyn.HomepageGrid.agc_rgnr.OpenFocusedView.Button" />
+  </CustomActions>
+  <Templates>
+    <RibbonTemplates Id="Mscrm.Templates"></RibbonTemplates>
+  </Templates>
+  <CommandDefinitions />
+  <RuleDefinitions>
+    <TabDisplayRules />
+    <DisplayRules />
+    <EnableRules />
+  </RuleDefinitions>
+  <LocLabels />
+</RibbonDiffXml>

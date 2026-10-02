@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RibbonDiffXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CustomActions>
+    <CustomAction Id="agc.Form.contact.MainTab.Actions.ModificaCarico.Button.CustomAction" Location="Mscrm.Form.contact.MainTab.Save.Controls._children" Sequence="49">
+      <CommandUIDefinition>
+        <Button Alt="$LocLabels:agc.Form.contact.MainTab.Actions.ModificaCarico.Button.Alt" Command="agc.Form.contact.ModificaCarico.Command" Id="agc.Form.contact.MainTab.Actions.ModificaCarico.Button" LabelText="$LocLabels:agc.Form.contact.MainTab.Actions.ModificaCarico.Button.LabelText" Sequence="49" TemplateAlias="o1" ToolTipTitle="$LocLabels:agc.Form.contact.MainTab.Actions.ModificaCarico.Button.ToolTipTitle" ToolTipDescription="$LocLabels:agc.Form.contact.MainTab.Actions.ModificaCarico.Button.ToolTipDescription" ModernImage="$webresource:agc_modificacarico_icon.svg" />
+      </CommandUIDefinition>
+    </CustomAction>
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.AddConnection.Hide" Location="Mscrm.Form.contact.AddConnection" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.AddToList.Hide" Location="Mscrm.Form.contact.AddToList" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.Assign.Hide" Location="Mscrm.Form.contact.Assign" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.EmailAsPDF.Hide" Location="Mscrm.Form.contact.EmailAsPDF" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.Flows.RefreshCommandBar.Flows.Hide" Location="Mscrm.Form.contact.Flows.RefreshCommandBar.Flows" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.Flows.RefreshCommandBar.Hide" Location="Mscrm.Form.contact.Flows.RefreshCommandBar" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.FollowButton.Hide" Location="Mscrm.Form.contact.FollowButton" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.NewUnfollowButton.Hide" Location="Mscrm.Form.contact.NewUnfollowButton" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.Reports.Hide" Location="Mscrm.Form.contact.Reports" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.RunWorkflow.Hide" Location="Mscrm.Form.contact.RunWorkflow" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.SendSelected.Hide" Location="Mscrm.Form.contact.SendSelected" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.UnfollowButton.Hide" Location="Mscrm.Form.contact.UnfollowButton" />
+    <HideCustomAction HideActionId="agc.Mscrm.Form.contact.ViewOrgChart.Hide" Location="Mscrm.Form.contact.ViewOrgChart" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.contact.Copy.Hide" Location="Mscrm.HomepageGrid.contact.Copy" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.contact.Flows.RefreshCommandBar.Flows.Hide" Location="Mscrm.HomepageGrid.contact.Flows.RefreshCommandBar.Flows" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.contact.Flows.RefreshCommandBar.Hide" Location="Mscrm.HomepageGrid.contact.Flows.RefreshCommandBar" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.contact.MainTab.QuickPowerBI.Button.Hide" Location="Mscrm.HomepageGrid.contact.MainTab.QuickPowerBI.Button" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.contact.RunReport.Hide" Location="Mscrm.HomepageGrid.contact.RunReport" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.contact.RunWorkflow.Hide" Location="Mscrm.HomepageGrid.contact.RunWorkflow" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.contact.Send.Hide" Location="Mscrm.HomepageGrid.contact.Send" />
+    <HideCustomAction HideActionId="agc.Mscrm.HomepageGrid.contact.Sharing.Hide" Location="Mscrm.HomepageGrid.contact.Sharing" />
+    <HideCustomAction HideActionId="agc.msdyn.HomepageGrid.contact.OpenFocusedView.Button.Hide" Location="msdyn.HomepageGrid.contact.OpenFocusedView.Button" />
+  </CustomActions>
+  <Templates>
+    <RibbonTemplates Id="Mscrm.Templates"></RibbonTemplates>
+  </Templates>
+  <CommandDefinitions>
+    <CommandDefinition Id="agc.Form.contact.ModificaCarico.Command">
+      <EnableRules>
+        <EnableRule Id="Mscrm.FormStateExistingOrReadOnly" />
+      </EnableRules>
+      <DisplayRules>
+        <DisplayRule Id="agc.ModificaCarico.IsSystemAdministrator.DisplayRule" />
+      </DisplayRules>
+      <Actions>
+        <JavaScriptFunction FunctionName="AgicAspen.ModificaCarico.openDialog" Library="$webresource:agc_modificacarico.js">
+          <CrmParameter Value="PrimaryControl" />
+        </JavaScriptFunction>
+      </Actions>
+    </CommandDefinition>
+  </CommandDefinitions>
+  <RuleDefinitions>
+    <TabDisplayRules />
+    <DisplayRules>
+      <DisplayRule Id="agc.ModificaCarico.IsSystemAdministrator.DisplayRule">
+        <ValueRule Value="" />
+      </DisplayRule>
+    </DisplayRules>
+    <EnableRules />
+  </RuleDefinitions>
+  <LocLabels>
+    <LocLabel Id="agc.Form.contact.MainTab.Actions.ModificaCarico.Button.Alt">
+      <Titles>
+        <Title description="Modifica Carico" languagecode="1033" />
+        <Title description="Modifica carico" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.Form.contact.MainTab.Actions.ModificaCarico.Button.LabelText">
+      <Titles>
+        <Title description="Modifica Carico" languagecode="1033" />
+        <Title description="Modifica carico" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.Form.contact.MainTab.Actions.ModificaCarico.Button.ToolTipDescription">
+      <Titles>
+        <Title description="Corregge manualmente il carico del magistrato (riservato agli amministratori)" languagecode="1033" />
+        <Title description="Modifica carico" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="agc.Form.contact.MainTab.Actions.ModificaCarico.Button.ToolTipTitle">
+      <Titles>
+        <Title description="Modifica Carico" languagecode="1033" />
+        <Title description="Modifica carico" languagecode="1040" />
+      </Titles>
+    </LocLabel>
+  </LocLabels>
+</RibbonDiffXml>
