@@ -752,7 +752,6 @@ AgicAspen.AssegnaFascicolo = (function () {
     function isEnabledForm(formContext) {
         try {
             var magistrato = formContext.getAttribute("agc_magistratocontatto");
-            console.log("[ASPEN] isEnabledForm - attr:", magistrato, "val:", magistrato ? magistrato.getValue() : "N/A");
             if (!magistrato) return true;
             var val = magistrato.getValue();
             // lookup restituisce null se vuoto, array [{id, entityType, name}] se valorizzato
@@ -773,7 +772,6 @@ AgicAspen.AssegnaFascicolo = (function () {
             var row = rows.getAll()[0];
 
             var magistrato = row.data.entity.attributes.get("agc_magistratocontatto");
-            console.log("[ASPEN] isEnabledGrid - attr:", magistrato, "val:", magistrato ? magistrato.getValue() : "N/A");
             if (magistrato) {
                 var val = magistrato.getValue();
                 if (val !== null && val !== undefined) {
@@ -787,7 +785,6 @@ AgicAspen.AssegnaFascicolo = (function () {
                 var name = allAttrs[i].getName();
                 if (name && name.toLowerCase().indexOf("magistratocontatto") !== -1) {
                     var v = allAttrs[i].getValue();
-                    console.log("[ASPEN] isEnabledGrid fallback attr:", name, "=", v);
                     if (v !== null && v !== undefined && v !== "") return false;
                 }
             }

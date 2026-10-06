@@ -4,6 +4,27 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### Aggiunto
+- Nuova colonna Choice `agc_appscope` su `agc_configurazione` per classificare i record di configurazione per applicazione (`ASPEN`, `ASSPECA`).
+- Campo `agc_appscope` aggiunto alla form principale di `agc_configurazione`.
+- Configurazioni BU-specifiche ASPEN per i 3 tribunali censiti (Milano, Messina, Roma):
+  - `ASPEN_PesoLimite_<BUId>`
+  - `ASPEN_PesoLimiteCanestro_<BUId>`
+
+### Aggiornato
+- Viste `agc_configurazione` usate da ASPEN (`Lista Configurazioni` e `Configurazioni`) filtrate su `agc_appscope = ASPEN`.
+- PCF `CaricoMagistratiChart` e `CaricoPerCanestro` aggiornati per leggere configurazioni con priorità su scope `ASPEN` e fallback ai record legacy senza scope.
+- UX tabella/form `agc_configurazione`: introdotta la colonna utente **"Tipologia configurazione"** (valori esposti: "Peso limite" / "Peso limite canestro") e rimosso dalla UI il campo tecnico `agc_nome` (rinominato "Nome configurazione", mantenuto popolato come chiave interna per compatibilità runtime PCF e lookup BU-specifici).
+- Riordino repository (non funzionale): introdotta convenzione operativa "sorgente autorevole" nel README (incluse sezioni "Stato corrente" e "Percorso rapido"); archiviate le versioni storiche `AgicAspenRibbon_v2..v8`/`_exported` in `05 - Power Platform/AssegnaFascicolo/_archive/` con README dedicato; marcata `AssegnaFascicolo/WebResources` come copia derivata; rimosso debug logging `console.log` residuo da `agc_assignfascicolo.js` (sorgente solution e copia derivata).
+- Dati configurazione base riallineati in Dev/Test:
+  - `PesoLimite=48` (`ASPEN`)
+  - `PesoLimiteCanestro=15` (`ASPEN`)
+  - `IndiceTurnoSezione=0` (`ASSPECA`)
+
+### Operativo (ambienti)
+- In `Tribunali-test` create le BU mancanti (`Tribunale di Milano`, `Tribunale di Messina`, `Tribunale di Roma`) per allineamento con `Tribunali-dev`.
+- Verificata presenza della colonna `agc_appscope` e dei record configurazione attesi in entrambi gli ambienti.
+
 ### Corretto
 - **ASPEN Home custom page**: risolto errore runtime su datasource `Fascicoli` in ambiente `Tribunali-dev` (`400 Could not find a property named 'agc_pesocalcolato'...`) aggiornando il mapping al campo live `agc_pesocalcolato2` nel pacchetto canvas app `cr248_aspenhome_1750e_DocumentUri.msapp`.
 

@@ -12,6 +12,16 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ---
 
+## Stato corrente (sintesi operativa)
+
+- Ambiente di riferimento corrente: **`Tribunali-dev`** (sezione "Ambiente di destinazione — Fase 12").
+- Migrazione Peso 1/Peso 2 a UserOwned: **completata**; tabelle legacy dismesse in destinazione.
+- Campo peso calcolato live: **`agc_pesocalcolato2`**.
+- Sorgente autorevole solution/metadata: `05 - Power Platform/Solution/ASPEN_unpacked/`.
+- Dettaglio operativo cronologico: `SESSION_NOTES.md`; riepilogo release/stato: `CHANGELOG.md`.
+
+---
+
 ## Portafoglio applicativo AS-IS
 
 | Applicativo | Stato | Sede attiva | Stack | Database |
@@ -73,6 +83,16 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ---
 
+## Percorso rapido (operativo)
+
+Per riprendere velocemente il lavoro:
+1. Stato release/migrazioni: `CHANGELOG.md` (fonte sintetica).
+2. Contesto cronologico tecnico: `SESSION_NOTES.md` (dettaglio completo).
+3. Metadati solution da modificare: `05 - Power Platform/Solution/ASPEN_unpacked/`.
+4. Ribbon live: `05 - Power Platform/AssegnaFascicolo/ASPENRibbon_unpacked_live/` e `.../ASPENRibbon2_unpacked_live/`.
+
+---
+
 ## Architettura target
 
 - **Piattaforma:** Microsoft Power Platform – Model-Driven App su Dataverse  
@@ -83,10 +103,12 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 ---
 
-## POC — stato attuale (06/07/2026)
+## POC — storico (06/07/2026)
 
 **Ambiente Dataverse:** `LCC-MINISTEROGIUSTIZIA-DEMO` (https://lccministerogiustiziademo.crm4.dynamics.com)  
 **Publisher prefix:** `agc_`
+
+> ℹ️ **Nota di contesto:** questa sezione POC è mantenuta per storicità. Lo stato operativo corrente è quello della sezione **"Ambiente di destinazione — Tribunali-dev (Fase 12)"** più sotto e di `CHANGELOG.md`.
 
 ### Modello dati POC
 
@@ -100,7 +122,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 
 > **Split Canestro → Peso 1 / Peso 2 (11/09/2026):** su richiesta del cliente, il peso "a canestro" è stato reso bidimensionale. La tabella `agc_canestrofascicolo` (in uso) è stata **rinominata "Peso 1"** (entità, campo lookup, 7 viste di sistema, sezione dashboard "Fascicoli per Canestro"→"Fascicoli per Peso 1", grafici PCF); è stata creata una **nuova tabella `agc_peso2`** con la stessa struttura (Nome + Peso Integer), collegata a `agc_fascicolo2` tramite una nuova lookup **`agc_peso2`** (entrambe le lookup sono opzionali, non obbligatorie, e ogni tribunale può popolare liberamente i propri record in entrambe le tabelle). Il campo formula `agc_pesocalcolato` è stato aggiornato per sommare anche il peso di Peso 2 se valorizzato: `agc_numeroimputati + agc_numeroimputazioni + agc_Canestrofascicolo.agc_peso + If(IsBlank(agc_Peso2), 0, agc_Peso2.agc_peso) + 1`. Testato end-to-end (verificato ricalcolo automatico aggiungendo/rimuovendo un Peso 2 su un fascicolo esistente). Il ruolo "Operatore ASPEN" ha ricevuto privilegi Create/Write (Local) su entrambe le tabelle Peso 1 e Peso 2, oltre a Read/Append/AppendTo/Assign (Global) già presenti su Peso 1. **Nota:** esiste in ambiente una tabella omonima ma dismessa/corrotta `agc_canestro` (diversa da `agc_canestrofascicolo`/Peso 1), risultato di un'operazione di pulizia incompleta — vedi `06 - Riferimenti Normativi e Tecnici/Risposta_MS_Support_EntityMap_Corruption.md`; non impatta il funzionamento, va solo ignorata.
 
-> ⚠️ **Migrazione in corso Peso 1/Peso 2 → UserOwned (26/09/2026, NON ancora completata):** `agc_canestrofascicolo`/Peso 1 e `agc_peso2`/Peso 2 erano `OrganizationOwned`, incompatibile con la segregazione per BU (i pesi sono configurati per tribunale, ogni BU deve vedere solo i propri). Sono state create le nuove tabelle **`agc_pesouno`**/**`agc_pesodue`** (`UserOwned`, stessa struttura, dati migrati con gli stessi GUID) e nuove lookup su `agc_fascicolo2` (`agc_PesoUno`/`agc_PesoDue`), già popolate su tutti i fascicoli. Durante l'aggiornamento della formula, il campo calcolato `agc_pesocalcolato` è stato colpito da un bug di piattaforma (cache del motore di calcolo non invalidata dopo update formula, persistente anche con delete+ricrea sullo stesso nome logico) ed è stato **rinominato permanentemente in `agc_pesocalcolato2`** — è questo il nome oggi live in produzione, non più `agc_pesocalcolato`. Dettagli completi: `03 - Documentazione Prodotta/Tecnica/Piano Migrazione Peso1-Peso2 UserOwned.md` §14, `SESSION_NOTES.md` sessione 2026-09-26. **Ancora da fare**: aggiornare i riferimenti di codice dai vecchi lookup `agc_canestrofascicolo`/`agc_peso2` ai nuovi `agc_pesouno`/`agc_pesodue` (le tabelle/righe sotto in questo README descrivono ancora lo **stato precedente**), aggiornare sitemap/dashboard, ripetere gli E2E, eliminare le vecchie tabelle solo dopo che tutti gli E2E sono PASS.
+> ✅ **Migrazione completata Peso 1/Peso 2 → UserOwned (26–28/09/2026):** `agc_canestrofascicolo`/Peso 1 e `agc_peso2`/Peso 2 (OrganizationOwned) sono stati sostituiti con **`agc_pesouno`**/**`agc_pesodue`** (UserOwned), con aggiornamento lookup su `agc_fascicolo2` e riallineamento riferimenti applicativi. Durante la migrazione, il campo calcolato `agc_pesocalcolato` è stato colpito da un bug di piattaforma (cache formula) ed è stato **rinominato permanentemente in `agc_pesocalcolato2`** (nome live corrente). La dismissione delle tabelle legacy è stata completata in ambiente destinazione (`Tribunali-dev`) con validazione finale Fase 12. Dettagli: `CHANGELOG.md`, `SESSION_NOTES.md` (sessioni 26/09 e 28/09) e `03 - Documentazione Prodotta/Tecnica/Piano Migrazione Peso1-Peso2 UserOwned.md`.
 
 > **Migrazione 06/07/2026:** le tabelle originali `agc_fascicolo` e `agc_canestro` sono state sostituite da `agc_fascicolo2` e `agc_canestrofascicolo`. La causa era una ghost relationship corrotta (`agc_CanestroName`) sulla tabella `agc_fascicolo` che impediva la creazione di nuovi fascicoli. Sono stati migrati 20 record. Commit: `7ca5685`.
 >
@@ -413,13 +435,22 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
     - Deployato manualmente in Maker Portal (stesso vincolo di corruzione metadati del punto 35).
     - Formula `Visible` del comando "Assegna Fascicolo" aggiornata in Command Designer per permettere qualunque selezione ≥ 1. **Testato end-to-end dall'utente e confermato funzionante**: (a) singolo non assegnato → dialog invariato; (b) singolo già assegnato → avviso e riassegnazione; (c) selezione mista assegnati/non assegnati → avviso con conteggio corretto, annulla non tocca nulla, conferma riassegna tutti con carico/continuità/riserva GUP coerenti.
     - Nota: il dialog di assegnazione singola (`agc_assignfascicolodialog.html`) continua a **non avere** un avviso "già assegnato — riassegnare?": è stato chiesto solo per il flusso batch, quindi resta così finché non richiesto diversamente.
-44. 🟡 **In corso (26/09/2026)** — **migrazione Peso 1/Peso 2 a `UserOwned`** per abilitare la segregazione per BU (i pesi sono configurati per tribunale). Create le nuove tabelle `agc_pesouno`/`agc_pesodue` (`UserOwned`), migrati i 5 record esistenti e popolati i nuovi lookup `agc_PesoUno`/`agc_PesoDue` su tutti i 41 fascicoli. **Incidente**: l'aggiornamento della formula del campo calcolato "Peso calcolato" ha attivato un bug di piattaforma Dataverse (cache del motore di calcolo non invalidata dopo update `FormulaDefinition`, persistente anche con delete+ricrea sullo stesso nome logico) che ha bloccato `agc_pesocalcolato` a 0 per tutti i record in modo irreversibile — **rimediato rinominando permanentemente il campo in `agc_pesocalcolato2`** (nuovo nome logico, stessa formula), verificato corretto sui 41/41 fascicoli contro la baseline. Aggiornati tutti i riferimenti di codice (PCF, `agc_assignfascicolo.js`, `CaricoMagistratoAssegnazionePlugin.cs`) e ridistribuito l'assembly plugin ricompilato. Dettagli completi in `03 - Documentazione Prodotta/Tecnica/Piano Migrazione Peso1-Peso2 UserOwned.md` §14 e `SESSION_NOTES.md` sessione 2026-09-26. **Ancora da fare**: rinominare nel codice i vecchi lookup `agc_canestrofascicolo`/`agc_peso2` in `agc_pesouno`/`agc_pesodue`, aggiornare sitemap/dashboard, ripetere gli E2E, eliminare le vecchie tabelle solo dopo che tutti gli E2E sono PASS.
+44. ✅ **Completato (26–28/09/2026)** — **migrazione Peso 1/Peso 2 a `UserOwned`** eseguita e chiusa in ambiente di destinazione (`Tribunali-dev`): create `agc_pesouno`/`agc_pesodue` (`UserOwned`), popolati i nuovi lookup su `agc_fascicolo2`, aggiornati i riferimenti applicativi e completata la dismissione delle tabelle legacy (`agc_canestrofascicolo`, `agc_peso2`). **Incidente gestito**: bug Dataverse sulla cache formula durante update di "Peso calcolato", risolto con rinomina permanente del campo live in `agc_pesocalcolato2`. Validazione finale Fase 12 completata (vedi `CHANGELOG.md` e `SESSION_NOTES.md` sessioni 26/09 e 28/09).
 
 ---
 
 ## Ambiente di destinazione — Tribunali-dev (Fase 12 — validazione finale e parità funzionale)
 
 A partire dalla Fase 0 del piano di migrazione (`03 - Documentazione Prodotta/Tecnica/ASPEN - Piano di Migrazione Ambiente Destinazione.md`), l'ambiente di produzione/destinazione è **`Tribunali-dev`** (Dataverse, tenant `org8e819d4a.crm4.dynamics.com`), distinto dall'ambiente POC/sorgente (`LCC-MINISTEROGIUSTIZIA-DEMO`) descritto nelle sezioni precedenti di questo README. Solution: **ASPEN** (unmanaged, publisher `Agic`, prefix `agc`).
+
+### Convenzioni repository (sorgenti autorevoli)
+
+| Ambito | Sorgente autorevole | Note operative |
+|---|---|---|
+| Solution ASPEN (metadata/versionamento) | `05 - Power Platform/Solution/ASPEN_unpacked/` | Usare questo path come riferimento primario per review e riallineamenti. |
+| WebResources assegnazione | `05 - Power Platform/Solution/ASPEN_unpacked/WebResources/` | Le copie in `05 - Power Platform/AssegnaFascicolo/WebResources/` sono derivate/storiche: non usarle come fonte primaria di modifica. |
+| Ribbon live | `05 - Power Platform/AssegnaFascicolo/ASPENRibbon_unpacked_live/` e `.../ASPENRibbon2_unpacked_live/` | Evitare modifiche su cartelle legacy non `_live`. |
+| Pacchetti ZIP di export locale | `05 - Power Platform/Solution/*.zip` e `05 - Power Platform/AssegnaFascicolo/_archive/` | Artefatti locali: non versionare zip di solution; per Ribbon mantenere nell'area operativa solo i pacchetti correnti e spostare gli storici in `_archive`. |
 
 ### GUID chiave dell'ambiente di destinazione
 
@@ -468,4 +499,3 @@ Stessa configurazione descritta nella sezione "Comandi moderni griglia `agc_fasc
 
 **Partecipanti call 04/06/2026 (AGIC):** Chiara D'Innocenzi, Linda Tomasello, Vincenzo Picone, Giuseppe Scalabrino, Riccardo Vedovato, Luca Campoglioni  
 **Microsoft:** Daiana D'Agostino
-

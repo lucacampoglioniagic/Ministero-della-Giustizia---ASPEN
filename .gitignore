@@ -1,2 +1,10 @@
 # Documenti di riferimento locale, non versionati
 aspen_resoconto_modifiche.pdf
+
+# Export locali solution (non versionare i pacchetti zip in working folder Solution)
+05 - Power Platform/Solution/*.zip
+
+# Artefatti temporanei comuni
+*.tmp
+*.temp
+~$*

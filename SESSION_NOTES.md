@@ -4,6 +4,67 @@
 
 ---
 
+## Sessione 06/10/2026 (sera) — Riordino documentale e guardrail repository
+
+- Eseguito health-check strutturale repository (focus: rischio errore umano su solution/export/documentazione).
+- Applicati guardrail non funzionali:
+  - ampliato `.gitignore` root per evitare versionamento accidentale dei pacchetti zip locali in `05 - Power Platform/Solution/`;
+  - allineato `README.md` sullo stato migrazione Peso1/Peso2 (da "in corso" a "completato" in destinazione);
+  - aggiunta sezione "Convenzioni repository (sorgenti autorevoli)" nel README con path ufficiali per Solution/WebResources/Ribbon live.
+- Riordino operativo aggiuntivo:
+  - create convenzioni di lettura rapida nel README ("Percorso rapido operativo");
+  - aggiunta nel README una sezione "Stato corrente (sintesi operativa)" in testa, e rinomina "POC — stato attuale" in "POC — storico" per ridurre ambiguità;
+  - archiviate le versioni storiche `AgicAspenRibbon_v2..v8` e `AgicAspenRibbon_exported.zip` in `05 - Power Platform/AssegnaFascicolo/_archive/` (area operativa lasciata con i pacchetti correnti);
+  - aggiunto `05 - Power Platform/AssegnaFascicolo/_archive/README.md` con regole d'uso dell'archivio (solo storico, non deploy live);
+  - rimossi i `console.log` residui da `agc_assignfascicolo.js` sia nel path autorevole (`Solution/ASPEN_unpacked/WebResources`) sia nella copia derivata (`AssegnaFascicolo/WebResources`) per mantenere coerenza.
+- Nessuna modifica a logiche runtime o componenti applicativi; intervento solo di governance documentale.
+
+---
+
+## Sessione 06/10/2026 — UX configurazioni: tipologia leggibile, chiave tecnica nascosta
+
+- Aggiornata la presentazione della tabella `agc_configurazione` per evitare l'esposizione in UI delle chiavi tecniche contenenti suffissi BU.
+- Introdotta in UI la colonna **"Tipologia configurazione"** con valori leggibili:
+  - `Peso limite`
+  - `Peso limite canestro`
+- Campo tecnico `agc_nome` rinominato lato etichetta in **"Nome configurazione"** e rimosso da vista/form operative.
+- Validazione logica effettuata: i PCF (`CaricoMagistratiChart`, `CaricoPerCanestro`) continuano a risolvere i parametri tramite `agc_nome`; quindi il comportamento runtime resta invariato **a condizione che `agc_nome` continui a essere mantenuto valorizzato** per ogni record configurazione.
+
+---
+
+## Sessione 05/10/2026 — Configurazioni multi-BU + scope applicativo ASPEN/ASSPECA
+
+- Estesa la tabella `agc_configurazione` con nuovo metadato applicativo:
+  - nuova colonna Choice `agc_appscope` con valori:
+    - `ASPEN` (100000000)
+    - `ASSPECA` (100000001)
+  - campo aggiunto alla form principale `Configurazione` (label "Applicazione").
+- Aggiornate le viste `agc_configurazione` usate dall'app ASPEN per mostrare solo record pertinenti:
+  - filtro su `agc_appscope = ASPEN` nelle viste principali (`Lista Configurazioni` e `Configurazioni`).
+- Aggiornata la logica dei PCF:
+  - `CaricoMagistratiChart` e `CaricoPerCanestro` ora filtrano le configurazioni privilegiando `agc_appscope = ASPEN`, con fallback ai record legacy senza scope (`null`) per retrocompatibilità.
+  - mantenuta la risoluzione già introdotta per chiavi BU-specifiche (`ASPEN_<Chiave>_<BUId>` → fallback globali).
+- Build PCF eseguita con esito positivo dopo le modifiche.
+
+### Allineamento ambienti e dati
+
+- **DEV (`Tribunali-dev`)** e **TEST (`Tribunali-test`)** verificati con colonna `agc_appscope` disponibile e leggibile su `agc_configurazione`.
+- In **TEST** erano presenti inizialmente solo 1 BU (`tribunali-test`): create le BU mancanti per allineamento con DEV:
+  - `Tribunale di Milano`
+  - `Tribunale di Messina`
+  - `Tribunale di Roma`
+- Eseguito upsert configurazioni in entrambi gli ambienti:
+  - record base:
+    - `PesoLimite = 48` con `agc_appscope = ASPEN`
+    - `PesoLimiteCanestro = 15` con `agc_appscope = ASPEN`
+    - `IndiceTurnoSezione = 0` con `agc_appscope = ASSPECA`
+  - record BU-specifici ASPEN (3 tribunali × 2 chiavi):
+    - `ASPEN_PesoLimite_<BUId> = 48`
+    - `ASPEN_PesoLimiteCanestro_<BUId> = 15`
+- Verifica finale effettuata via `pac env fetch`: presenti i 9 record attesi per ciascun ambiente (3 base + 6 BU-specifici ASPEN), con scope valorizzato correttamente.
+
+---
+
 ## Sessione 02/10/2026 — Hotfix Home (`agc_pesocalcolato2`) + riallineamento solution Ribbon live
 
 - Segnalato errore runtime sulla custom page **ASPEN Home**: `400 Could not find a property named 'agc_pesocalcolato' on type 'Microsoft.Dynamics.CRM.agc_fascicolo2'`.
