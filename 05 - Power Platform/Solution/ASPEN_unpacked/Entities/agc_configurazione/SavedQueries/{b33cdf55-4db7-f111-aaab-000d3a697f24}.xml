@@ -14,6 +14,7 @@
           <attribute name="agc_configurazioneid" />
           <filter type="and">
             <condition attribute="statecode" operator="eq" value="0" />
+            <condition attribute="agc_appscope" operator="eq" value="100000000" />
           </filter>
         </entity>
       </fetch>

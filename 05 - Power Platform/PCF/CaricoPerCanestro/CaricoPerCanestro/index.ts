@@ -5,12 +5,25 @@ const COLOR_YELLOW = "#FFB900";
 const COLOR_RED = "#D13438";
 const CLOSED_STATUS_LABEL = "chiuso";
 const CLOSED_STATUS_VALUE = 2;
+const CONFIG_APP_PREFIX = "ASPEN";
+const CONFIG_APP_SCOPE_VALUE = 100000000;
 
 interface CaricoGruppo {
   id: string;
   nome: string;
   pesoTotale: number;
   numFascicoli: number;
+}
+
+function normalizeConfigValue(raw: unknown): number | null {
+  if (typeof raw === "number") {
+    return Number.isFinite(raw) ? raw : null;
+  }
+  if (typeof raw === "string") {
+    const parsed = Number(raw.replace(",", "."));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
 }
 
 export class CaricoPerCanestro implements ComponentFramework.StandardControl<
@@ -52,21 +65,86 @@ export class CaricoPerCanestro implements ComponentFramework.StandardControl<
   }
 
   private _loadPesoLimite(context: ComponentFramework.Context<IInputs>): void {
-    context.webAPI
-      .retrieveMultipleRecords(
-        "agc_configurazione",
-        "?$select=agc_valore&$filter=agc_nome eq 'PesoLimiteCanestro'&$top=1",
-      )
-      .then((res) => {
-        if (res.entities.length > 0) {
-          const v = res.entities[0]["agc_valore"] as number;
-          if (v > 0) this._pesoLimiteCanestro = v;
-        }
-        return res;
+    this._resolveConfigValue(context, "PesoLimiteCanestro")
+      .then((value) => {
+        if (value !== null && value > 0) this._pesoLimiteCanestro = value;
+        return value;
       })
       .catch(() => {
         /* usa default */
       });
+  }
+
+  private async _resolveConfigValue(
+    context: ComponentFramework.Context<IInputs>,
+    baseKey: string,
+  ): Promise<number | null> {
+    const buId = await this._getCurrentBusinessUnitId(context);
+    const keys = this._buildCandidateKeys(baseKey, buId);
+    const keyFilter = keys.map((key) => `agc_nome eq '${key}'`).join(" or ");
+    const query =
+      `?$select=agc_nome,agc_valore,agc_appscope,modifiedon&` +
+      `$filter=(${keyFilter}) and (agc_appscope eq ${CONFIG_APP_SCOPE_VALUE} or agc_appscope eq null)&` +
+      `$orderby=modifiedon desc&$top=20`;
+
+    const result = await context.webAPI.retrieveMultipleRecords(
+      "agc_configurazione",
+      query,
+    );
+
+    for (const key of keys) {
+      const scopedHit = result.entities.find(
+        (entity) =>
+          String(entity["agc_nome"] ?? "").toLowerCase() === key.toLowerCase() &&
+          Number(entity["agc_appscope"]) === CONFIG_APP_SCOPE_VALUE,
+      );
+      const legacyHit = result.entities.find(
+        (entity) =>
+          String(entity["agc_nome"] ?? "").toLowerCase() === key.toLowerCase(),
+      );
+      const hit = scopedHit ?? legacyHit;
+      if (!hit) continue;
+
+      const value = normalizeConfigValue(hit["agc_valore"]);
+      if (value !== null) return value;
+    }
+
+    return null;
+  }
+
+  private async _getCurrentBusinessUnitId(
+    context: ComponentFramework.Context<IInputs>,
+  ): Promise<string | null> {
+    const userId = context.userSettings.userId.replace(/[{}]/g, "");
+    if (!userId) return null;
+
+    try {
+      const user = await context.webAPI.retrieveRecord(
+        "systemuser",
+        userId,
+        "?$select=_businessunitid_value",
+      );
+      const buId = user["_businessunitid_value"];
+      return typeof buId === "string" && buId.length > 0
+        ? buId.toLowerCase()
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private _buildCandidateKeys(baseKey: string, buId: string | null): string[] {
+    const keys: string[] = [];
+
+    if (buId) {
+      keys.push(`${CONFIG_APP_PREFIX}_${baseKey}_${buId}`);
+      keys.push(`${baseKey}_${buId}`);
+    }
+
+    keys.push(`${CONFIG_APP_PREFIX}_${baseKey}`);
+    keys.push(baseKey);
+
+    return keys;
   }
 
   private _loadData(magistratoId: string): void {

@@ -60,6 +60,13 @@
     <LocalizedName description="ASPEN" languagecode="1040" />
   </LocalizedNames>
   <appelements>
+    <appelement uniquename="agc_agc_ASPEN_canvasappid_cr248_aspenhome_1750e">
+      <canvasappid>
+        <name>cr248_aspenhome_1750e</name>
+      </canvasappid>
+      <iscustomizable>1</iscustomizable>
+      <name>agc_agc_ASPEN_canvasappid_cr248_aspenhome_1750e</name>
+    </appelement>
     <appelement uniquename="agc_agc_ASPEN_canvasappid_agc_aspendefaultcommandlibrary_9af74">
       <canvasappid>
         <name>agc_aspendefaultcommandlibrary_9af74</name>

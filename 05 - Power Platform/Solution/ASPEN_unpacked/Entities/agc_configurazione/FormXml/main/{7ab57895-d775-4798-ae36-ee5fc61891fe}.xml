@@ -36,6 +36,14 @@
                       </cell>
                     </row>
                     <row>
+                      <cell id="{9b87a909-53bf-4563-bf4b-f11f5fbcb28f}">
+                        <labels>
+                          <label description="Applicazione" languagecode="1040" />
+                        </labels>
+                        <control id="agc_appscope" classid="{3EF39988-22BB-4f0b-BBBE-64B5A3748AEE}" datafieldname="agc_appscope" />
+                      </cell>
+                    </row>
+                    <row>
                       <cell id="{ff86488e-2e50-492f-af3a-9a287fb36815}">
                         <labels>
                           <label description="Valore" languagecode="1040" />

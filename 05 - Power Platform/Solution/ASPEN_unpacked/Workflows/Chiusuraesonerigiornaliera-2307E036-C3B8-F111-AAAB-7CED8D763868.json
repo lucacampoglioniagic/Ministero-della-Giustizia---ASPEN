@@ -52,7 +52,7 @@
             },
             "parameters": {
               "entityName": "agc_esoneros",
-              "$filter": "agc_statoesonero eq 1 and agc_datafine le '@{formatDateTime(utcNow(),'yyyy-MM-dd')}'"
+              "$filter": "agc_statoesonero eq 1 and agc_datafine le @{formatDateTime(utcNow(),'yyyy-MM-dd')}"
             },
             "authentication": "@parameters('$authentication')"
           }

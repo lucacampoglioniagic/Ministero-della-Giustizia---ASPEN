@@ -237,7 +237,7 @@ Screen1 As screen:
         HoverFill: =RGBA(0, 96, 171, 1)
         OnSelect: |
             =Launch(
-                "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=dashboard&id=d4cd81e8-5963-f111-ab0c-7ced8d72f54e&type=system&_canOverride=true",
+                "/main.aspx?appid=" & Param("appid") & "&pagetype=dashboard&id=4ff56c67-5fb7-f111-aaab-000d3a697f24&type=system&_canOverride=true",
                 {},
                 LaunchTarget.Replace
             )
@@ -295,7 +295,7 @@ Screen1 As screen:
         HoverFill: =RGBA(244, 247, 251, 1)
         OnSelect: |
             =Launch(
-                "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entitylist&etn=agc_fascicolo2&viewid=66ef2ecc-32ca-4275-901c-80f0637f1003&viewType=1039",
+                "/main.aspx?appid=" & Param("appid") & "&pagetype=entitylist&etn=agc_fascicolo2&viewid=487d09ca-0922-4613-a4a3-8a98dbf32779&viewType=1039",
                 {},
                 LaunchTarget.Replace
             )
@@ -351,7 +351,7 @@ Screen1 As screen:
         HoverFill: =RGBA(8, 42, 84, 1)
         OnSelect: |
             =Launch(
-                "https://lccministerogiustiziademo.crm4.dynamics.com/main.aspx?appid=390ef80f-5163-f111-ab0c-7ced8d72f54e&pagetype=entityrecord&etn=agc_fascicolo2",
+                "/main.aspx?appid=" & Param("appid") & "&pagetype=entityrecord&etn=agc_fascicolo2",
                 {},
                 LaunchTarget.Replace
             )
