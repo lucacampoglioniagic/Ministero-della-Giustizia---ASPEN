@@ -83,6 +83,10 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
   private _delayedRefreshTimer: number | null = null;
   // magistrato name → list of fascicoli rows (from dataset)
   private _fascicoliPerMagistrato: Record<string, FascicoloRow[]> = {};
+  // magistrato fullname → contact.agc_caricoattuale (carico ufficiale, include modifiche manuali)
+  private _carichi: Record<string, number> | null = null;
+  private _carichiLoadedAt = 0;
+  private _carichiLoading = false;
 
   constructor() {
     // PCF required constructor
@@ -213,10 +217,45 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
     return keys;
   }
 
+  private _loadCarichi(context: ComponentFramework.Context<IInputs>): void {
+    if (this._carichiLoading || Date.now() - this._carichiLoadedAt < 5000) {
+      return;
+    }
+    this._carichiLoading = true;
+    context.webAPI
+      .retrieveMultipleRecords(
+        "contact",
+        "?$select=fullname,agc_caricoattuale&$filter=agc_ismagistrato eq true and statecode eq 0",
+      )
+      .then((result) => {
+        const carichi: Record<string, number> = {};
+        for (const entity of result.entities) {
+          const name = String(entity["fullname"] ?? "").trim();
+          if (!name) continue;
+          carichi[name] = Number(entity["agc_caricoattuale"]) || 0;
+        }
+        this._carichi = carichi;
+        return carichi;
+      })
+      .catch(() => {
+        // keep the previous values, retry on next refresh
+        return null;
+      })
+      .finally(() => {
+        this._carichiLoading = false;
+        this._carichiLoadedAt = Date.now();
+        this.updateView(this._context);
+      })
+      .catch(() => {
+        // updateView errors must not surface as unhandled rejections
+      });
+  }
+
   public updateView(context: ComponentFramework.Context<IInputs>): void {
     this._context = context;
     const dataset = context.parameters.fascicoliDataSet;
     if (dataset.loading) return;
+    this._loadCarichi(context);
     if (!this._hasScheduledDelayedRefresh) {
       this._hasScheduledDelayedRefresh = true;
       this._delayedRefreshTimer = window.setTimeout(() => {
@@ -257,7 +296,14 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
       this._fascicoliPerMagistrato[magistrato].push(row);
     }
 
-    const sorted = Object.entries(totals).sort((a, b) => {
+    // Le barre dei magistrati mostrano agc_caricoattuale; i fascicoli non assegnati
+    // non hanno un magistrato, quindi restano la somma dei loro pesi.
+    const display: Record<string, number> = { ...(this._carichi ?? {}) };
+    if (totals[UNASSIGNED_LABEL] !== undefined) {
+      display[UNASSIGNED_LABEL] = totals[UNASSIGNED_LABEL];
+    }
+
+    const sorted = Object.entries(display).sort((a, b) => {
       const aIsUnassigned = a[0] === UNASSIGNED_LABEL;
       const bIsUnassigned = b[0] === UNASSIGNED_LABEL;
       if (aIsUnassigned && !bIsUnassigned) return 1;
@@ -344,6 +390,12 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
 
   private _openModal(magistratoName: string): void {
     const rows = this._fascicoliPerMagistrato[magistratoName] ?? [];
+    const totaleFascicoli = rows.reduce((sum, r) => sum + r.peso, 0);
+    const caricoAttuale = this._carichi?.[magistratoName];
+    const caricoInfo =
+      caricoAttuale !== undefined
+        ? `<span class="aspen-modal-summary">Carico attuale: <strong>${caricoAttuale}</strong> &middot; Peso totale fascicoli: <strong>${totaleFascicoli}</strong></span>`
+        : "";
 
     // Remove any existing modal
     const existing = document.getElementById("aspen-modal-overlay");
@@ -363,6 +415,7 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
     header.className = "aspen-modal-header";
     header.innerHTML = `
       <span class="aspen-modal-title">Fascicoli di <strong>${magistratoName}</strong></span>
+      ${caricoInfo}
       <button class="aspen-modal-close" aria-label="Chiudi">&times;</button>
     `;
     header

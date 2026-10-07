@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest>
-  <control namespace="AgicAspen" constructor="CaricoMagistratiChart" version="1.0.0"
+  <control namespace="AgicAspen" constructor="CaricoMagistratiChart" version="1.0.1"
     display-name-key="Carico per Magistrato"
-    description-key="Grafico animato del carico (somma pesi) per magistrato"
+    description-key="Grafico animato del carico attuale (contact.agc_caricoattuale) per magistrato; i fascicoli non assegnati mostrano la somma dei pesi"
     control-type="standard">
     <external-service-usage enabled="false" />
     <!--

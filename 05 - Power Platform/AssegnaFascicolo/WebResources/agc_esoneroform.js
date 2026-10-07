@@ -20,6 +20,7 @@ AgicAspen.EsoneroForm = (function () {
         var isTotale = tipoAttr.getValue() === TIPO_TOTALE;
 
         percControl.setVisible(!isTotale);
+        percAttr.setRequiredLevel(isTotale ? "none" : "required");
 
         if (isTotale && percAttr.getValue() !== null) {
             percAttr.setValue(null);

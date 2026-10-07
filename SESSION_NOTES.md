@@ -4,6 +4,38 @@
 
 ---
 
+## Sessione 07/10/2026 (pomeriggio) — Form esonero, flag magistrati, PCF carico v1.0.1, step plugin riattivati
+
+### Cosa è stato fatto
+- **`agc_esoneroform.js`**: percentuale esonero obbligatoria se tipo ≠ Totale; nascosta e azzerata se Totale. Limiti 0–100 già a livello metadati → nessun plugin aggiuntivo (decisione utente). Web resource caricato manualmente dall'utente.
+- **Contatti magistrati**: i 70 contatti dell'Excel `Lista Magistrati 07-10-2026 13-15-11.xlsx` in dev avevano `agc_ismagistrato = No` → invisibili nella vista *Lista Magistrati*. Impostato `Sì` via `pac data import` (matching nome/cognome, 70/70).
+- **PCF `CaricoMagistratiChart` v1.0.1**: barre = `contact.agc_caricoattuale`; "non assegnato" = somma pesi dei fascicoli; modale con carico attuale + peso totale fascicoli. Deploy con `pac pcf push` (workaround fratelli) + `pac solution import`.
+- **Step plugin ASPEN**: 10 step erano disabilitati dal 05/10 18:38 (non causati dal deploy odierno). Riattivati via Web API con Playwright (`pac data import` non supporta `sdkmessageprocessingstep`).
+
+### Decisioni
+- Nessun plugin per la validazione 0–100 della percentuale: bastano i metadati.
+- Riattivazione step via Web API (unica via praticabile).
+
+### Stato attuale
+- Assegnazioni dal 05/10 con step spenti: carico non aggiornato → possibile riallineamento manuale.
+- Grafico e modale non ancora verificati a schermo.
+
+### Tooling
+- I token `pac` scadono per conditional access (~23h) → `pac auth create` con profilo `TribunaliDevCli2` (attivo).
+- `pac env fetch --xml` funziona per FetchXML con apici singoli negli attributi.
+- `pac data import` utile per update massivi su `contact`.
+
+### Prossimi passi / aperti
+- Verificare a schermo grafico e modale del PCF.
+- Valutare riallineamento carico per assegnazioni dal 05/10.
+- Home senza scroll verticale su viewport stretti (già noto).
+- Fase 9 saltata.
+
+### File modificati
+- `agc_esoneroform.js` (web resource), PCF `CaricoMagistratiChart` (v1.0.1), dati `contact` in dev. README/CHANGELOG già aggiornati.
+
+---
+
 ## Sessione 06/10/2026 (sera) — Riordino documentale e guardrail repository
 
 - Eseguito health-check strutturale repository (focus: rischio errore umano su solution/export/documentazione).

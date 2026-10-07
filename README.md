@@ -173,6 +173,7 @@ Per riprendere velocemente il lavoro:
 
 #### `AgicAspen.CaricoMagistratiChart` — `05 - Power Platform/PCF/`
 Grafico a barre orizzontali del carico per magistrato.
+- **v1.0.1 (07/10/2026):** le barre mostrano `contact.agc_caricoattuale` (non più la somma dei pesi dei fascicoli); `(non assegnato)` resta somma pesi fascicoli — vedi punto 45.
 - **Colori dinamici** dalla soglia `PesoLimite` in `agc_configurazione`:
   - 🟢 Verde `#107C10` — carico < 80% soglia
   - 🟡 Giallo `#FFB900` — carico ≥ 80% soglia
@@ -436,7 +437,11 @@ Ogni card operativa ha un'icona SVG inline (Image control con data URI, 48×48 p
     - Formula `Visible` del comando "Assegna Fascicolo" aggiornata in Command Designer per permettere qualunque selezione ≥ 1. **Testato end-to-end dall'utente e confermato funzionante**: (a) singolo non assegnato → dialog invariato; (b) singolo già assegnato → avviso e riassegnazione; (c) selezione mista assegnati/non assegnati → avviso con conteggio corretto, annulla non tocca nulla, conferma riassegna tutti con carico/continuità/riserva GUP coerenti.
     - Nota: il dialog di assegnazione singola (`agc_assignfascicolodialog.html`) continua a **non avere** un avviso "già assegnato — riassegnare?": è stato chiesto solo per il flusso batch, quindi resta così finché non richiesto diversamente.
 44. ✅ **Completato (26–28/09/2026)** — **migrazione Peso 1/Peso 2 a `UserOwned`** eseguita e chiusa in ambiente di destinazione (`Tribunali-dev`): create `agc_pesouno`/`agc_pesodue` (`UserOwned`), popolati i nuovi lookup su `agc_fascicolo2`, aggiornati i riferimenti applicativi e completata la dismissione delle tabelle legacy (`agc_canestrofascicolo`, `agc_peso2`). **Incidente gestito**: bug Dataverse sulla cache formula durante update di "Peso calcolato", risolto con rinomina permanente del campo live in `agc_pesocalcolato2`. Validazione finale Fase 12 completata (vedi `CHANGELOG.md` e `SESSION_NOTES.md` sessioni 26/09 e 28/09).
-
+45. ✅ **Risolto (07/10/2026, `Tribunali-dev`)** — 4 interventi:
+    - **`agc_esoneroform.js` (`applyTipoEsoneroRules`)**: `agc_percentualeesonero` è ora **obbligatorio** (`setRequiredLevel('required')`) quando `agc_tipoesonero` ≠ Totale (1); se Totale resta nascosto, azzerato e non obbligatorio. Range 0–100 con 2 decimali già garantito dai metadati; **nessun plugin di validazione aggiuntivo** (scelta confermata). Web resource aggiornato manualmente in Power Apps.
+    - **PCF `CaricoMagistratiChart` v1.0.0 → 1.0.1**: le barre mostrano `contact.agc_caricoattuale` (magistrati attivi con `agc_ismagistrato=true`, letto via WebAPI, ricaricato al massimo ogni 5s) invece della somma `agc_pesocalcolato2` dei fascicoli; la barra `(non assegnato)` resta la somma dei pesi dei fascicoli. Il modale di dettaglio mostra "Carico attuale: X · Peso totale fascicoli: Y" (css `.aspen-modal-summary`). Deploy via `pac pcf push` (workaround cartelle fratelle) + `pac solution import --publish-changes`.
+    - **Dati**: 70 contatti magistrati importati da `Lista Magistrati 07-10-2026 13-15-11.xlsx` avevano `agc_ismagistrato=No` e quindi non comparivano nella vista "Lista Magistrati" (filtro `agc_ismagistrato=1` e `statecode=0`); impostato a Sì via `pac data import`.
+    - **Step plugin**: i 10 step SDK ASPEN risultavano **disabilitati dal 05/10 18:38** (pattern ricorrente dopo `pac solution import`); riattivati via Web API (`statecode=0`). Le assegnazioni dal 05/10 con step spenti non hanno aggiornato `agc_caricoattuale` (eventuale riallineamento manuale con "Modifica carico"). **Raccomandazione: ricontrollare gli step dopo ogni import.**
 ---
 
 ## Ambiente di destinazione — Tribunali-dev (Fase 12 — validazione finale e parità funzionale)

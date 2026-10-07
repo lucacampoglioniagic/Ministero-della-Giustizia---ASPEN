@@ -106,6 +106,14 @@
 .aspen-modal-title strong {
     font-weight: 700;
 }
+.aspen-modal-summary {
+    font-size: 13px;
+    margin-left: auto;
+    margin-right: 16px;
+}
+.aspen-modal-summary strong {
+    font-weight: 700;
+}
 .aspen-modal-close {
     background: none;
     border: none;

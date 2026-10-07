@@ -4,6 +4,14 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### Aggiornato (07/10/2026, `Tribunali-dev`)
+- Web resource `agc_esoneroform.js`: `agc_percentualeesonero` obbligatorio quando `agc_tipoesonero` ≠ Totale; nascosto/azzerato/non obbligatorio se Totale (nessun plugin di validazione aggiuntivo).
+- PCF `CaricoMagistratiChart` 1.0.0 → 1.0.1: barre basate su `contact.agc_caricoattuale` (ricarica max ogni 5s); `(non assegnato)` invariato; modale con "Carico attuale" e "Peso totale fascicoli".
+
+### Corretto (07/10/2026)
+- 70 contatti magistrati importati da `Lista Magistrati 07-10-2026 13-15-11.xlsx` avevano `agc_ismagistrato=No` (invisibili nella vista "Lista Magistrati"): impostato a Sì via `pac data import`.
+- Riattivati via Web API i 10 step SDK plugin ASPEN disabilitati dal 05/10 18:38 (pattern ricorrente post `pac solution import`; ricontrollare gli step dopo ogni import). Le assegnazioni dal 05/10 non hanno aggiornato `agc_caricoattuale`: eventuale riallineamento manuale con "Modifica carico".
+
 ### Aggiunto
 - Nuova colonna Choice `agc_appscope` su `agc_configurazione` per classificare i record di configurazione per applicazione (`ASPEN`, `ASSPECA`).
 - Campo `agc_appscope` aggiunto alla form principale di `agc_configurazione`.
