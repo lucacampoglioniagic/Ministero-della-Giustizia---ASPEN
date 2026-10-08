@@ -4,6 +4,39 @@
 
 ---
 
+## Sessione 08/10/2026 — PCF Carico/Esoneri, fix pulsanti Home custom page
+
+### Cosa è stato fatto
+- **PCF `CaricoMagistratiChart`**: scroll verticale (`.chart-scroll`, 34px per barra + 60px asse) per evitare barre schiacciate con molti magistrati.
+- **PCF `EsoneriAttiviChart` v1.0.2**: fix grafico vuoto nel giorno di inizio esonero. `agc_datainizio` è solo-data, letto come mezzanotte UTC = 02:00 locale > "oggi"; ora normalizzato a giorno locale.
+- **Custom page ASPEN Home**: i pulsanti *Vai alla dashboard / Apri elenco / Crea ora* aprivano `https://main.aspx/`. Causa: `Src/Screen1.pa.yaml` nel msapp aveva `Launch` relativo con `Param("appid")` vuoto (`Controls/4.json` aveva già URL assoluti, ma il runtime usa il pa.yaml). Sostituiti con URL assoluti di dev nel msapp e in `Model-Driven-App/AspenHomeCustomPage/Source/Screen1.fx.yaml`.
+- Reimportata **solo** l'app canvas tramite solution temporanea `AspenHomeTmp` (poi eliminata).
+
+### Decisioni
+- **Non reimportare l'intera solution ASPEN**: si perderebbero le modifiche manuali al ribbon fatte con Ribbon Workbench.
+- PCF: `pac pcf push` da copia temporanea con un solo controllo (`PCF.pcfproj` multi-controllo fallisce).
+- Canvas app: solution temporanea contenente solo il componente.
+
+### Stato attuale
+- Fix applicati in dev; documentazione (README/CHANGELOG/Piano Migrazione) già aggiornata da altro agente.
+- Scroll del grafico Carico non ancora verificato a schermo con molti magistrati.
+
+### Tooling
+- Device code bloccato da conditional access (53003). Usare login interattivo: `pac auth create --name TribunaliDevCli2 --environment https://org8e819d4a.crm4.dynamics.com/`.
+
+### Prossimi passi / aperti
+- URL della Home specifici di dev → adattare per Tribunali-test.
+- Verificare a schermo scroll del grafico Carico.
+- Riallineare carico assegnazioni dal 05/10 (step plugin erano disattivati).
+- Riattivare gli step plugin dopo ogni `pac solution import`.
+- Home senza scroll verticale su viewport stretti.
+- Riga `CaricoMagistratiChart` nel Piano di Migrazione §1.8 ancora a v1.0.0.
+
+### File modificati
+- PCF `CaricoMagistratiChart` e `EsoneriAttiviChart` (v1.0.2); `Model-Driven-App/AspenHomeCustomPage/Source/Screen1.fx.yaml` e msapp Home.
+
+---
+
 ## Sessione 07/10/2026 (pomeriggio) — Form esonero, flag magistrati, PCF carico v1.0.1, step plugin riattivati
 
 ### Cosa è stato fatto

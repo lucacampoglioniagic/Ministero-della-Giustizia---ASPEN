@@ -18,6 +18,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 - Migrazione Peso 1/Peso 2 a UserOwned: **completata**; tabelle legacy dismesse in destinazione.
 - Campo peso calcolato live: **`agc_pesocalcolato2`**.
 - Sorgente autorevole solution/metadata: `05 - Power Platform/Solution/ASPEN_unpacked/`.
+- Aggiornamenti 08/10/2026 (`Tribunali-dev`, pubblicati **senza reimportare la solution ASPEN** per non perdere le modifiche manuali al ribbon fatte con Ribbon Workbench): PCF `CaricoMagistratiChart` con scroll verticale (`.chart-scroll`); PCF `EsoneriAttiviChart` v1.0.2 (fix grafico vuoto nel giorno di inizio esonero); custom page **ASPEN Home** con URL `Launch` assoluti (fix `https://main.aspx/...`). Gli URL della Home sono specifici di dev: per `Tribunali-test` vanno adattati. Procedura di pubblicazione e note auth in `CHANGELOG.md` e nel Piano di Migrazione (§1.8).
 - Dettaglio operativo cronologico: `SESSION_NOTES.md`; riepilogo release/stato: `CHANGELOG.md`.
 
 ---

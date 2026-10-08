@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest>
-  <control namespace="AgicAspen" constructor="EsoneriAttiviChart" version="1.0.1"
+  <control namespace="AgicAspen" constructor="EsoneriAttiviChart" version="1.0.2"
     display-name-key="Esoneri Attivi per Magistrato"
     description-key="Grafico dei magistrati attualmente in esonero (Totale/Parziale)"
     control-type="standard">

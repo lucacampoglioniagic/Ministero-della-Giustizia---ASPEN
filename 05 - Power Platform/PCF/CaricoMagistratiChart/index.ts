@@ -29,6 +29,8 @@ const COLOR_UNASSIGNED_HOVER = "#4B1F78";
 const UNASSIGNED_LABEL = "(non assegnato)";
 const CLOSED_STATUS_LABEL = "chiuso";
 const CLOSED_STATUS_VALUE = 2;
+const ROW_HEIGHT_PX = 34;
+const AXIS_HEIGHT_PX = 60;
 const CONFIG_APP_PREFIX = "ASPEN";
 const CONFIG_APP_SCOPE_VALUE = 100000000;
 
@@ -74,6 +76,7 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
   private _container: HTMLDivElement;
   private _canvas: HTMLCanvasElement;
   private _legendEl: HTMLDivElement;
+  private _canvasHolder: HTMLDivElement;
   private _chart: Chart<"bar", number[], string> | null = null;
   private _context: ComponentFramework.Context<IInputs>;
   private _notifyOutputChanged: () => void;
@@ -123,8 +126,16 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
       <span class="legend-item"><span class="legend-dot" style="background:${COLOR_UNASSIGNED}"></span>Non assegnato</span>
     `;
 
+    this._canvasHolder = document.createElement("div");
+    this._canvasHolder.className = "chart-canvas-holder";
+    this._canvasHolder.appendChild(this._canvas);
+
+    const scroll = document.createElement("div");
+    scroll.className = "chart-scroll";
+    scroll.appendChild(this._canvasHolder);
+
     wrapper.appendChild(title);
-    wrapper.appendChild(this._canvas);
+    wrapper.appendChild(scroll);
     wrapper.appendChild(this._legendEl);
     this._container.appendChild(wrapper);
 
@@ -324,6 +335,8 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
     );
 
     this._labels = labels;
+    // Altezza minima per barra: oltre la viewport compare lo scroll verticale
+    this._canvasHolder.style.height = `${Math.max(labels.length * ROW_HEIGHT_PX + AXIS_HEIGHT_PX, 0)}px`;
 
     if (this._chart) {
       this._chart.data.labels = labels;

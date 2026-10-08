@@ -262,13 +262,15 @@ Ribbon classico obbligatorio per il contatto perché Power Fx del Command Design
 | Controllo | Tipo | Progetto sorgente | Proprietà | Dipendenze runtime | Uso |
 |---|---|---|---|---|---|
 | `CaricoMagistratiChart` v1.0.0 | dataset (`fascicoliDataSet`) | `PCF/` | `magistratoField` (Lookup.Simple → `agc_magistratocontatto`), `pesoField` (Whole/FP/Decimal → `agc_pesocalcolato`); legge `agc_statocaso` e `agc_numeroregistrogenerale` dalla vista | WebAPI: `agc_configurazione?$select=agc_valore&$filter=agc_nome eq 'PesoLimite'` | Dashboard |
-| `EsoneriAttiviChart` v1.0.0 | dataset (`esoneriDataSet`) | `PCF/` | `magistratoField`, `tipoField` (OptionSet), `statoField` (OptionSet), `percentualeField` (opt), `dataInizioField`, `dataFineField` (opt) | — | Dashboard (vista "Esoneri attivi/e") |
+| `EsoneriAttiviChart` v1.0.2 (08/10/2026: `toDateOrNull` normalizza `agc_datainizio` al giorno locale) | dataset (`esoneriDataSet`) | `PCF/` | `magistratoField`, `tipoField` (OptionSet), `statoField` (OptionSet), `percentualeField` (opt), `dataInizioField`, `dataFineField` (opt) | — | Dashboard (vista "Esoneri attivi/e") |
 | `AndamentoCaricoMensileChart` v1.0.0 | dataset | `PCF/` | `magistratoField`, `pesoField`, `dataField` (`agc_datacaso`) | — | Dashboard |
 | `CaricoPerCanestro` v1.0.1 | field (`dummyBind` SingleLine.Text) | `PCF/CaricoPerCanestro/` (pcfproj separato, escluso dal primo) | nessuna bound utile; legge `context.page.entityId` | WebAPI: `agc_configurazione` (`PesoLimiteCanestro`), `agc_fascicolo2s?$select=agc_fascicolo2id,agc_pesocalcolato,agc_statocaso,_agc_canestrofascicolo_value&$filter=_agc_magistratocontatto_value eq <id> and agc_pesocalcolato ne null` | Form contact |
 | `FascicoliPerCanestroChart` v1.0.0 | dataset | `PCF-Pie/` | `canestroField` (Lookup.Simple → `agc_canestrofascicolo`); legge `agc_numeroregistrogenerale`, `agc_magistratocontatto`, `agc_statocaso`, `agc_pesocalcolato`, `agc_datacaso` dalla vista | — | Dashboard |
 | `StatoFascicoliChart` v1.0.0 | dataset | `PCF-Pie/` | `statoField` (OptionSet `agc_statocaso`) | — | **Non più usato** nel cruscotto → migrazione opzionale (proposta: non migrare) |
 
 Vincolo tooling: `pac pcf push` accetta **un solo manifest per pcfproj**; i progetti multi-controllo (`PCF/`, `PCF-Pie/`) vanno spezzati in un pcfproj per controllo, oppure compilati con `dotnet build` e importati come solution zip (`bin/Debug/*.zip`) nella solution ASPEN.
+
+Nota 08/10/2026: `CaricoMagistratiChart` ora ha scroll verticale (`.chart-scroll`, `ROW_HEIGHT_PX` 34 + `AXIS_HEIGHT_PX` 60). Per pubblicare un singolo PCF senza reimportare la solution (ribbon Ribbon Workbench), usare `pac pcf push --publisher-prefix agc` da una copia temporanea con solo la cartella del controllo + `package.json`/`tsconfig`/`PCF.pcfproj`/`pcfconfig.json` e junction `node_modules`. Per la custom page ASPEN Home: solution temporanea con solo il canvasapp, export/unpack, patch del `.msapp` (sia `Controls/*.json` sia `Src/*.pa.yaml`), pack, import `--publish-changes`; i `Launch` della Home usano URL assoluti di dev (da adattare per altri ambienti). Auth: `pac auth create --name TribunaliDevCli2 --environment <url>` (il device code è bloccato da AADSTS 53003).
 
 ### 1.9 App model-driven e sitemap
 

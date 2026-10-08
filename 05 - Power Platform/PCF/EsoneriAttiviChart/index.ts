@@ -33,11 +33,23 @@ interface EsoneroRow {
   dataFine: string;
 }
 
+// Restituisce il solo giorno (mezzanotte locale): i campi sono di tipo Data e una stringa
+// "YYYY-MM-DD" verrebbe altrimenti letta come mezzanotte UTC (es. 02:00 locale), facendo
+// risultare l'esonero "non ancora iniziato" proprio nel giorno di inizio.
 function toDateOrNull(value: unknown): Date | null {
   if (value === null || value === undefined) return null;
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-  const parsed = new Date(value as string | number);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
+  const dateOnly =
+    typeof value === "string"
+      ? /^(\d{4})-(\d{2})-(\d{2})(?:$|T00:00:00(?:\.0+)?Z?$)/.exec(value)
+      : null;
+  if (dateOnly) {
+    return new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]));
+  }
+  const parsed =
+    value instanceof Date ? new Date(value.getTime()) : new Date(value as string | number);
+  if (Number.isNaN(parsed.getTime())) return null;
+  parsed.setHours(0, 0, 0, 0);
+  return parsed;
 }
 
 function isEsoneroEffettivamenteAttivo(

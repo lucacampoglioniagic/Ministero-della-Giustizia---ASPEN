@@ -4,6 +4,15 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### Aggiornato (08/10/2026, `Tribunali-dev`)
+- PCF `CaricoMagistratiChart`: aggiunto scroll verticale (contenitore `.chart-scroll`, 34px per barra + 60px per l'asse; costanti `ROW_HEIGHT_PX`/`AXIS_HEIGHT_PX` in `index.ts`, regole in `css/chart.css`) per evitare barre schiacciate con molti magistrati.
+- PCF `EsoneriAttiviChart` 1.0.1 → 1.0.2: nel giorno di inizio dell'esonero il grafico risultava vuoto. Causa: `agc_datainizio` è un campo solo-data e la stringa `YYYY-MM-DD` parsata con `new Date()` è mezzanotte UTC (02:00 locale), quindi maggiore di "oggi a mezzanotte locale" → esonero considerato "non ancora iniziato". Fix: `toDateOrNull` normalizza al giorno locale. Verificato (canvas visibile).
+- Custom page **ASPEN Home** (`cr248_aspenhome_1750e`): i pulsanti "Vai alla dashboard", "Apri elenco", "Crea ora" puntavano a `https://main.aspx/...`. Causa: `Src/Screen1.pa.yaml` nel `.msapp` conservava `Launch("/main.aspx?appid=" & Param("appid")...)` (appid vuoto, URL relativo non risolto dal runtime), mentre `Controls/4.json` aveva già URL assoluti; il runtime usa il `pa.yaml`. Fix: 3 `Launch` sostituiti con URL assoluti di dev (`https://org8e819d4a.crm4.dynamics.com/main.aspx?appid=7c769e36-f2b7-f111-aaab-000d3a697f24&...`) in `Src/Screen1.pa.yaml` (aggiornato in `Solution/ASPEN_unpacked/CanvasApps`) e in `Model-Driven-App/AspenHomeCustomPage/Source/Screen1.fx.yaml`. **Nota:** URL specifici dell'ambiente dev; per `Tribunali-test` vanno adattati.
+- Pubblicazione **senza reimportare la solution ASPEN** (per non perdere le modifiche manuali al ribbon fatte con Ribbon Workbench):
+  - PCF: `pac pcf push --publisher-prefix agc` da una copia temporanea con solo la cartella del controllo + `package.json`/`tsconfig`/`PCF.pcfproj`/`pcfconfig.json` e junction `node_modules` (il `PCF.pcfproj` multi-controllo fa fallire `pcf push` con "more than one ControlManifest").
+  - Custom page: solution temporanea via Web API (es. `AspenHomeTmp`) con solo il canvasapp (`AddSolutionComponent`, `ComponentType` 300) → `pac solution export`/`unpack` → modifica del `.msapp` (**patchare sia `Controls/*.json` sia `Src/*.pa.yaml`**: il runtime usa il `pa.yaml`) → pack → import con `--publish-changes` → cancellazione della solution temporanea.
+- Auth: il device code è bloccato dalla conditional access (AADSTS 53003); usare `pac auth create --name TribunaliDevCli2 --environment https://org8e819d4a.crm4.dynamics.com/` (login interattivo nel browser) e selezionare TribunaliDevCli2 se `pac auth list` ha un altro profilo attivo.
+
 ### Aggiornato (07/10/2026, `Tribunali-dev`)
 - Web resource `agc_esoneroform.js`: `agc_percentualeesonero` obbligatorio quando `agc_tipoesonero` ≠ Totale; nascosto/azzerato/non obbligatorio se Totale (nessun plugin di validazione aggiuntivo).
 - PCF `CaricoMagistratiChart` 1.0.0 → 1.0.1: barre basate su `contact.agc_caricoattuale` (ricarica max ogni 5s); `(non assegnato)` invariato; modale con "Carico attuale" e "Peso totale fascicoli".
