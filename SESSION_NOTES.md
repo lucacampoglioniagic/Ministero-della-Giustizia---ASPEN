@@ -4,6 +4,34 @@
 
 ---
 
+## Sessione 09/10/2026 — PCF cruscotto: Carico v1.0.2, Fascicoli per Peso v1.0.4 (Web API)
+
+### Cosa è stato fatto
+- **`CaricoMagistratiChart` v1.0.2**: rimossa la colonna *Stato* dalla modale.
+- **`FascicoliPerCanestroChart` v1.0.4** ("Fascicoli per Peso"): selettore **Peso 1/2** sotto Anno, modale senza Stato. Il Peso risultava sempre 0 perché `agc_pesocalcolato2` non è tra le colonne della view del dataset → i dati ora arrivano via **Web API** su `agc_fascicolo2`. Fix torta schiacciata (holder canvas `min-height: 420px`); errori di caricamento mostrati in rosso.
+- **`EsoneriAttiviChart`**: invariato. I 2 esoneri "Attivi" su dev iniziano 10/10 e 12/10; il filtro per data inizio è voluto dall'utente.
+- Docs aggiornati: README, Piano Migrazione Ambiente Destinazione, CHANGELOG.
+- Deploy su Tribunali-dev **solo dei PCF**, senza reimportare la solution.
+
+### Decisioni
+- Per usare la Web API nel PCF serve `<feature-usage><uses-feature name="WebAPI"/></feature-usage>` nel manifest; senza dà l'errore *"Feature WebAPI.retrieveMultipleRecords is required..."*.
+- Dati letti via Web API invece che dal dataset, perché la view non contiene `agc_pesocalcolato2`.
+- Workaround deploy: `pac pcf push` fallisce con MSB3231 → spostare le cartelle fratelle in TEMP, eseguire il push, poi `pac solution import --publish-changes` dello zip `obj\PowerAppsToolsTemp_agc\bin\Debug\PowerAppsToolsTemp_agc.zip`.
+
+### Stato attuale
+- PCF pubblicati in dev. Render della torta dopo l'ultimo fix layout **non ancora verificato** (a cura dell'utente).
+
+### Prossimi passi
+- Verificare a schermo la torta di Fascicoli per Peso (e lo scroll del grafico Carico, aperto dal 08/10).
+- Riportare le versioni PCF (Carico 1.0.2, Fascicoli per Peso 1.0.4) e il requisito WebAPI nel Piano di Migrazione per Tribunali-test.
+- Restano aperti i punti del 08/10 (URL Home di dev, riallineo carico dal 05/10, step plugin).
+
+### File modificati
+- PCF `CaricoMagistratiChart`, `FascicoliPerCanestroChart` (codice + `ControlManifest.Input.xml`); README, Piano Migrazione, CHANGELOG.
+- Nessun commit/push eseguito.
+
+---
+
 ## Sessione 08/10/2026 — PCF Carico/Esoneri, fix pulsanti Home custom page
 
 ### Cosa è stato fatto

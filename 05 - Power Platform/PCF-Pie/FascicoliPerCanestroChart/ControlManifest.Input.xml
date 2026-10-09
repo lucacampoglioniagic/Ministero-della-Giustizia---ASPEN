@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest>
-  <control namespace="AgicAspen" constructor="FascicoliPerCanestroChart" version="1.0.0"
-    display-name-key="Fascicoli per Peso 1"
-    description-key="Grafico a torta dei fascicoli suddivisi per Peso 1"
+  <control namespace="AgicAspen" constructor="FascicoliPerCanestroChart" version="1.0.4"
+    display-name-key="Fascicoli per Peso"
+    description-key="Grafico a torta dei fascicoli suddivisi per Peso 1 o Peso 2"
     control-type="standard">
     <external-service-usage enabled="false" />
     <!--
@@ -26,5 +26,8 @@
       <code path="index.ts" order="1" />
       <css path="css/chart.css" order="1" />
     </resources>
+    <feature-usage>
+      <uses-feature name="WebAPI" required="true" />
+    </feature-usage>
   </control>
 </manifest>

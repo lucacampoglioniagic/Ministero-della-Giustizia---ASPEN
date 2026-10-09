@@ -38,7 +38,6 @@ interface FascicoloRow {
   rg: string;
   canestro: string;
   peso: number;
-  stato: string;
   data: string;
 }
 
@@ -298,7 +297,6 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
           record.getFormattedValue("agc_pesounoname") ||
           "—",
         peso,
-        stato: stato || "—",
         data: record.getFormattedValue("agc_datacaso") || "—",
       };
       if (!this._fascicoliPerMagistrato[magistrato]) {
@@ -449,7 +447,6 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
             <th>N. RG</th>
             <th>Peso 1</th>
             <th>Peso</th>
-            <th>Stato</th>
             <th>Data</th>
           </tr>
         </thead>
@@ -460,7 +457,6 @@ export class CaricoMagistratiChart implements ComponentFramework.StandardControl
             <td>${r.rg}</td>
             <td>${r.canestro}</td>
             <td><strong>${r.peso}</strong></td>
-            <td><span class="badge badge-${r.stato.toLowerCase()}">${r.stato}</span></td>
             <td>${r.data}</td>
           </tr>`,
             )

@@ -59,10 +59,15 @@
     border-color: #0f6cbd;
     box-shadow: 0 0 0 2px rgba(15, 108, 189, 0.2);
 }
-.stato-fascicoli-chart .chart-canvas {
+.stato-fascicoli-chart .chart-canvas-holder {
+    position: relative;
     flex: 1;
+    min-height: 420px;
+    width: 100%;
+}
+.stato-fascicoli-chart .chart-canvas {
     width: 100% !important;
-    min-height: 200px;
+    height: 100% !important;
 }
 
 /* Shared modal styles (same as CaricoMagistratiChart) */
@@ -145,4 +150,11 @@
 }
 .aspen-modal-table tr:hover td {
     background: #f3f9ff;
+}
+
+.stato-fascicoli-chart .chart-filters {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
 }

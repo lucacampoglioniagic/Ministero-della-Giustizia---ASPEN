@@ -4,6 +4,16 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### Aggiornato (09/10/2026, `Tribunali-dev`) — pubblicato
+- PCF `CaricoMagistratiChart` 1.0.1 → 1.0.2: rimossa la colonna Stato dalla modale.
+- PCF `FascicoliPerCanestroChart` 1.0.1 → 1.0.4, rinominato "Fascicoli per Peso":
+  - selettore Peso 1/Peso 2 sotto il filtro Anno;
+  - rimossa la colonna Stato dalla modale;
+  - il Peso risultava sempre 0 perché `agc_pesocalcolato2` non è tra le colonne della view del dataset → i fascicoli sono ora letti via Web API (`retrieveMultipleRecords` su `agc_fascicolo2`); nel manifest è dichiarato il `feature-usage` `WebAPI` (senza, errore "Feature WebAPI.retrieveMultipleRecords is required...");
+  - fix layout: torta schiacciata, risolto con `min-height: 420px` sul holder del canvas.
+- PCF `EsoneriAttiviChart`: invariato. I 2 esoneri "Attivi" su dev iniziano il 10/10 e il 12/10 (date future), quindi correttamente non compaiono.
+- Pubblicazione: solo i PCF, senza reimportare la solution. `pac pcf push` fallisce con `MSB3231`, quindi è stato importato lo zip `PowerAppsToolsTemp_agc`.
+
 ### Aggiornato (08/10/2026, `Tribunali-dev`)
 - PCF `CaricoMagistratiChart`: aggiunto scroll verticale (contenitore `.chart-scroll`, 34px per barra + 60px per l'asse; costanti `ROW_HEIGHT_PX`/`AXIS_HEIGHT_PX` in `index.ts`, regole in `css/chart.css`) per evitare barre schiacciate con molti magistrati.
 - PCF `EsoneriAttiviChart` 1.0.1 → 1.0.2: nel giorno di inizio dell'esonero il grafico risultava vuoto. Causa: `agc_datainizio` è un campo solo-data e la stringa `YYYY-MM-DD` parsata con `new Date()` è mezzanotte UTC (02:00 locale), quindi maggiore di "oggi a mezzanotte locale" → esonero considerato "non ancora iniziato". Fix: `toDateOrNull` normalizza al giorno locale. Verificato (canvas visibile).

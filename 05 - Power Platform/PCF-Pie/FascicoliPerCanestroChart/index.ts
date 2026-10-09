@@ -12,14 +12,23 @@ const FALLBACK_PALETTE = [
   "#038387",
   "#CA5010",
 ];
-const UNKNOWN_LABEL = "(nessun canestro)";
+const UNKNOWN_LABEL = "(nessun peso)";
+const FORMATTED = "@OData.Community.Display.V1.FormattedValue";
+const RELOAD_MIN_INTERVAL_MS = 5000;
+
+type PesoKind = "peso1" | "peso2";
 
 interface FascicoloRow {
   rg: string;
   magistrato: string;
-  stato: string;
   peso: number;
   data: string;
+}
+
+interface FascicoloData extends FascicoloRow {
+  year: number | null;
+  peso1: string;
+  peso2: string;
 }
 
 export class FascicoliPerCanestroChart implements ComponentFramework.StandardControl<
@@ -34,6 +43,12 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
   private _labels: string[] = [];
   private _fascicoliPerCanestro: Record<string, FascicoloRow[]> = {};
   private _selectedYear = "all";
+  private _pesoSelect: HTMLSelectElement;
+  private _selectedPeso: PesoKind = "peso1";
+  private _fascicoli: FascicoloData[] = [];
+  private _loadedAt = 0;
+  private _loading = false;
+  private _errorEl: HTMLDivElement;
 
   constructor() {
     // PCF required constructor
@@ -57,7 +72,10 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
 
     const title = document.createElement("h2");
     title.className = "chart-title";
-    title.textContent = "Fascicoli per Peso 1";
+    title.textContent = "Fascicoli per Peso";
+
+    const filters = document.createElement("div");
+    filters.className = "chart-filters";
 
     const filterWrap = document.createElement("div");
     filterWrap.className = "year-filter";
@@ -76,15 +94,42 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
 
     filterWrap.appendChild(filterLabel);
     filterWrap.appendChild(this._yearSelect);
+
+    const pesoWrap = document.createElement("div");
+    pesoWrap.className = "year-filter";
+    const pesoLabel = document.createElement("span");
+    pesoLabel.className = "year-filter-label";
+    pesoLabel.textContent = "Peso";
+    this._pesoSelect = document.createElement("select");
+    this._pesoSelect.className = "year-filter-select";
+    this._pesoSelect.innerHTML =
+      `<option value="peso1">Peso 1</option><option value="peso2">Peso 2</option>`;
+    this._pesoSelect.addEventListener("change", () => {
+      this._selectedPeso = this._pesoSelect.value as PesoKind;
+      if (this._context) this.updateView(this._context);
+    });
+    pesoWrap.appendChild(pesoLabel);
+    pesoWrap.appendChild(this._pesoSelect);
+
+    filters.appendChild(filterWrap);
+    filters.appendChild(pesoWrap);
     header.appendChild(title);
-    header.appendChild(filterWrap);
+    header.appendChild(filters);
 
     this._canvas = document.createElement("canvas");
     this._canvas.className = "chart-canvas";
     this._canvas.style.cursor = "pointer";
 
+    const canvasHolder = document.createElement("div");
+    canvasHolder.className = "chart-canvas-holder";
+    canvasHolder.appendChild(this._canvas);
+
+    this._errorEl = document.createElement("div");
+    this._errorEl.style.cssText = "display:none;color:#D13438;font-size:13px;margin-bottom:8px;";
+
     wrapper.appendChild(header);
-    wrapper.appendChild(this._canvas);
+    wrapper.appendChild(this._errorEl);
+    wrapper.appendChild(canvasHolder);
     this._container.appendChild(wrapper);
   }
 
@@ -92,12 +137,11 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
     this._context = context;
     const dataset = context.parameters.fascicoliDataSet;
     if (dataset.loading) return;
+    this._loadFascicoli(context);
 
     const yearsSet = new Set<number>();
-    for (const id of dataset.sortedRecordIds) {
-      const record = dataset.records[id];
-      const year = this._extractYear(record);
-      if (year !== null) yearsSet.add(year);
+    for (const f of this._fascicoli) {
+      if (f.year !== null) yearsSet.add(f.year);
     }
     const years = Array.from(yearsSet).sort((a, b) => b - a);
     this._syncYearFilter(years);
@@ -105,33 +149,19 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
     const counts: Record<string, number> = {};
     this._fascicoliPerCanestro = {};
 
-    for (const id of dataset.sortedRecordIds) {
-      const record = dataset.records[id];
-      const year = this._extractYear(record);
-      if (this._selectedYear !== "all" && year !== Number(this._selectedYear)) {
+    for (const f of this._fascicoli) {
+      if (this._selectedYear !== "all" && f.year !== Number(this._selectedYear)) {
         continue;
       }
 
-      const canestro = record.getFormattedValue("canestroField") || UNKNOWN_LABEL;
+      const canestro =
+        (this._selectedPeso === "peso1" ? f.peso1 : f.peso2) || UNKNOWN_LABEL;
       counts[canestro] = (counts[canestro] ?? 0) + 1;
 
-      const row: FascicoloRow = {
-        rg: (record.getValue("agc_numeroregistrogenerale") as string) || "—",
-        magistrato:
-          record.getFormattedValue("agc_magistratocontatto") ||
-          record.getFormattedValue("agc_magistratocontattoname") ||
-          "—",
-        stato:
-          record.getFormattedValue("agc_statocaso") ||
-          record.getFormattedValue("agc_statocasoname") ||
-          "—",
-        peso: Number(record.getValue("agc_pesocalcolato2")) || 0,
-        data: record.getFormattedValue("agc_datacaso") || "—",
-      };
       if (!this._fascicoliPerCanestro[canestro]) {
         this._fascicoliPerCanestro[canestro] = [];
       }
-      this._fascicoliPerCanestro[canestro].push(row);
+      this._fascicoliPerCanestro[canestro].push(f);
     }
 
     const labels = Object.keys(counts);
@@ -196,6 +226,73 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
     });
   }
 
+  // Il dataset legato alla view non contiene agc_pesocalcolato2 né agc_pesodue (leggerli da lì
+  // restituiva sempre 0/vuoto): i dati dei fascicoli si leggono direttamente via Web API.
+  private _loadFascicoli(context: ComponentFramework.Context<IInputs>): void {
+    if (this._loading || Date.now() - this._loadedAt < RELOAD_MIN_INTERVAL_MS) {
+      return;
+    }
+    this._loading = true;
+    this._fetchAllFascicoli(context)
+      .then((rows) => {
+        this._fascicoli = rows;
+        this._errorEl.style.display = "none";
+        return rows;
+      })
+      .catch((err) => {
+        // mantiene i dati precedenti, riprova al prossimo refresh
+        console.error("FascicoliPerCanestroChart: caricamento fascicoli fallito", err);
+        this._errorEl.textContent = `Errore nel caricamento dei fascicoli: ${
+          (err as { message?: string })?.message ?? String(err)
+        }`;
+        this._errorEl.style.display = "block";
+        return null;
+      })
+      .finally(() => {
+        this._loading = false;
+        this._loadedAt = Date.now();
+        this.updateView(this._context);
+      })
+      .catch(() => {
+        // errori di updateView non devono diventare unhandled rejection
+      });
+  }
+
+  private async _fetchAllFascicoli(
+    context: ComponentFramework.Context<IInputs>,
+  ): Promise<FascicoloData[]> {
+    const select =
+      "?$select=agc_numeroregistrogenerale,agc_datacaso,agc_pesocalcolato2," +
+      "_agc_magistratocontatto_value,_agc_pesouno_value,_agc_pesodue_value";
+    const rows: FascicoloData[] = [];
+    let query: string | undefined = select;
+    while (query) {
+      const res: ComponentFramework.WebApi.RetrieveMultipleResponse =
+        await context.webAPI.retrieveMultipleRecords("agc_fascicolo2", query);
+      for (const e of res.entities as Record<string, unknown>[]) {
+        rows.push({
+          rg: (e["agc_numeroregistrogenerale"] as string) || "—",
+          magistrato:
+            (e[`_agc_magistratocontatto_value${FORMATTED}`] as string) || "—",
+          peso: Number(e["agc_pesocalcolato2"]) || 0,
+          data: (e[`agc_datacaso${FORMATTED}`] as string) || "—",
+          year: this._yearFromRaw(e["agc_datacaso"]),
+          peso1: (e[`_agc_pesouno_value${FORMATTED}`] as string) || "",
+          peso2: (e[`_agc_pesodue_value${FORMATTED}`] as string) || "",
+        });
+      }
+      const next: string | undefined = res.nextLink;
+      query = next ? next.substring(next.indexOf("?")) : undefined;
+    }
+    return rows;
+  }
+
+  private _yearFromRaw(raw: unknown): number | null {
+    if (typeof raw !== "string") return null;
+    const m = /^(\d{4})-/.exec(raw);
+    return m ? Number(m[1]) : null;
+  }
+
   private _syncYearFilter(years: number[]): void {
     const selectedStillValid =
       this._selectedYear === "all" ||
@@ -208,25 +305,6 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
     ];
     this._yearSelect.innerHTML = options.join("");
     this._yearSelect.value = this._selectedYear;
-  }
-
-  private _extractYear(
-    record: ComponentFramework.PropertyHelper.DataSetApi.EntityRecord,
-  ): number | null {
-    const raw = record.getValue("agc_datacaso");
-    if (raw instanceof Date && !Number.isNaN(raw.getTime())) {
-      return raw.getFullYear();
-    }
-    if (typeof raw === "string") {
-      const rawDate = new Date(raw);
-      if (!Number.isNaN(rawDate.getTime())) return rawDate.getFullYear();
-    }
-
-    const formatted = record.getFormattedValue("agc_datacaso") || "";
-    const match = formatted.match(/(19|20)\d{2}/);
-    if (match) return Number(match[0]);
-
-    return null;
   }
 
   private _openModal(canestro: string): void {
@@ -249,7 +327,7 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
     header.className = "aspen-modal-header";
     header.style.background = "#0F6CBD";
     header.innerHTML = `
-      <span class="aspen-modal-title">Fascicoli nel canestro <strong>${canestro}</strong> (${rows.length})</span>
+      <span class="aspen-modal-title">Fascicoli con ${this._selectedPeso === "peso1" ? "Peso 1" : "Peso 2"} <strong>${canestro}</strong> (${rows.length})</span>
       <button class="aspen-modal-close" aria-label="Chiudi">&times;</button>
     `;
     header
@@ -269,7 +347,6 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
           <tr>
             <th>N. RG</th>
             <th>Magistrato</th>
-            <th>Stato</th>
             <th>Peso</th>
             <th>Data</th>
           </tr>
@@ -280,7 +357,6 @@ export class FascicoliPerCanestroChart implements ComponentFramework.StandardCon
               (r) => `<tr>
             <td>${r.rg}</td>
             <td>${r.magistrato}</td>
-            <td>${r.stato}</td>
             <td><strong>${r.peso}</strong></td>
             <td>${r.data}</td>
           </tr>`,

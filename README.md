@@ -18,6 +18,7 @@ Reingegnerizzazione del portafoglio applicativo **ASPEN** — famiglia di applic
 - Migrazione Peso 1/Peso 2 a UserOwned: **completata**; tabelle legacy dismesse in destinazione.
 - Campo peso calcolato live: **`agc_pesocalcolato2`**.
 - Sorgente autorevole solution/metadata: `05 - Power Platform/Solution/ASPEN_unpacked/`.
+- Aggiornamenti 09/10/2026 (`Tribunali-dev`, solo PCF via `pac pcf push` workaround/import zip, **senza reimportare la solution ASPEN**): `CaricoMagistratiChart` 1.0.2 (modale senza colonna Stato); `FascicoliPerCanestroChart` 1.0.4 "Fascicoli per Peso" (selettore Peso 1/Peso 2, dati via Web API su `agc_fascicolo2`); `EsoneriAttiviChart` invariato (solo esoneri Attivi con inizio ≤ oggi).
 - Aggiornamenti 08/10/2026 (`Tribunali-dev`, pubblicati **senza reimportare la solution ASPEN** per non perdere le modifiche manuali al ribbon fatte con Ribbon Workbench): PCF `CaricoMagistratiChart` con scroll verticale (`.chart-scroll`); PCF `EsoneriAttiviChart` v1.0.2 (fix grafico vuoto nel giorno di inizio esonero); custom page **ASPEN Home** con URL `Launch` assoluti (fix `https://main.aspx/...`). Gli URL della Home sono specifici di dev: per `Tribunali-test` vanno adattati. Procedura di pubblicazione e note auth in `CHANGELOG.md` e nel Piano di Migrazione (§1.8).
 - Dettaglio operativo cronologico: `SESSION_NOTES.md`; riepilogo release/stato: `CHANGELOG.md`.
 
@@ -174,6 +175,7 @@ Per riprendere velocemente il lavoro:
 
 #### `AgicAspen.CaricoMagistratiChart` — `05 - Power Platform/PCF/`
 Grafico a barre orizzontali del carico per magistrato.
+- **v1.0.2 (09/10/2026):** rimossa la colonna Stato dalla modale di dettaglio.
 - **v1.0.1 (07/10/2026):** le barre mostrano `contact.agc_caricoattuale` (non più la somma dei pesi dei fascicoli); `(non assegnato)` resta somma pesi fascicoli — vedi punto 45.
 - **Colori dinamici** dalla soglia `PesoLimite` in `agc_configurazione`:
   - 🟢 Verde `#107C10` — carico < 80% soglia
@@ -186,6 +188,12 @@ Grafico a barre orizzontali del carico per magistrato.
 - **Click su barra** → modal con elenco fascicoli assegnati al magistrato; colonna canestro letta da `agc_canestrofascicolo` / `agc_canestrofascicoloname`
 - **Mapping nel designer:** `magistratoField` → `agc_magistratoassegnato`, `pesoField` → `agc_pesocalcolato` (aggiornato 07/07/2026, ex `agc_peso` — vedi nota migrazione sotto)
 - **Dataset bindato al dashboard "Cruscotto ASPEN"** tramite view Dataverse (non hardcoded nel codice PCF). ⚠️ **Fix 07/07/2026:** la view era ancora puntata su `agc_fascicolo` (vecchia tabella dismessa) — vedi nota migrazione sotto
+
+#### `AgicAspen.FascicoliPerCanestroChart` ("Fascicoli per Peso") — `05 - Power Platform/PCF-Pie/`
+- **v1.0.4 (09/10/2026):** titolo "Fascicoli per Peso"; selettore **Peso 1 / Peso 2** sotto il filtro Anno; modale senza colonna Stato; dati letti via Web API su `agc_fascicolo2` (`agc_pesocalcolato2` non è nella view del dataset, prima Peso risultava 0); manifest con feature-usage `WebAPI`; layout con holder canvas `min-height` 420px.
+
+#### `AgicAspen.EsoneriAttiviChart` — `05 - Power Platform/PCF/`
+- Invariato al 09/10/2026: mostra solo esoneri con stato Attivo e data inizio ≤ oggi; gli esoneri con inizio futuro non compaiono (comportamento voluto).
 
 #### `AgicAspen.CaricoPerCanestro` — `05 - Power Platform/PCF/CaricoPerCanestro/`
 Grafico a barre del carico per canestro (materia giudiziaria).
