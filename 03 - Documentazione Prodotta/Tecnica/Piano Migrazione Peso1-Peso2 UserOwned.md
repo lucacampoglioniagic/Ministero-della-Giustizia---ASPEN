@@ -356,6 +356,9 @@ Via libera ricevuto dal committente ("vai, cancella le tabelle non più usate").
 
 **Stato finale delle vecchie tabelle**: `agc_canestrofascicolo` e `agc_peso2` esistono ancora come EntityDefinitions ma senza alcun lookup attivo da `agc_fascicolo2` e senza inclusione nell'app model-driven ASPEN (rimossa via `RemoveAppComponents`). Zero impatto funzionale residuo confermato. La loro eliminazione fisica resta un'attività futura opzionale, da eseguire con `pac solution` (fuori sessione corrente).
 
+### 14.8 Step `SetOwnerTeamPlugin` su Peso 1/Peso 2 (registrati 09/10/2026, `Tribunali-dev`)
+Eseguito il punto 8 di §3: registrati e verificati gli step Create/Pre-Operation(20)/sync/rank 1 su `agc_pesouno` e `agc_pesodue` (più `agc_esonero`), nel repo `Solution\ASPEN_unpacked\SdkMessageProcessingSteps\{a1c0d3e1-7b2a-4f11-9d01-5a0e1c2b3d01/02/03}.xml`. Test OK: record creati assegnati al default team della BU dell'utente. Requisito: il default team deve avere il ruolo "Operatore ASPEN" (altrimenti `0x80042f0a`), che a sua volta richiede i privilegi base di lettura per aprire l'app (fix solo in ambiente; XML dei ruoli nel repo non aggiornati) — vedi Piano Ambiente Destinazione, rischio #5, e README. Dopo ogni `pac solution import` riattivare/verificare gli step.
+
 ### Da fare (vedi anche §10, §11)
 - Valutare/pianificare separatamente (fuori scope migrazione Peso1/Peso2) l'assenza di privilegi `systemuser` nel ruolo "Operatore ASPEN" (trovata in E2E-45) — impedisce a un operatore di creare un fascicolo in prima persona via API/plugin (owner=impersonato).
 - **Eliminazione fisica delle vecchie tabelle `agc_canestrofascicolo`/`agc_peso2`** (§10/§14.7): bloccata da residui di solution-layering non risolvibili in sicurezza via Web API diretta; richiede intervento futuro con `pac solution` export/unpack. Le tabelle sono nel frattempo completamente inerti (lookup e inclusione app già rimossi), nessun rischio residuo per l'uso quotidiano del sistema.

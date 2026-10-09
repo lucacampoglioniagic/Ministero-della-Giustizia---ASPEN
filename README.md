@@ -283,14 +283,23 @@ Configurati in **Command Designer** (Maker Portal → tabella `agc_fascicolo2` �
 
 ### Plugin — SetOwnerTeamPlugin
 
-Plugin registrato su **`agc_fascicolo2`** per la gestione automatica del team proprietario del fascicolo alla creazione.
+Plugin registrato su **`agc_fascicolo2`**, `agc_rgnr` e (09/10/2026) **`agc_pesouno`, `agc_pesodue`, `agc_esonero`** per la gestione automatica del team proprietario del record alla creazione (default team della BU dell'utente).
 
 | Proprietà | Valore |
 |---|---|
 | Assembly | `SetOwnerTeamPlugin` |
-| Tabella target | `agc_fascicolo2` |
+| Tabelle target | `agc_fascicolo2`, `agc_rgnr`, `agc_pesouno`, `agc_pesodue`, `agc_esonero` |
 | Messaggio | `Create` |
-| Stage | `Pre-Operation (20)` |
+| Stage | `Pre-Operation (20)`, sincrono, rank 1 |
+
+I 3 step del 09/10/2026 sono nel repo in `Solution\ASPEN_unpacked\SdkMessageProcessingSteps\{a1c0d3e1-7b2a-4f11-9d01-5a0e1c2b3d01/02/03}.xml` (+ RootComponent in `Other\Solution.xml`); registrati via Web API dal browser Playwright autenticato (`az`/`pac` fuori sessione) e verificati: record Peso 1/Peso 2/Esonero creati risultano assegnati al default team della BU. **Volutamente non registrato** su `agc_fotocaricoesonero` (creata da `EsoneroRientroPlugin`: lo step annidato annullerebbe l'esonero; possibile miglioramento futuro: far ereditare alla foto l'`ownerid` dell'esonero) né su `agc_modificacarico` (audit, Read Global, nessun beneficio).
+
+**Requisiti di sicurezza (09/10/2026):**
+- Il **default team di ogni BU deve avere il ruolo "Operatore ASPEN"**, altrimenti la creazione fallisce con `0x80042f0a` "Errore nei ruoli del team" (visto anche sul team ANCONA su `agc_rgnr`). Oggi lo hanno solo Roma, Messina, Milano, Distretto L'Aquila, Distretto Ancona e Ministero della Giustizia; ~140 default team di tribunali/distretti ne sono privi → **da assegnare prima del go-live**.
+- Per aprire l'app a un operatore il ruolo "Operatore ASPEN" richiede privilegi base di lettura (Entity `prvReadEntity`, Attribute, Relationship, OptionSet, SystemForm, SystemChart/`savedqueryvisualization`, `appmodule`, `canvasapp`, `webresource`, `userentityuisettings`, `usersettings`, `organization`, `businessunit`; errore osservato: `RetrieveUserContext` `prvReadEntity`). Fix applicato **solo in ambiente**: `Roles\Operatore ASPEN.xml` e `Amministratore ASPEN.xml` nel repo **non sono ancora aggiornati** (Amministratore ancora da allineare, mancano anche Assign su fascicolo2/rgnr). Alternativa: basare i ruoli su una copia di Basic User.
+- `SetOwnerTeamPlugin` richiede utenti con Read su `systemuser`/`team` (verificato OK nei test).
+- **Produzione:** impostare l'ereditarietà privilegi del team ("Sia privilegi utente che del team" vs "Solo privilegi del team"); i `contact` magistrati **non si creano da soli**: importarli (`pac data import` da Excel, flag magistrato = Sì, BU/proprietario, carico iniziale). Read su `contact` ed `agc_esonero`/`agc_fotocaricoesonero`/`agc_modificacarico` è Global, Write Local.
+- Dopo ogni `pac solution import` **riattivare/verificare gli step plugin**.
 
 **Directory:** `05 - Power Platform/Plugin-Custom-API/`
 

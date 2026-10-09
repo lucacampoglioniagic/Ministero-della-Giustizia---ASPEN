@@ -4,6 +4,37 @@
 
 ---
 
+## Sessione 09/10/2026 (sera) — Ruoli Operatore, assegnazione a team, SetOwnerTeamPlugin su Peso/Esonero
+
+### Cosa è stato fatto
+- **Diagnosi ruolo Operatore ASPEN**: non riusciva ad aprire l'app perché mancavano i privilegi base (`prvReadEntity` ecc.). Fix applicato **direttamente in Tribunali-dev dall'utente**; i `Roles\*.xml` del repo **NON sono stati aggiornati**.
+- **Amministratore ASPEN**: da allineare (mancano anche i privilegi *Assign* su `fascicolo2` e `rgnr`). Sospeso "per ora": `pac`/`az` fuori sessione per mancato login giustizia.it.
+- **Errore `0x80042f0a`** nell'assegnazione record al team ANCONA: causa = team senza ruolo.
+- **SetOwnerTeamPlugin**: analisi con Opus, registrati e testati OK (via Web API da browser Playwright) 3 step Create, stage 20, su `agc_pesouno`, `agc_pesodue`, `agc_esonero`. XML creati nel repo: `SdkMessageProcessingSteps\{a1c0d3e1-7b2a-4f11-9d01-5a0e1c2b3d01/02/03}.xml` + `Solution.xml`.
+- Operatore ASPEN assegnato al default team "Ministero della Giustizia" in Tribunali-dev.
+- Docs aggiornati (Kaworu): README, CHANGELOG, Piano Migrazione Ambiente Destinazione, Piano Peso1-Peso2.
+
+### Decisioni
+- **Foto carico** e **modifica carico** lasciati **senza step** per scelta dell'utente.
+- Fix ruoli fatto a mano in dev; allineamento repo rimandato.
+
+### Stato attuale
+- 3 step plugin funzionanti in dev. Ruolo Operatore funzionante in dev, non nel repo.
+- Amministratore ASPEN non allineato. Nessun commit eseguito.
+
+### Prossimi passi
+- Assegnare Operatore ASPEN a tutti i ~140 default team senza ruolo **prima del go-live**.
+- Aggiornare gli XML dei ruoli nel repo (Operatore + Amministratore con Assign fascicolo2/rgnr) dopo login pac/az.
+- Import contact magistrati in produzione.
+- Eliminare i record di test (Peso1 "test", Peso2, Esonero).
+- Valutare ownerid foto = esonero in `EsoneroRientroPlugin`.
+
+### File modificati
+- 3 XML step in `SdkMessageProcessingSteps`, `Other/Solution.xml`, README, CHANGELOG, Piano Migrazione Ambiente Destinazione, Piano Peso1-Peso2 (tutti **non committati**).
+- `Lista Magistrati 07-10-2026 13-15-11.xlsx` non tracciato.
+
+---
+
 ## Sessione 09/10/2026 — PCF cruscotto: Carico v1.0.2, Fascicoli per Peso v1.0.4 (Web API)
 
 ### Cosa è stato fatto

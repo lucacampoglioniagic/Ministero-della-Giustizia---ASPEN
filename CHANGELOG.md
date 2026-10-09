@@ -4,6 +4,13 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### Aggiunto (09/10/2026, `Tribunali-dev`) — SetOwnerTeamPlugin su Peso 1/Peso 2/Esonero
+- Registrati e verificati 3 nuovi step `SetOwnerTeamPlugin` (Create, Pre-Operation 20, sync, rank 1) su `agc_pesouno`, `agc_pesodue`, `agc_esonero`; nel repo `Solution\ASPEN_unpacked\SdkMessageProcessingSteps\{a1c0d3e1-7b2a-4f11-9d01-5a0e1c2b3d01/02/03}.xml` + RootComponent in `Other\Solution.xml`. Registrazione via Web API dal browser Playwright autenticato. Test OK: i record nuovi sono assegnati al default team della BU dell'utente.
+- Non registrato su `agc_fotocaricoesonero` (creata da `EsoneroRientroPlugin`, lo step annidato annullerebbe l'esonero) né su `agc_modificacarico` (audit, nessun beneficio). Decisione: per ora lasciati così.
+- **Requisito ruoli:** il default team di ogni BU deve avere "Operatore ASPEN", altrimenti `0x80042f0a` "Errore nei ruoli del team". Lo hanno solo Roma, Messina, Milano, Distretto L'Aquila, Distretto Ancona, Ministero della Giustizia (assegnato il 09/10 per il test); ~140 default team da assegnare prima del go-live.
+- **Operatore ASPEN:** aggiunti in ambiente i privilegi base per aprire l'app (Entity/Attribute/Relationship/OptionSet/SystemForm/SystemChart/appmodule/canvasapp/webresource/userentityuisettings/usersettings/organization/businessunit). **Non ancora nel repo** (`Roles\Operatore ASPEN.xml`, `Amministratore ASPEN.xml`); Amministratore ancora da allineare (mancano anche Assign su fascicolo2/rgnr).
+- Note produzione: ereditarietà privilegi del team; import dei contact magistrati (`pac data import`); riattivare/verificare gli step plugin dopo ogni `pac solution import`. Dettagli in README, sezione "Plugin — SetOwnerTeamPlugin".
+
 ### Aggiornato (09/10/2026, `Tribunali-dev`) — pubblicato
 - PCF `CaricoMagistratiChart` 1.0.1 → 1.0.2: rimossa la colonna Stato dalla modale.
 - PCF `FascicoliPerCanestroChart` 1.0.1 → 1.0.4, rinominato "Fascicoli per Peso":
