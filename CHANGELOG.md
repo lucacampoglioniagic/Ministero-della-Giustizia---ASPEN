@@ -4,6 +4,19 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### 15/10/2026 — Operatore ASPEN: privilegi Read mancanti per l'ingresso nell'app (org8e819d4a)
+- **Sintomo:** Gloria Violi ed Elia Quaranta (team "Tribunale di Roma") non entravano nell'app col solo Operatore ASPEN; entravano aggiungendo System Customizer al team.
+- **Cause escluse (verifica Web API in sola lettura):** app `agc_ASPEN` condivisa col ruolo; ruolo con privilegi utente+team (`isinherited=1`); team con la copia BU corretta del ruolo.
+- **Causa:** mancavano `prvReadCanvasApp` (Home = custom page canvas), `prvReadTheme`, `prvReadAppModuleComponentNode`. Aggiunti dall'utente (Global) nel PPAC: 585 → 588 privilegi. Nessun privilegio di scrittura/customization necessario.
+- **Esito:** senza System Customizer Elia entra; Gloria non con LevelUp ma identica a Elia in Dataverse (probabile limite/cache LevelUp) — da confermare con test reale InPrivate.
+- **Da fare:** allineare `Roles\Operatore ASPEN.xml` (non ancora aggiornato), rimuovere System Customizer dal team, verificare l'intento di `prvReadagc_configurazione` Global (vedi E2E-33 nel Piano).
+
+### 12/10/2026 — Ruolo Operatore ASPEN ricreato nell'ambiente ministero (org8e819d4a)
+- **Confronto via Web API:** il ruolo interno (`lccministerogiustiziademo`) ha 134 privilegi (modificato 16/09), con tabelle legacy `agc_Peso2`/`agc_Fascicolo`/`agc_Canestro` e privilegi di sistema extra. Il ruolo del ministero ne aveva solo 68: aveva le nuove tabelle `agc_PesoUno`/`PesoDue`/`esonero`/`fotocaricoesonero` ma non i privilegi di sistema, in particolare `prvReadTeam`. Causa probabile degli errori `SetOwnerTeamPlugin` (es. `0x80042f0a`).
+- **Soluzione:** ruolo ricreato copiandolo da Basic User e aggiungendo i privilegi custom come da `05 - Power Platform\Solution\ASPEN_unpacked\Roles\Operatore ASPEN.xml` (riferimento per l'elenco). Funzionamento confermato dall'utente.
+- **Procedura:** se esiste già un ruolo omonimo, rinominarlo temporaneamente prima della copia.
+- **Da fare:** verificare se serve Read su `agc_configurazione` (OrgOwned, non presente nel ruolo); assegnare il ruolo ai default team delle BU.
+
 ### Aggiunto (09/10/2026, `Tribunali-dev`) — SetOwnerTeamPlugin su Peso 1/Peso 2/Esonero
 - Registrati e verificati 3 nuovi step `SetOwnerTeamPlugin` (Create, Pre-Operation 20, sync, rank 1) su `agc_pesouno`, `agc_pesodue`, `agc_esonero`; nel repo `Solution\ASPEN_unpacked\SdkMessageProcessingSteps\{a1c0d3e1-7b2a-4f11-9d01-5a0e1c2b3d01/02/03}.xml` + RootComponent in `Other\Solution.xml`. Registrazione via Web API dal browser Playwright autenticato. Test OK: i record nuovi sono assegnati al default team della BU dell'utente.
 - Non registrato su `agc_fotocaricoesonero` (creata da `EsoneroRientroPlugin`, lo step annidato annullerebbe l'esonero) né su `agc_modificacarico` (audit, nessun beneficio). Decisione: per ora lasciati così.

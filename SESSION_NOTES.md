@@ -4,6 +4,76 @@
 
 ---
 
+## Sessione 15/10/2026 — Utenti Tribunale di Roma non entrano nell'app con il solo ruolo Operatore ASPEN
+
+### Cosa è stato fatto
+- Problema: Gloria Violi ed Elia Quaranta (BU/team "Tribunale di Roma", ruolo solo via team) non entrano nell'app ASPEN col solo Operatore ASPEN; entrano se al team si aggiunge System Customizer.
+- Analisi (Gemini 4 Argon + Microsoft Learn): ipotesi = app non condivisa col ruolo, ereditarietà privilegi membro, ruolo del team errato, privilegi mancanti.
+- Verifiche live su `org8e819d4a` (Tribunali-dev) via Web API (Playwright, **sola lettura**): app `agc_ASPEN` condivisa con Operatore e Amministratore ASPEN (escluso); ruolo con "Livello di accesso utente diretto (di base) e privilegi del team", `isinherited=1` (escluso); team Roma ha la copia BU corretta del ruolo (roleid `20d37ec9-28b7-444e-a4eb-3ec160825428`, root `23935357-54c6-f111-aaaf-7ced8d763868`, BU `741409db-1fb8-f111-aaab-000d3a697f24`) più System Customizer (escluso).
+- **Causa**: privilegi Read mancanti rispetto a System Customizer: `prvReadCanvasApp` (la Home è custom page canvas `cr248_aspenhome_1750e` + command library canvas), `prvReadTheme`, `prvReadAppModuleComponentNode`. Aggiunti **dall'utente** a livello Global nel PPAC: privilegi 585 → 588 (verificato con `RetrieveRolePrivilegesRole`).
+- `prvReadagc_configurazione` Global è già nel ruolo live ma **assente** nell'XML del repo. `prvReadCustomControl` non c'è nemmeno in System Customizer (irrilevante). Non servono privilegi di scrittura/customization. Marginali non aggiunti: `prvReadAppUserSetting`, `prvReadAppModuleComponentEdge`, `prvReadSolution`, `prvReadPublisher`.
+- Test: rimosso System Customizer, Elia entra (LevelUp impersonate); Gloria no con LevelUp, ma Dataverse mostra Gloria ed Elia identiche (stessa BU, team, 306 privilegi effettivi, abilitate, licenza, accessmode 0) → fallimento quasi certamente limite/cache di LevelUp. Test `MSCRMCallerID` su appmodules non significativo (0 risultati anche per Elia).
+- Nessuna modifica ai dati da parte dell'assistente.
+
+### Decisioni
+- Fix = solo privilegi Read (CanvasApp, Theme, AppModuleComponentNode) a Global; niente System Customizer né privilegi di scrittura.
+- Marginali non aggiunti finché non dimostrati necessari.
+
+### Stato attuale
+- Ruolo live a 588 privilegi; Elia entra senza System Customizer. Gloria **non ancora confermata** con test reale.
+- Repo: `Roles\Operatore ASPEN.xml` NON allineato (volutamente non toccato). Nessun commit.
+- Attenzione: il Piano (E2E-33) dice che Read `agc_configurazione` era stato rimosso per nascondere le configurazioni; nel ruolo live è Global → verificare l'intento.
+
+### Prossimi passi
+- Test reale di Gloria in InPrivate su `https://org8e819d4a.crm4.dynamics.com/main.aspx?appid=7c769e36-f2b7-f111-aaab-000d3a697f24`; se fallisce, catturare errore Console/Network (`CheckPrivilege`, `PrivilegeName`).
+- Rimuovere System Customizer dal team se ancora presente e riverificare.
+- Aggiornare `Roles\Operatore ASPEN.xml` (CanvasApp, Theme, AppModuleComponentNode, agc_configurazione Read + privilegi base di Basic User).
+- Assegnare il ruolo ai default team delle altre BU (~140); riallineare `agc_caricoattuale`; importare magistrati.
+- Pulire `role_ministero.json` / `role_interno.json` in `C:\Users\Andal\.copilot\installed-plugins\power-platform-skills\model-apps\`.
+
+### Files changed
+- `SESSION_NOTES.md`, `CHANGELOG.md`, `03 - Documentazione Prodotta\Tecnica\ASPEN - Piano di Migrazione Ambiente Destinazione.md` (solo documentazione).
+
+---
+
+## Sessione 12/10/2026 — Ruolo Operatore ASPEN nel ministero: confronto con ambiente interno e ricreazione (fix SetOwnerTeamPlugin)
+
+### Cosa è stato fatto
+- Recuperato il contesto; aperte con Playwright due tab: ambiente interno `lccministerogiustiziademo` (account agic.it) e ambiente ministero `org8e819d4a` (account giustizia.it). Login manuali, password inserite dall'utente.
+- Estratti via Web API i privilegi del ruolo **Operatore ASPEN** nella BU radice di entrambi e confrontati:
+  - **interno**: 134 privilegi (modificato 16/09; tabelle legacy `agc_Peso2`/`agc_Fascicolo`/`agc_Canestro`; privilegi di sistema extra, tra cui Read globale su Team/User/Role/Workflow ecc.);
+  - **ministero**: 68 privilegi (tabelle nuove ma **senza** privilegi di sistema, es. manca `prvReadTeam`).
+- Causa probabile degli errori `SetOwnerTeamPlugin` (`0x80042f0a`): ruolo troppo povero nel ministero.
+- Ruolo **ricreato nel ministero** copiandolo da *Basic User* (Copia ruolo; nome "Operatore ASPEN", si applica a Users, descrizione e riepilogo privilegi in italiano), poi aggiunti i privilegi custom come da `Roles\Operatore ASPEN.xml`: `fascicolo2`/`rgnr` CRUD+Append+Assign Local; `PesoUno`/`PesoDue` C/R/W+Append+Assign Local; `esonero` C/W Local, R Global; `fotocaricoesonero` C/R/Append Global; `modificacarico` R Global; Contact R/Assign Global; plugin/SharePoint Read Global.
+- **L'utente ha confermato che ora funziona.**
+- Documentazione aggiornata: CHANGELOG, README (sezione SetOwnerTeamPlugin), Piano Migrazione Ambiente Destinazione (riga rischio #5).
+
+### Decisioni
+- Ricreare il ruolo da *Basic User* + privilegi custom, invece di importare/copiare quello dell'ambiente interno (che contiene privilegi legacy e di sistema eccessivi).
+- Riferimento per i privilegi custom: `Roles\Operatore ASPEN.xml` del repo.
+
+### Stato attuale
+- Ruolo Operatore ASPEN funzionante nel ministero (confermato dall'utente). Nessun commit eseguito.
+- Ruolo del ministero non ancora ri-estratto né confrontato col repo.
+
+### Prossimi passi
+- Verificare se serve Read su `agc_configurazione`.
+- Assegnare il ruolo ai default team di ~140 BU.
+- Allineare `Roles\Operatore ASPEN.xml` e `Amministratore ASPEN.xml` nel repo con l'ambiente.
+- Ri-estrarre il ruolo del ministero e confrontarlo col repo.
+- Import magistrati e verifica step plugin per produzione.
+- Riallineamento `agc_caricoattuale`.
+
+### Insidie / pulizia
+- La navigazione diretta a `/api/data` dà 401/Access denied: serve prima una sessione su `main.aspx`.
+- Gli indici delle tab Playwright non sono affidabili.
+- `browser_evaluate` con `filename` ha salvato i file in `C:\Users\Andal\.copilot\installed-plugins\power-platform-skills\model-apps\` (`role_ministero.json`, `role_interno.json`): **da cancellare**.
+
+### File modificati
+- CHANGELOG.md, README.md, Piano Migrazione Ambiente Destinazione (tutti **non committati**).
+
+---
+
 ## Sessione 09/10/2026 (sera) — Ruoli Operatore, assegnazione a team, SetOwnerTeamPlugin su Peso/Esonero
 
 ### Cosa è stato fatto
