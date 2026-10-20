@@ -4,6 +4,64 @@
 
 ---
 
+## Sessione 20/10/2026 — Tribunali-test: import magistrati, owner team Tribunale, amministratore team
+
+### Cosa è stato fatto
+- Creati **70 contatti magistrati** da `Lista Magistrati 20-10-2026 11-13-48.xlsx` (`agc_ismagistrato=true`; e-mail solo dove presente nel file). 24 righe con sfondo giallo → Firenze, 46 → Roma.
+- Collegamento contatto→utente via `contact.preferredsystemuserid`: solo Alessandro Azzaroli e Francesco Patrone hanno un utente in test; gli altri 68 utenti non esistono ancora.
+- Team **Tribunale di FIRENZE** (`9ff91f35-65cc-f111-a05d-000d3ad9771d`) e **Tribunale di ROMA** (`f11c09ff-f2c0-f111-aaaf-7c1e5237859e`): default team di BU, membri non aggiungibili a mano, privilegi = 0 → non potevano possedere contatti. Assegnato **Operatore ASPEN** (copia della BU di ciascun team) via Web API (`teamroles_association`), perché la UI dava «problema durante il caricamento dei ruoli». Poi 70 contatti riassegnati come owner: 24 a Firenze, 46 a Roma.
+- Impostato **Riccardo Vedovato** (`riccardo.vedovato@giustizia.it`, `0826376d-c2b5-f111-aaab-70a8a581cd32`; NON l'account admin «# Riccardo Vedovato») come amministratore di tutti i **171 team Tribunale/Distretto**.
+
+### Decisioni
+- Per poter possedere contatti, il default team di BU deve avere il ruolo Operatore ASPEN (stesso requisito già emerso per `SetOwnerTeamPlugin`).
+- Ruolo assegnato via Web API perché la UI non caricava i ruoli.
+
+### Stato attuale
+- Test: 70 magistrati presenti, owner = team di competenza; solo 2 su 70 collegati a un utente.
+- Nessuna modifica al repo (solo `SESSION_NOTES.md` e `CHANGELOG.md`); modifiche effettuate sull'ambiente Tribunali-test.
+
+### Prossimi passi
+- **Creare gli utenti dei 68 magistrati in test e associarli ai contatti** (`preferredsystemuserid`).
+- Ruoli sui team **Distretto** non toccati: valutare l'assegnazione di Operatore ASPEN.
+- Resta aperto l'assegnamento di Operatore ASPEN ai ~140 default team delle BU.
+
+### Files changed
+- Nessuna modifica di codice/solution nel repo oltre a `SESSION_NOTES.md` e `CHANGELOG.md`.
+- Working tree non committato: `README.md` (riga aggiornamento 16/10/2026, residuo della sessione precedente) e `Lista Magistrati 20-10-2026 11-13-48.xlsx` (file sorgente dell'import, non tracciato; contiene dati personali → valutare se versionarlo o escluderlo via `.gitignore`).
+
+---
+
+## Sessione 16/10/2026 — Confronto Tribunali-test vs Tribunali-dev e riattivazione step plugin
+
+### Cosa è stato fatto
+- Recuperato il contesto; consigliato come gestire un ruolo Operatore ASPEN diverso nell'ambiente di test managed: allineare i GUID del ruolo con quelli di dev.
+- Confronto **Tribunali-test vs Tribunali-dev**: solution ASPEN `1.0.0.9` uguale; ruoli con GUID identici (Operatore ASPEN `23935357-54c6-f111-aaaf-7ced8d763868`, Amministratore ASPEN `9fb62eb8-4fb7-f111-aaab-7ced8d763868`); 650 privilegi identici; workflow identici.
+- Trovati **10 step plugin disabilitati in test**: AnnoRegistroValidation, CaricoMagistratoAssegnazione, EsoneroOverlapValidation, EsoneroRientro (Create/Update), SetOwnerTeam Create su `agc_rgnr` e `agc_fascicolo2`. **Riattivati via Web API (204)** e verificati.
+
+### Decisioni
+- Per il ruolo diverso in test: allineare i GUID invece di mantenere ruoli distinti.
+- Riattivazione step eseguita direttamente via Web API (test managed non esportabile).
+
+### Stato attuale
+- Test e dev allineati su solution, ruoli, privilegi, workflow e step plugin.
+- **Non verificati** in test: dati di configurazione, PCF, custom page.
+- Nessun commit. Nessuna modifica a file del repo in questa sessione (working tree pulito; nessun documento sovrascritto).
+- Note operative: login pac rifatti (profili `TribunaliTestCli3`, `TribunaliDevCli3`) perché i token scadono per conditional access (sign-in frequency) → `pac auth create` interattivo; `pac env fetch` usare `-xf` (con `-x` e XML errore di quoting in PowerShell); `az` è loggato con account siag.it, da NON usare; l'ambiente test managed non è esportabile (`pac solution export` fallisce).
+- Ruolo managed in test: se i GUID dei ruoli differiscono la solution crea un duplicato / l'upgrade elimina il vecchio; qui GUID allineati. Step riattivati con `PATCH statecode=0,statuscode=1` usando la sessione browser autenticata su test.
+
+### Prossimi passi
+- Aggiornare nel repo `Roles\Operatore ASPEN.xml` e `Roles\Amministratore ASPEN.xml`.
+- Rimuovere System Customizer dal team Tribunale di Roma.
+- Verificare Read su `agc_configurazione` (vedi E2E-33).
+- Assegnare Operatore ASPEN ai ~140 default team delle BU.
+- Adattare l'URL della custom page Home per l'ambiente test.
+- Verificare in test dati di configurazione, PCF e custom page.
+
+### Files changed
+- Nessuno nel repo (solo `SESSION_NOTES.md`); modifiche effettuate sull'ambiente Tribunali-test (step plugin riattivati).
+
+---
+
 ## Sessione 15/10/2026 — Utenti Tribunale di Roma non entrano nell'app con il solo ruolo Operatore ASPEN
 
 ### Cosa è stato fatto

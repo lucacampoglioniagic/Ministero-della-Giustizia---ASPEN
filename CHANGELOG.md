@@ -4,6 +4,19 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### 20/10/2026 — Tribunali-test: contatti magistrati, owner sui team Tribunale e amministratore team (solo ambiente, nessuna modifica al repo)
+- **Contatti magistrati:** creati **70 contatti** da `Lista Magistrati 20-10-2026 11-13-48.xlsx` con `agc_ismagistrato=true`; e-mail valorizzata solo dove presente nel file. Righe con sfondo giallo (24) → **Firenze**, le altre (46) → **Roma**.
+- **Collegamento contatto→utente** (`contact.preferredsystemuserid`): solo **Alessandro Azzaroli** e **Francesco Patrone** hanno un utente in test; gli altri **68 utenti non esistono ancora**.
+- **Team Tribunale di FIRENZE** (`9ff91f35-65cc-f111-a05d-000d3ad9771d`) e **Tribunale di ROMA** (`f11c09ff-f2c0-f111-aaaf-7c1e5237859e`): sono default team di BU (membri non aggiungibili a mano) con **privilegi = 0**, quindi non potevano possedere contatti. Assegnato il ruolo **Operatore ASPEN** (copia della BU di ciascun team) via Web API (`teamroles_association`), perché la UI dava l'errore «problema durante il caricamento dei ruoli». Poi i 70 contatti sono stati riassegnati come owner: **24 a Firenze, 46 a Roma**.
+- **Amministratore team:** impostato **Riccardo Vedovato** (`riccardo.vedovato@giustizia.it`, systemuserid `0826376d-c2b5-f111-aaab-70a8a581cd32`; **non** l'account admin «# Riccardo Vedovato») come amministratore di tutti i **171 team Tribunale/Distretto**.
+- **Aperto:** creare e associare in test gli utenti dei 68 magistrati; ruoli sui team **Distretto** non toccati.
+
+### 16/10/2026 — Allineamento Tribunali-test vs Tribunali-dev e riattivazione step plugin in test
+- **Verifica allineamento (sola lettura):** solution ASPEN `1.0.0.9` in entrambi gli ambienti (managed in test, unmanaged in dev); ruoli **Operatore ASPEN** (`23935357-54c6-f111-aaaf-7ced8d763868`) e **Amministratore ASPEN** (`9fb62eb8-4fb7-f111-aaab-7ced8d763868`) con **GUID identici** → nessun duplicato; **650 privilegi identici** (confronto per nome); nessuna differenza nei workflow ASPEN.
+- **Corretto in test:** dopo l'import 10 step plugin risultavano **Disabilitati**: `AnnoRegistroValidationPlugin` (Create/Update su `agc_rgnr`), `CaricoMagistratoAssegnazionePlugin` (Create/Update su `agc_fascicolo2`), `EsoneroOverlapValidationPlugin` ed `EsoneroRientroPlugin` (Create/Update su `agc_esonero`), `SetOwnerTeamPlugin` (Create su `agc_rgnr` e `agc_fascicolo2`). Riattivati via Web API `PATCH` (`statecode=0`, `statuscode=1`, 204) con la sessione browser autenticata su test; verificato che nessuno step ASPEN risulta più disabilitato.
+- **Nota ruoli managed:** con ruolo managed in test, se i GUID dei ruoli differiscono la solution crea un duplicato o l'upgrade elimina il vecchio; qui i GUID sono allineati, quindi nessun rischio.
+- **Note operative:** Tribunali-test è managed e non esportabile (`pac solution export` fallisce); i token `pac` scadono per conditional access (sign-in frequency) → `pac auth create` interattivo (profili `TribunaliTestCli3` / `TribunaliDevCli3`); `pac env fetch` richiede `-xf` (file) perché `-x` con XML dà errore di quoting in PowerShell; l'account `az` attivo è un altro utente (siag.it): non usarlo.
+
 ### 15/10/2026 — Operatore ASPEN: privilegi Read mancanti per l'ingresso nell'app (org8e819d4a)
 - **Sintomo:** Gloria Violi ed Elia Quaranta (team "Tribunale di Roma") non entravano nell'app col solo Operatore ASPEN; entravano aggiungendo System Customizer al team.
 - **Cause escluse (verifica Web API in sola lettura):** app `agc_ASPEN` condivisa col ruolo; ruolo con privilegi utente+team (`isinherited=1`); team con la copia BU corretta del ruolo.
