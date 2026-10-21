@@ -4,6 +4,15 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### 21/10/2026 — Tribunali-test: configurazioni per tribunale, visibilità per BU, licenze (solo ambiente + documentazione)
+- **Configurazioni:** creati **278 record `agc_configurazione`** via `pac data import` (pacchetto Configuration Migration `data.xml`+`data_schema.xml` generato con PowerShell, fuori dal repo). Per le **142 BU `Tribunale%`** (173 BU totali) chiavi `ASPEN_PesoLimite_<BUId>=60` e `ASPEN_PesoLimiteCanestro_<BUId>=15`, `agc_appscope=ASPEN`. Preesistenti non toccati: 6 record di Milano, Messina, Roma (PesoLimite=48, Canestro=15). Verifica: 287 record, 142+142 chiavi BU, 0 duplicati, 1 record ASSPECA.
+- **Visibilità:** `agc_configurazione` è Organization-owned e Operatore ASPEN ha Read Global → vede tutti i record; il filtro per BU è solo nei PCF (fallback globale). Verifica E2E con utente di BU tribunale non eseguita.
+- **Errore `0x8004830b`:** appartenenze dei default team gestite automaticamente; spostare l'utente di BU (Change business unit) e riassegnare i ruoli, oppure usare team Owner non default.
+- **Licenze:** Gloria Violi (BU Messina) non accede ad ASPEN: App Access Checker Security Yes / **License No**; con System Administrator passa (esentato). Servono licenza Power Apps o App Pass (o pay-as-you-go); richiesta inviata al cliente.
+- **Tecnico:** token `pac` scade ogni 23h (AADSTS70043) → `pac auth create` (profilo `TribunaliTestCli4`); `pac auth select` non rinnova.
+- **Aperti/da fare:** licenze utenti; decisione 48→60 per Milano/Messina/Roma; test visibilità per BU con utente reale; eventuale cambio ownership di `agc_configurazione` (User/Team con Read BU).
+- **Doc:** aggiornato Piano di Migrazione (§1.1.9, rischio R21).
+
 ### 20/10/2026 — Tribunali-test: contatti magistrati, owner sui team Tribunale e amministratore team (solo ambiente, nessuna modifica al repo)
 - **Contatti magistrati:** creati **70 contatti** da `Lista Magistrati 20-10-2026 11-13-48.xlsx` con `agc_ismagistrato=true`; e-mail valorizzata solo dove presente nel file. Righe con sfondo giallo (24) → **Firenze**, le altre (46) → **Roma**.
 - **Collegamento contatto→utente** (`contact.preferredsystemuserid`): solo **Alessandro Azzaroli** e **Francesco Patrone** hanno un utente in test; gli altri **68 utenti non esistono ancora**.

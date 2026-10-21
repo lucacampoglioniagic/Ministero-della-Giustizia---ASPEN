@@ -151,6 +151,18 @@ User/Team owned (soggetto a `SetOwnerTeamPlugin`). Form con tab "Fascicoli" (sub
 
 Record: `PesoLimite = 20` (soglia carico per magistrato, PCF CaricoMagistratiChart), `PesoLimiteCanestro = 30` (PCF CaricoPerCanestro). Voce sitemap "Configurazioni" in area Impostazioni con privilege rule (visibile solo a chi ha privilegio di Write sulla tabella / admin).
 
+**Configurazioni per tribunale (Tribunali-test, 21/10/2026).** Chiavi con suffisso BU: `ASPEN_<Chiave>_<BUId>` (`ASPEN_PesoLimite_<BUId>`, `ASPEN_PesoLimiteCanestro_<BUId>`), `agc_appscope=ASPEN` (100000000). I PCF (`CaricoMagistratiChart`, `CaricoPerCanestro`) risolvono la chiave in base alla BU dell'utente con fallback globale.
+- Create con `pac data import` (pacchetto Configuration Migration `data.xml` + `data_schema.xml` generato via PowerShell, fuori dal repo; funziona come upsert/creazione): **278 record** = 142 BU `Tribunale%` × 2 chiavi (PesoLimite=60, PesoLimiteCanestro=15). Gerarchia BU: radice tribunali-test > Ministero della Giustizia > Distretti > Tribunali (173 BU totali).
+- Non toccati: 6 record preesistenti di Milano, Messina, Roma (PesoLimite=48, Canestro=15) → **decisione aperta** se allinearli a 60.
+- Verifica: 287 record totali, 142+142 chiavi BU, 0 duplicati, 1 record ASSPECA (`IndiceTurnoSezione`).
+- **Visibilità per BU:** la tabella è Organization-owned (OrgOwnedMask) e l'Operatore ASPEN ha Read Global (mask 8): vede nativamente tutti i record (viste/Web API incluse); il filtro per tribunale esiste solo nei PCF. Verifica E2E con utente di BU tribunale **non eseguita** (unico utente attivo in BU Tribunale: Agnese Di Girolamo; gli altri nella BU radice; nessun token per il tenant giustizia.it). Opzione: rendere la tabella User/Team-owned con Read a livello BU (come Peso1/Peso2) se serve filtro anche su viste/liste.
+
+**Licenze (21/10/2026).** Un utente con solo Operatore ASPEN (es. Gloria Violi, BU Messina) non accede all'app: App Access Checker (`WebResources/msdyn_AppAccessChecker.html`) → Security: Yes, **License: No** («can be accessed via App Pass»). Con System Administrator passa (admin esentati; `IsLicenseEnforcementOn: true`). Causa = licenza, non ruoli. Servono licenza Power Apps (per-user/Premium) o App Pass (per app) assegnato ad ambiente/app, oppure pay-as-you-go. Richiesta inviata al cliente (in attesa). Dopo l'assegnazione ripetere il checker col solo Operatore ASPEN e la verifica visibilità configurazioni per BU.
+
+**Team predefiniti (errore `0x8004830b`).** Nei default team di BU l'appartenenza è gestita automaticamente («Impossibile modificare le appartenenze dei team predefiniti»): per inserire un utente occorre spostarlo nella BU (Change business unit) e riassegnare i ruoli; alternativa: team Owner non default.
+
+**Nota operativa pac.** Il token scade ogni 23h (AADSTS70043, sign-in frequency): `pac auth create` interattivo (profilo `TribunaliTestCli4`); `pac auth select` non rinnova il token.
+
 #### 1.1.10 Tabelle legacy da NON ricreare
 
 | Tabella | Motivo |
@@ -632,6 +644,7 @@ Durante la ricostruzione della dashboard "Cruscotto ASPEN" nella destinazione si
 | R17 | Import di solution unpacked senza `<MissingDependencies />` | M | Basso | Template Solution.xml versionato | 5 |
 | R18 | Scelta opzione B (rinomina `agc_fascicolo2`→`agc_fascicolo`) introduce regressioni | M (se scelta) | Alto | Raccomandata opzione A; se B, refactor prima della Fase 4 + full E2E | 3 |
 | R19 | Licenze/utenti test non disponibili nella nuova tenant | M | Medio | Verificare in Fase 0; in fallback usare un solo utente per BU con cambio BU | 0 |
+| R21 | Utenti operatori senza licenza Power Apps/App Pass: accesso all'app negato pur con ruoli corretti (App Access Checker: License No) | A | Alto | Assegnare licenze per-user/Premium o App Pass all'ambiente; pay-as-you-go come alternativa (richiesta inviata al cliente 21/10/2026) | 0/11 |
 | R20 | Differenze di versione piattaforma (nuovo env più recente): deprecazioni (`Xrm.Page`, `openWebResource`) | B | Medio | Codice usa già `formContext`/`Xrm.Navigation`; solution checker in Fase 12 | 12 |
 
 ---

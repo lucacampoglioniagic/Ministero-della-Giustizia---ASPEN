@@ -4,6 +4,35 @@
 
 ---
 
+## Sessione 21/10/2026 — Tribunali-test: configurazioni per tribunale, visibilità per BU, licenze
+
+### Cosa è stato fatto
+- Create **278 `agc_configurazione`** in TEST con `pac data import` (pacchetto Configuration Migration generato via PowerShell, fuori dal repo): per le 142 BU `Tribunale%` (su 173 BU; gerarchia radice > Ministero della Giustizia > Distretti > Tribunali) `ASPEN_PesoLimite_<BUId>=60` e `ASPEN_PesoLimiteCanestro_<BUId>=15`, `agc_appscope=ASPEN`. Non toccati i 6 record preesistenti di Milano/Messina/Roma (PesoLimite=48, Canestro=15). Verifica: 287 totali, 142+142 chiavi, 0 duplicati, 1 ASSPECA.
+- Analisi visibilità: tabella Organization-owned + Operatore ASPEN Read Global → vede tutto nativamente; filtro per BU solo nei PCF (`CaricoMagistratiChart`, `CaricoPerCanestro`) con fallback globale.
+- Errore `0x8004830b`: default team con appartenenza automatica → spostare utente di BU e riassegnare ruoli, o team Owner non default.
+- Gloria Violi (`d436c69b-5dc9-f111-aaaf-7c1e5237859e`, BU Messina) non accede: App Access Checker Security Yes / **License No**; admin esentati. Causa = licenza. Richiesta licenze inviata al cliente.
+
+### Decisioni
+- Chiavi per tribunale con suffisso `_<BUId>` e scope ASPEN; i valori Milano/Messina/Roma non sovrascritti in attesa di decisione.
+- Diagnosi accesso: licenza (Power Apps per-user/Premium o App Pass, o pay-as-you-go), non ruoli.
+- `pac data import` usato come upsert/creazione.
+
+### Stato attuale
+- Configurazioni create e verificate (conteggi). **Non verificato** end-to-end il filtro per BU (unico utente in BU tribunale: Agnese Di Girolamo; nessun token per tenant giustizia.it).
+- Licenze in attesa dal cliente. Token pac scade ogni 23h (AADSTS70043): `pac auth create` interattivo (profilo `TribunaliTestCli4`); `pac auth select` non rinnova.
+
+### Aperti / da fare
+- **Licenze utenti** (poi ripetere App Access Checker col solo Operatore ASPEN).
+- **Decisione 48→60** per Milano/Messina/Roma.
+- **Test visibilità configurazioni per BU** con utente reale in BU tribunale.
+- Eventuale **cambio ownership `agc_configurazione`** a User/Team con Read BU (come Peso1/Peso2) se serve filtro su viste/liste.
+- Residui precedenti: utenti dei 68 magistrati, Operatore ASPEN sui default team (~140) e Distretti.
+
+### Files changed
+- `SESSION_NOTES.md`, `CHANGELOG.md`, `03 - Documentazione Prodotta\Tecnica\ASPEN - Piano di Migrazione Ambiente Destinazione.md` (§1.1.9, R21). Nessuna modifica a codice/solution; modifiche sull'ambiente Tribunali-test.
+
+---
+
 ## Sessione 20/10/2026 — Tribunali-test: import magistrati, owner team Tribunale, amministratore team
 
 ### Cosa è stato fatto
