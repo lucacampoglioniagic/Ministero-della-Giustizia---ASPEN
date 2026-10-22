@@ -4,6 +4,13 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### 22/10/2026 — Regole operative chiarite e allineamento README (solo documentazione)
+- **README.md:** aggiunta la sezione «Regole operative chiarite (22/10/2026)» con: accesso da definire al go-live; ruoli Operatore ASPEN / Amministratore ASPEN; riserva GUP non bloccante; riassegnazione; Carico Attuale non ricalcolato al cambio di Peso 1/2; esoneri parziali = maggiorazione del peso con coefficiente `1+%/100` (confermata dal cliente); soglie e colori del cruscotto.
+- **Configurazione:** valori documentati aggiornati a `PesoLimite=60` e `PesoLimiteCanestro=15` per le BU Tribunale.
+- **Modifica Carico:** ora indicato per System Administrator e Amministratore ASPEN.
+- **Segnalato:** ambiguità dell'etichetta «Percentuale Esonero».
+- Nessuna modifica a codice o ambiente; nessun commit/push, PDF non rigenerato.
+
 ### 21/10/2026 — Tribunali-test: configurazioni per tribunale, visibilità per BU, licenze (solo ambiente + documentazione)
 - **Configurazioni:** creati **278 record `agc_configurazione`** via `pac data import` (pacchetto Configuration Migration `data.xml`+`data_schema.xml` generato con PowerShell, fuori dal repo). Per le **142 BU `Tribunale%`** (173 BU totali) chiavi `ASPEN_PesoLimite_<BUId>=60` e `ASPEN_PesoLimiteCanestro_<BUId>=15`, `agc_appscope=ASPEN`. Preesistenti non toccati: 6 record di Milano, Messina, Roma (PesoLimite=48, Canestro=15). Verifica: 287 record, 142+142 chiavi BU, 0 duplicati, 1 record ASSPECA.
 - **Visibilità:** `agc_configurazione` è Organization-owned e Operatore ASPEN ha Read Global → vede tutti i record; il filtro per BU è solo nei PCF (fallback globale). Verifica E2E con utente di BU tribunale non eseguita.
