@@ -1,5 +1,7 @@
 # Home Custom Page — Sorgente reale (Screen1.fx.yaml / App.fx.yaml)
 
+> ⚠️ **Sorgente non aggiornato (26/10/2026)**: i file qui hanno ancora URL fissi di dev. La Home corrente usa variabili d'ambiente con URL completo per pulsante (`App.OnStart` → `Set(gXxxUrl; LookUp('Environment Variable Values'; ...).Value)`, `Launch(gXxxUrl; {}; LaunchTarget.Replace)`); da riesportare da dev. Vedi `README.md` radice (procedura re-point).
+
 Questi due file sono il **vero** sorgente Power Fx round-trippabile della custom page "Home"
 (`agc_home_629be`, custom page di tipo `canvasapptype=2` embedded nella app modello ASPENPOC),
 estratto ed editato direttamente il 11/09/2026.

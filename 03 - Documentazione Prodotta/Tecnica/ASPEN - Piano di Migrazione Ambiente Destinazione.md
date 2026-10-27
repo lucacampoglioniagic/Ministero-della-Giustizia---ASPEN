@@ -104,7 +104,7 @@ Form "Contatto - Magistrato" (FormXml **non versionato** in repo): campi anagraf
 | `agc_statoesonero` | Choice | R | 1 = Attivo (default form), 2 = Chiuso, 3 = Annullato |
 | `agc_note` | Memo | O | |
 | `agc_punteggioalmomentoesonero` | Decimal | P/ro | Snapshot carico all'attivazione |
-| `agc_punteggioalrientro` | Decimal | P/ro | Snapshot carico alla chiusura |
+| `agc_punteggioalrientro` | Decimal | P/ro | Snapshot carico alla chiusura (Totale: carico risultante dopo il riallineamento, dal 26/10/2026; = `max(carico collega, agc_punteggioalmomentoesonero)`, dal 27/10/2026) |
 | `agc_collegariferimento` | Lookup → contact | P/ro | Collega "più simile" usato per il riallineamento |
 
 Business rule: "Nascondi Percentuale Esonero se Totale" (scope form). Viste: "Esoneri attivi/e" (deve includere `agc_statoesonero`, `agc_tipoesonero`, `agc_percentualeesonero`, `agc_datainizio`, `agc_datafine`, `agc_magistrato` per il PCF), "Esoneri inattivi/e", associata, lookup.
@@ -224,7 +224,7 @@ I valori sono **hard-coded** in plugin (`TipoEsonero.Totale=1`, `StatoEsonero.At
 | idem | Update | `agc_fascicolo2` | PostOperation (40) | Sync | `agc_magistratocontatto` | PreImage `PreImage` (`agc_magistratocontatto`, `agc_contributocaricoassegnato`) | Decrementa il contributo precedente dal vecchio magistrato, incrementa il nuovo; blocco esonero Totale |
 | `EsoneroOverlapValidationPlugin` | Create, Update | `agc_esonero` | PreOperation (20) | Sync | (Update: `agc_datainizio, agc_datafine, agc_statoesonero, agc_magistrato`) | PreImage su Update | Blocca esoneri Attivi sovrapposti per lo stesso magistrato |
 | `EsoneroRientroPlugin` | Create | `agc_esonero` | PostOperation (40) | Sync | — | — | Se Attivo: snapshot `agc_punteggioalmomentoesonero`; se Totale crea `agc_fotocaricoesonero` per tutti i colleghi magistrati |
-| idem | Update | `agc_esonero` | PostOperation (40) | Sync | `agc_statoesonero` | PreImage `PreImage` (`agc_statoesonero`, `agc_magistrato`) | Attivo→Chiuso: scrive `agc_punteggioalrientro`; se Totale riallinea `agc_caricoattuale` al collega più simile (min \|foto − punteggio\|, tie → carico inferiore) e imposta `agc_collegariferimento` |
+| idem | Update | `agc_esonero` | PostOperation (40) | Sync | `agc_statoesonero` | PreImage `PreImage` (`agc_statoesonero`, `agc_magistrato`) | Attivo→Chiuso: scrive `agc_punteggioalrientro` (Totale: carico risultante dopo il riallineamento); se Totale riallinea `agc_caricoattuale` al collega più simile (min \|foto − punteggio\|, tie → carico inferiore) e imposta `agc_collegariferimento`; dal 27/10/2026 (solo dev, da portare in test) il carico risultante è `max(carico attuale del collega, agc_punteggioalmomentoesonero)` (solo aumento: il rientro non diminuisce mai il carico), scritto identico in `agc_caricoattuale` e `agc_punteggioalrientro` |
 | `AnnoRegistroValidationPlugin` | Create, Update | `agc_rgnr` | PreOperation (20) | Sync | (Update: `agc_annoregistro`) | — | `agc_annoregistro` numerico 4 cifre in [1900, 2200] |
 | `ModificaCaricoMagistratoPlugin` | Custom API `agc_ModificaCaricoMagistrato` | bound a `contact` | (Custom API step, sync) | | | | Verifica ruolo Sys Admin (GUID **hard-coded** `5eaeacb4-735a-f111-a825-000d3ade6bac` → da parametrizzare), aggiorna `agc_caricoattuale`, crea `agc_modificacarico`, ritorna `AuditId` |
 | `CaricoConcurrencyHelper` | helper | | | | | | Retry (5) su `RowVersion` / errore `-2147088254` |
@@ -585,7 +585,7 @@ Durante la ricostruzione della dashboard "Cruscotto ASPEN" nella destinazione si
 | E2E-15 | Esoneri | Overlap bloccato | op.roma | Secondo esonero Attivo sovrapposto per lo stesso magistrato | Errore salvataggio con messaggio `EsoneroOverlapValidationPlugin` | smoke |
 | E2E-16 | Esoneri | Overlap consentito se Annullato/Chiuso | op.roma | Esonero precedente Chiuso, nuovo sovrapposto | Salvataggio OK | full |
 | E2E-17 | Esoneri | Snapshot all'attivazione + foto colleghi | op.roma | Crea esonero Totale Attivo per M1 | `agc_punteggioalmomentoesonero` = carico M1; N−1 record `agc_fotocaricoesonero` legati all'esonero | smoke |
-| E2E-18 | Esoneri | Rientro con riallineamento | op.roma | Modifica carichi colleghi (assegnazioni) → chiudi esonero Totale | `agc_punteggioalrientro` valorizzato; `agc_caricoattuale` M1 = carico attuale del collega con \|foto − punteggio\| minimo; `agc_collegariferimento` impostato; tie → collega con carico inferiore | full |
+| E2E-18 | Esoneri | Rientro con riallineamento | op.roma | Modifica carichi colleghi (assegnazioni) → chiudi esonero Totale | `agc_punteggioalrientro` valorizzato; `agc_caricoattuale` M1 = `max(carico attuale del collega con \|foto − punteggio\| minimo, agc_punteggioalmomentoesonero)` (mai inferiore al carico al momento dell'esonero), uguale a `agc_punteggioalrientro`; `agc_collegariferimento` impostato; tie → collega con carico inferiore | full |
 | E2E-19 | Esoneri | Rientro esonero Parziale | op.roma | Chiudi esonero Parziale | Solo `agc_punteggioalrientro`; carico invariato; nessun collega riferimento | full |
 | E2E-20 | Esoneri | Business rule percentuale | op.roma | Tipo = Totale / Parziale | Campo percentuale nascosto / visibile | full |
 | E2E-21 | Esoneri | Flow chiusura automatica | admin | Esonero Attivo con `agc_datafine` = ieri → run flow | Stato Chiuso, plugin rientro eseguito | full |

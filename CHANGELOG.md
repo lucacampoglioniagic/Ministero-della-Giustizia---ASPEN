@@ -4,6 +4,25 @@ Registro delle modifiche principali applicate alla solution `ASPEN` e alla docum
 
 ## [Non rilasciato] — Fase 12: validazione finale e parità funzionale
 
+### 27/10/2026 — Rientro da esonero Totale: il carico non può mai diminuire (Tribunali-dev)
+- **Modificato (`Tribunali-dev`, plugin):** `EsoneroRientroPlugin.cs` → `RiallineaCaricoAlRientro`: per gli esoneri **Totali** il carico al rientro è `max(carico attuale del collega M2, agc_punteggioalmomentoesonero)`, quindi il carico **non può mai diminuire**; lo stesso valore è scritto su `contact.agc_caricoattuale` e su `agc_punteggioalrientro`. Esoneri **Parziali** invariati. Build Release OK, solo assembly pushato (`pac plugin push`, assembly `63e5f64b-58b7-f111-aaab-7ced8d763868`, nuovo profilo pac `TribunaliDevCli5` per token scaduto). **NON testato e2e, non ancora in test.**
+- **Verificato (dati dev):** gli esoneri di Gloria Violi con momento == rientro (33/33, 10/10) sono corretti (collega scelto con stesso carico); i casi 150→69 e 19→17 con la nuova regola diventerebbero 150 e 19.
+- **Noto:** errore `0x80042f0a` se il default team della BU non ha il ruolo Operatore ASPEN (già noto).
+- **Da fare:** portare il plugin in test; riesportare la Home corrente nel repo (`Source/Screen1.fx.yaml` e msapp sono vecchi); creare/valorizzare in test le variabili d'ambiente URL; verificare `prvReadEnvironmentVariableDefinition` per "Amministratore ASPEN"; test e2e della regola solo-aumento; porting in test della nuova regola.
+
+### 26/10/2026 — Fix `agc_punteggioalrientro` (dev) e Home: URL completi via variabili d'ambiente
+- **Corretto (`Tribunali-dev`, plugin):** `EsoneroRientroPlugin.cs` → `RiallineaCaricoAlRientro`: per gli esoneri **Totali**, dopo il riallineamento `agc_punteggioalrientro` riceve il **carico risultante** del magistrato (prima: carico pre-riallineamento). Build OK, solo assembly pushato (`pac plugin push`), test e2e OK (momento=999999, rientro=999500, carico M1=999500, collega=M2; dati ripuliti). **Non ancora in test.**
+- **Corretto (Home ASPEN, dev + test):** i 3 pulsanti portavano alla stessa pagina o a errore perché l'`appid` della model-driven app differisce tra ambienti. Soluzione: una variabile d'ambiente per pulsante con l'URL completo, letta in `App.OnStart` (`Set(gXxxUrl; LookUp('Environment Variable Values'; ...).Value)`) e usata in `Launch(gXxxUrl; {}; LaunchTarget.Replace)`. Sostituisce `gOrgUrl`/`agc_url_ambiente` (23/10). Verificato dall'utente.
+- **Cause trovate in test:** layer non gestito 'Active' sulla canvas app (rimosso); manifest UnifiedApp `agc_ASPEN` non riallineato (risolto ripubblicando l'app model-driven); lookup su Environment Variable Values fallito con `AppDataSourceError`.
+- **Da fare:** portare il plugin in test; riesportare la Home corrente nel repo (`Source/Screen1.fx.yaml` e msapp sono vecchi); creare/valorizzare in test le variabili d'ambiente URL; verificare `prvReadEnvironmentVariableDefinition` per "Amministratore ASPEN".
+
+### 23/10/2026 — Home ASPEN: URL per ambiente, layer temporaneo in test, licenze (Tribunali-dev + documentazione)
+- **Corretto (`Tribunali-dev`):** custom page **ASPEN Home**: i 3 pulsanti (dashboard, elenco, nuovo fascicolo) puntavano sempre all'host di dev. Ora usano `Launch(gOrgUrl & "/main.aspx?...")`, con `gOrgUrl` calcolata in `Screen1.OnVisible` dalla variabile d'ambiente di tipo Testo `agc_url_ambiente` (valore = URL base di ciascun ambiente); aggiunti alla Home i data source **Environment Variable Definitions** e **Environment Variable Values**.
+- **Da fare:** pubblicare in Studio, esportare e rilasciare la solution; impostare il valore corrente di `agc_url_ambiente` in ogni ambiente.
+- **Tribunali-test (intervento temporaneo):** la Home era stata ripuntata a mano a `https://tribunali-test.crm4.dynamics.com` con solution temporanea `AspenHomeTmp` (poi eliminata), lasciando un **layer non gestito** sulla canvas app. **Da rimuovere prima del rilascio con variabile d'ambiente.**
+- **Segnalato/Info:** arrivate le licenze utenti; accesso all'app OK col solo ruolo **Operatore ASPEN** (chiude il punto aperto sulle licenze del 21/10).
+- **Doc:** chiarito al cliente il calcolo dell'assegnazione dopo un esonero (Parziale: contributo = peso × (1 + %/100); Totale: escluso; al rientro Totale riallineamento al collega più simile; al rientro Parziale solo log). Già presente nel README: nessuna modifica ai file.
+
 ### 22/10/2026 — Regole operative chiarite e allineamento README (solo documentazione)
 - **README.md:** aggiunta la sezione «Regole operative chiarite (22/10/2026)» con: accesso da definire al go-live; ruoli Operatore ASPEN / Amministratore ASPEN; riserva GUP non bloccante; riassegnazione; Carico Attuale non ricalcolato al cambio di Peso 1/2; esoneri parziali = maggiorazione del peso con coefficiente `1+%/100` (confermata dal cliente); soglie e colori del cruscotto.
 - **Configurazione:** valori documentati aggiornati a `PesoLimite=60` e `PesoLimiteCanestro=15` per le BU Tribunale.

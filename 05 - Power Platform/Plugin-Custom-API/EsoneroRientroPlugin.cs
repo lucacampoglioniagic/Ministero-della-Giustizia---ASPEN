@@ -23,7 +23,10 @@ namespace AgicAspen.Plugins
     ///     agc_punteggioalrientro, a solo scopo di log/reportistica. Il carico reale non viene
     ///     mai modificato: il riequilibrio avviene naturalmente tramite l'algoritmo a minor carico
     ///     del motore di assegnazione nelle assegnazioni successive.
-    ///   - Esonero "Totale" (1): oltre al log in agc_punteggioalrientro, riallinea il carico reale
+    ///   - Esonero "Totale" (1): riallinea il carico reale e sovrascrive agc_punteggioalrientro
+    ///     con il carico risultante dal riallineamento (se non avviene, resta il carico attuale).
+    ///     Il carico risultante non e' mai inferiore a agc_punteggioalmomentoesonero (solo aumento).
+    ///     Riallinea il carico reale
     ///     (contact.agc_caricoattuale) del magistrato al carico ATTUALE del "collega piu' simile"
     ///     M2, cioe' il collega la cui fotografia (agc_fotocaricoesonero, presa all'attivazione)
     ///     era la piu' vicina al carico del magistrato all'attivazione dell'esonero
@@ -123,7 +126,7 @@ namespace AgicAspen.Plugins
             }
             else if (nuovoStato == StatoChiuso && vecchioStato == StatoAttivo)
             {
-                tracer.Trace($"EsoneroRientroPlugin: rientro da esonero, fotografo carico attuale ({caricoAttuale}) in agc_punteggioalrientro (solo log).");
+                tracer.Trace($"EsoneroRientroPlugin: rientro da esonero, fotografo carico attuale ({caricoAttuale}) in agc_punteggioalrientro (sovrascritto se Totale riallinea).");
                 esoneroUpdate["agc_punteggioalrientro"] = caricoAttuale;
 
                 if (tipoEsonero == TipoTotale)
@@ -284,16 +287,21 @@ namespace AgicAspen.Plugins
                 ? collega.GetAttributeValue<decimal>("agc_caricoattuale")
                 : 0m;
 
-            tracer.Trace($"EsoneroRientroPlugin: collega piu' simile individuato ({collegaRef.Id}), riallineo carico magistrato a {caricoCollegaAttuale}.");
+            // Il carico non puo' mai diminuire per effetto del rientro: floor al punteggio all'attivazione.
+            var nuovoCarico = Math.Max(caricoCollegaAttuale, puntiAllEsonero);
+
+            tracer.Trace($"EsoneroRientroPlugin: collega piu' simile individuato ({collegaRef.Id}, carico {caricoCollegaAttuale}), riallineo carico magistrato a {nuovoCarico} (minimo {puntiAllEsonero}).");
 
             // Scrittura con retry su concorrenza ottimistica: il riallineamento e' una
             // sostituzione assoluta (il valore non dipende dal carico attuale del magistrato,
             // solo da quello del collega), ma la scrittura deve comunque avvenire sull'ultima
             // versione committata del contact, per non fallire silenziosamente se un'altra
             // assegnazione ha scritto nel frattempo.
-            CaricoConcurrencyHelper.AggiornaCaricoConRetry(service, tracer, nameof(EsoneroRientroPlugin), magistratoId, _ => caricoCollegaAttuale);
+            CaricoConcurrencyHelper.AggiornaCaricoConRetry(service, tracer, nameof(EsoneroRientroPlugin), magistratoId, _ => nuovoCarico);
 
             esoneroUpdate["agc_collegariferimento"] = collegaRef;
+            // Il punteggio al rientro e' quello con cui il magistrato riparte, cioe' dopo il riallineamento.
+            esoneroUpdate["agc_punteggioalrientro"] = nuovoCarico;
         }
     }
 }

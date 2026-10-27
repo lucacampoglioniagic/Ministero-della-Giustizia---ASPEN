@@ -4,6 +4,91 @@
 
 ---
 
+## Sessione 27/10/2026 — Regola "solo aumento" al rientro, diagnosi 0x80042f0a, utenti di test
+
+### Cosa è stato fatto
+- **Spiegazione fix 26/10 su `agc_punteggioalrientro`**: per esoneri Totali il campo ora riceve il carico risultante dopo il riallineamento (prima salvava il valore pre-riallineamento, quindi momento=rientro=20 con carico reale 41). Fix in `RiallineaCaricoAlRientro`, e2e OK in dev.
+- **Regola "solo aumento"** implementata in `RiallineaCaricoAlRientro`: il carico al rientro = `max(carico collega di riferimento, punteggio al momento dell'esonero)`, così il carico del magistrato non diminuisce mai. Build Release OK, pushata in **Tribunali-dev** (assembly id `63e5f64b-58b7-f111-aaab-7ced8d763868`; l'id `5cd6cdfb...` appartiene all'ambiente sorgente). **NON testata e2e.**
+- **Diagnosi errore `0x80042f0a`**: causa = default team della BU senza il ruolo Operatore ASPEN; non è legato al plugin.
+- **Utenti di test / impersonazione**: Elia Quaranta (Roma), Gloria Violi (Messina); gli utenti `op.*` non sono mai stati creati. Gap: l'impersonazione richiede `prvReadUser` su `systemuser`, non presente.
+- **Verifica esoneri di Gloria Violi**: i valori uguali momento==rientro sono corretti (il collega di riferimento ha lo stesso carico).
+
+### Decisioni
+- Regola "solo aumento" applicata via `max(...)` nel plugin anziché nel calcolo del collega.
+- Dati interrogati con `pac org fetch --xmlFile` (Playwright non autenticato; `az` sull'account sbagliato → 403).
+- `pac auth`: token scaduto → nuovo profilo `TribunaliDevCli5`.
+
+### Stato attuale
+- Plugin con regola solo-aumento in Tribunali-dev, compilato ma non testato e2e. Test non ancora aggiornato.
+
+### Prossimi passi
+- E2E della regola solo-aumento.
+- Portare il plugin in test.
+- Riesportare la Home nel repo.
+- Env var URL in test.
+- Verificare `prvReadEnvironmentVariableDefinition` per "Amministratore ASPEN".
+- Assegnare il ruolo ai ~140 default team delle BU.
+
+### Files changed
+- `EsoneroRientroPlugin.cs` (regola solo-aumento); `SESSION_NOTES.md`.
+
+---
+
+## Sessione 26/10/2026 — Fix `agc_punteggioalrientro` e Home: URL per ambiente via variabili d'ambiente
+
+### Cosa è stato fatto
+- **Plugin** (`05 - Power Platform\Plugin-Custom-API\EsoneroRientroPlugin.cs`, `RiallineaCaricoAlRientro`): per esoneri Totali, dopo il riallineamento si scrive in `agc_punteggioalrientro` il carico risultante (prima il pre-riallineamento, es. mom=20, rientro=20, carico 41). Compilato (0 errori), `pac plugin push` solo assembly in dev, e2e OK (999999 / 999500, carico M1=999500, collega=M2), dati test ripuliti.
+- **Home (canvas `cr248_aspenhome_1750e`)**: i 3 pulsanti andavano alla stessa pagina o in errore (appid model-driven diverso: dev `7c769e36-f2b7-f111-aaab-000d3a697f24`, test `f5ddeadf-a8c0-f111-aaad-0022489c155a`). Cause in test: (a) layer 'Active' non gestito (23/10) che bloccava l'aggiornamento → rimosso; (b) manifest `agc_ASPEN` non riallineato (databaseReferences solo Fascicoli) → ripubblicata l'app model-driven; (c) lookup su Environment Variable Values per l'appid in errore `AppDataSourceError`.
+- **Soluzione finale (verificata dall'utente)**: una variabile d'ambiente per pulsante con URL completo; `App.OnStart` → `Set(gXxxUrl; LookUp('Environment Variable Values'; 'Environment Variable Definition'.'Schema Name' = "<schemaname>").Value)`; `OnSelect` → `Launch(gXxxUrl; {}; LaunchTarget.Replace)`. Nessun `appid`/`gBase`. Studio in locale italiano usa `;`. Supera `gOrgUrl`/`agc_url_ambiente` del 23/10.
+
+### Lezioni
+- Dopo l'import di una custom page aggiornare/ripubblicare l'app model-driven.
+- Controllare con `msdyn_componentlayers` che non ci sia un layer 'Active' non gestito sulla canvas app.
+- "Amministratore ASPEN" potrebbe non avere `prvReadEnvironmentVariableDefinition` (non verificato in modo definitivo).
+- Il repo non ha la Home corrente: `Source/Screen1.fx.yaml` e msapp in `Solution/ASPEN_unpacked/CanvasApps` sono vecchi (URL fissi).
+
+### Aperti / da fare
+- Portare il plugin fixato in test (export solution da dev con versione incrementata + import).
+- Riesportare la Home corrente nel repo.
+- Creare/valorizzare le variabili d'ambiente per gli URL in **tutti** gli ambienti (con appid/URL propri).
+- Verificare se il ruolo "Amministratore ASPEN" ha `prvReadEnvironmentVariableDefinition` (altrimenti la Home fallisce per quegli utenti).
+
+### Files changed
+- `EsoneroRientroPlugin.cs`; documentazione (`README.md`, `CHANGELOG.md`, `SESSION_NOTES.md`, Piano di Migrazione).
+
+---
+
+## Sessione 23/10/2026 — Fase 12 (validazione finale), calcolo carico dopo esonero, licenze, Home custom page e URL ambiente
+
+### Cosa è stato fatto
+- **Recupero contesto**: ripreso il lavoro in Fase 12 (validazione finale).
+- **Risposta al cliente sul calcolo dopo un esonero** (verificato in `CaricoMagistratoAssegnazionePlugin.cs` ed `EsoneroRientroPlugin.cs`):
+  - **Totale** = magistrato escluso dall'assegnazione (blocco anche server-side).
+  - **Parziale** = contributo = peso × (1 + %/100); nuovo carico = carico + contributo; contributo salvato in `agc_contributocaricoassegnato`.
+  - **Al rientro**: Parziale → solo log (`agc_punteggioalrientro`); Totale → riallineamento al collega più simile (`agc_collegariferimento`).
+- **Licenze arrivate**: in test l'accesso all'app funziona col solo ruolo Operatore ASPEN.
+- **Home custom page**: i 3 `Launch` erano hardcoded all'host di dev (`Screen1.fx.yaml` righe ~239/297/353; nel msapp `Controls/4.json` e `Src/Screen1.pa.yaml`, 6 occorrenze). Intervento temporaneo su Tribunali-test: export impossibile (solution managed) → creata solution temporanea `AspenHomeTmp` con solo la canvas app patchata (host tribunali-test) via script Python sullo zip msapp, `pac solution pack` / `import --publish-changes`, poi solution eliminata. Resta un **layer non gestito** sulla canvas app in test. `pac auth` riautenticato (profilo `TribunaliTestCli4b`) per scadenza token da conditional access.
+- **Soluzione definitiva (fatta dall'utente in Studio su dev)**: variabile d'ambiente Testo `agc_url_ambiente`; data source *Environment Variable Definitions* e *Values*; `Screen1.OnVisible` con `Set(gOrgUrl; Coalesce(LookUp('Environment Variable Values'; 'Environment Variable Definition'.'Schema Name' = "agc_url_ambiente").Value; LookUp('Environment Variable Definitions'; 'Schema Name' = "agc_url_ambiente").'Default Value'))`; nei 3 pulsanti `Launch(gOrgUrl & "/main.aspx?...", {}, LaunchTarget.Replace)`. Verificato funzionante in Studio.
+
+### Decisioni
+- `Navigate()` nativo non supporta dashboard/form → scelta della **variabile d'ambiente** per l'URL.
+- Lezioni: il msapp managed non è esportabile; in Studio `OnVisible` va eseguito a mano; aggiungere **entrambe** le tabelle delle variabili d'ambiente.
+
+### Stato attuale
+- Accesso all'app in test OK col solo Operatore ASPEN. Home su dev funzionante in Studio. In test la Home ha ancora il patch temporaneo (layer non gestito).
+
+### Aperti / da fare
+- Pubblicare Home, export e import in test con valore corrente `https://tribunali-test.crm4.dynamics.com`.
+- Rimuovere il layer non gestito sulla canvas app in test.
+- Verificare lettura delle tabelle variabili per Operatore ASPEN.
+- Aggiornare `Source/Screen1.fx.yaml` nel repo (ancora con host hardcoded).
+- Test visibilità BU con utente reale; creazione dei 68 utenti magistrati mancanti; decisione 48→60 per Milano/Messina/Roma; eliminazione vecchie tabelle dopo E2E PASS.
+
+### Files changed
+- `SESSION_NOTES.md`. Nessuna modifica a codice nel repo; interventi su Tribunali-test (solution temporanea poi eliminata) e su dev (Studio).
+
+---
+
 ## Sessione 21/10/2026 — Tribunali-test: configurazioni per tribunale, visibilità per BU, licenze
 
 ### Cosa è stato fatto
